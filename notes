@@ -1,7 +1,8 @@
 #generate with different APIs
+#https://towardsdatascience.com/how-i-won-singapores-gpt-4-prompt-engineering-competition-34c195a93d41
+#summarization, classifcation .... prompts
 #generate with openAI
 #generate structured JSON
-#prompt templates
 #do prompting tasks
 #prompt generator , tuner, optimizer
 #generate images, different models
