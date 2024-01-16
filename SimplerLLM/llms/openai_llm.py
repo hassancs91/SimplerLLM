@@ -1,5 +1,4 @@
 #add streaming
-
 from openai import AsyncOpenAI
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -72,7 +71,6 @@ def generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RETRIES, retry_
                 print(f"Failed to generate response after {max_retries} attempts due to: {e}")
                 return None
 
-
 async def async_generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RETRIES, retry_delay=RETRY_DELAY):
     """
     Generates a text response for a given user prompt using the specified model.
@@ -104,7 +102,6 @@ async def async_generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RET
                 # Log the error or inform the user
                 print(f"Failed to generate response after {max_retries} attempts due to: {e}")
                 return None
-
 
 def print_responses(responses,streaming_delay = STREAMING_DELAY):
     """

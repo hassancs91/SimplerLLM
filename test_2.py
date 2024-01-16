@@ -1,5 +1,6 @@
-import test
+
+from SimplerLLM.llms.llm import LLM, LLMModel
 
 
-pr = test.prompt_template.prompt
-print("M" +  pr)
+llm_instance = LLM(model=LLMModel.OPENAI)
+print(llm_instance.generate_text("generate a sentence from 5 words"))
