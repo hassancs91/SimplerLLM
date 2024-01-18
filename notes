@@ -9,10 +9,11 @@
 #sequential and router chains.
 ---------------------
 
+#load documents and split with token number optional
 
 #summarization, classifcation .... prompts
 
-
+#web research 
 #prompt generator , tuner, optimizer
 #generate images, different models
 #generate images dalle
