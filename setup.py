@@ -1,8 +1,11 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='SimplerLLM',  # Replace with your library's name
-    version='0.1.1',  # Your library's initial version
+    version='0.1.2',  # Your library's initial version
     author='LearnWithHasan',  # Your name or your organization's name
     author_email='hasan@learnwithhasan.com',  # Your contact email
     description='An asynchronous text generation library using OpenAI.',  # A short description
@@ -10,6 +13,7 @@ setup(
     long_description_content_type='text/markdown',  # Type of the long description
     url='https://github.com/yourusername/text_generator',  # Link to your project's repository
     packages=find_packages(),  # Automatically find your package
+    install_requires=requirements,
     # install_requires=[
     #     'openai>=0.2.4',  # Ensure you pin down the versions for better reproducibility
     #     'python-dotenv>=0.15.0',
