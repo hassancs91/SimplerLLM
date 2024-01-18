@@ -1,0 +1,4 @@
+openai
+newspaper3k
+youtube-transcript-api
+selenium
