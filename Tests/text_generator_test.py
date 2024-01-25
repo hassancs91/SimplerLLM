@@ -1,7 +1,7 @@
 # test_text_generator.py
 
 import pytest
-from SimplerLLM.llms.openai_llm import basic_generation
+from SimplerLLM.langauge.openai_llm import basic_generation
 
 @pytest.mark.asyncio
 async def test_generate_response():

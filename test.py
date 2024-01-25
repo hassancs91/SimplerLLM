@@ -1,4 +1,4 @@
-import SimplerLLM.llms.openai_llm as generator
+import SimplerLLM.langauge.openai_llm as generator
 import SimplerLLM.prompts.prompt_builder as pr
 from SimplerLLM.tools.blogs import read_content_from_url
 
