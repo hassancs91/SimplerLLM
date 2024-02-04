@@ -1,6 +1,7 @@
-import SimplerLLM.langauge.openai_llm as generator
+import SimplerLLM.langauge.llm_providers.openai_llm as generator
 import SimplerLLM.prompts.prompt_builder as pr
 from SimplerLLM.tools.blogs import read_content_from_url
+from SimplerLLM.tools.serp import search_with_value_serp_api
 
 # Example usage:
 prompt_template_plain = "Hello, my name is {name} and I enjoy {activity}."
@@ -37,10 +38,10 @@ prompt.assign_parms(name = "Hasan", activity="Baseball")
 # # Step 4: Display the generated prompts
 # for prompt in generated_prompts:
 #     print(prompt)
+results = search_with_value_serp_api("baseball",5)
+print(results[0]["link"])
+#url = "https://learnwithhasan.com/keyword-research-with-ai/"
 
+#content = read_content_from_url(url)
 
-url = "https://learnwithhasan.com/keyword-research-with-ai/"
-
-content = read_content_from_url(url)
-
-print ("ok")
+#print ("ok")

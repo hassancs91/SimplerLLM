@@ -10,6 +10,17 @@ from selenium.webdriver.chrome.options import Options
 import requests
 import json
 from duckduckgo_search import DDGS
+from dotenv import load_dotenv
+import os
+import asyncio
+import time
+import instructor
+
+# Load environment variables
+load_dotenv()
+
+# Constants
+VALUE_SERP_API_KEY = os.getenv('VALUE_SERP_API_KEY')
 
 ...
 
@@ -18,6 +29,18 @@ from duckduckgo_search import DDGS
 # with DDGS() as ddgs:
 #     results = [r for r in ddgs.text(query, max_results=5)]
 #     print(results[0]["title"])
+
+
+
+def search_with_value_serp_api(query,results_count=100):
+    url = "https://api.valueserp.com/search"
+    params = {
+        "q": query,
+        "api_key": VALUE_SERP_API_KEY,
+        "num": results_count
+    }
+    response = requests.get(url, params=params)
+    return response.json()['organic_results']
 
 
 
