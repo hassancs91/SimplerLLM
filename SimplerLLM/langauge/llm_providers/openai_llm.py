@@ -180,7 +180,6 @@ async def generate_full_response_async(user_prompt,system_prompt, model, max_tok
                 print(f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}")
                 return None
 
-
 def generate_json_with_pydantic(user_prompt, pydantic_model,model_name):
 
     for attempt in range(MAX_RETRIES):
@@ -216,9 +215,6 @@ async def generate_json_with_pydantic_async(user_prompt, pydantic_model,model_na
             else:
                 print(f"Response generation exception after max retries: {e}")
                 return None
-
-
-
 
 def generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RETRIES, retry_delay=RETRY_DELAY, enable_streaming=False,print_response = False,streaming_delay = STREAMING_DELAY):
     """
@@ -300,6 +296,34 @@ async def async_generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RET
                 # Log the error or inform the user
                 print(f"Failed to generate response after {max_retries} attempts due to: {e}")
                 return None
+
+#GPT-Vision posponded to V2
+# def analyze_image_with_vision(image_url, prompt, model="gpt-4-vision-preview",max_tokens=300):
+#     response = openai_client.chat.completions.create(
+#     model="model",
+#     messages=[
+#         {
+#         "role": "user",
+#         "content": [
+#             {"type": "text", "text": prompt},
+#             {
+#             "type": "image_url",
+#             "image_url": {
+#                 "url": image_url,
+#             },
+#             },
+#         ],
+#         }
+#     ],
+#     max_tokens=max_tokens,
+#     )
+
+    return response.choices[0].message.content
+
+
+
+
+
 
 def print_responses(responses,streaming_delay = STREAMING_DELAY):
     """
