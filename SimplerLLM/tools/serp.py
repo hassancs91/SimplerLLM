@@ -1,92 +1,60 @@
-#Using Value SERP
-#Other Popular SERP API
-#Using Automation
-#Duckduck Go
-from selenium import webdriver
-from selenium_stealth import stealth
-from bs4 import BeautifulSoup
-from urllib.parse import urlparse
-from selenium.webdriver.chrome.options import Options
-import requests
-import json
-from duckduckgo_search import DDGS
+from duckduckgo_search import DDGS, AsyncDDGS
 from dotenv import load_dotenv
 import os
-import asyncio
-import time
-import instructor
+import json
 
 # Load environment variables
 load_dotenv()
 
-# Constants
-VALUE_SERP_API_KEY = os.getenv('VALUE_SERP_API_KEY')
-
-...
-
-# query = "how to make a great pastrami sandwich"
-
-# with DDGS() as ddgs:
-#     results = [r for r in ddgs.text(query, max_results=5)]
-#     print(results[0]["title"])
 
 
+async def search_with_duck_duck_go_async(query, max_results=50):
+    """
+    Perform an asynchronous search using the DuckDuckGo search engine.
 
-def search_with_value_serp_api(query,results_count=100):
-    url = "https://api.valueserp.com/search"
-    params = {
-        "q": query,
-        "api_key": VALUE_SERP_API_KEY,
-        "num": results_count
-    }
-    response = requests.get(url, params=params)
-    return response.json()['organic_results']
+    Args:
+    query (str): The search query string.
+    max_results (int, optional): The maximum number of results to return. Defaults to 50.
+
+    Returns:
+    str: A JSON string containing the search results, each result being a dictionary with URL, Title, and Description.
+    """
+    async with AsyncDDGS() as ddgs:
+        results = []
+        async for r in ddgs.text(query, max_results=max_results):
+            results.append(r)
+        result_data = []
+        for result in results:
+            # Ensure all keys exist to avoid key errors
+            url = result.get("href", "No URL available")
+            title = result.get("title", "No title available")
+            description = result.get("body", "No description available")
+            result_data.append({"URL": url, "Title": title, "Description": description})
+        
+        return json.dumps(result_data, indent=4)
 
 
+def search_with_duck_duck_go(query, max_results=10):
+    """
+    Perform a synchronous search using the DuckDuckGo search engine.
 
-def search_google_with_web_automation(query):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    chrome_options.add_experimental_option("useAutomationExtension", False)
-    driver = webdriver.Chrome(options=chrome_options)
+    Args:
+    query (str): The search query string.
+    max_results (int, optional): The maximum number of results to return. Defaults to 50.
 
-    stealth(
-        driver,
-        languages=["en-US", "en"],
-        vendor="Google Inc.",
-        platform="Win32",
-        webgl_vendor="Intel Inc.",
-        renderer="Intel Iris OpenGL Engine",
-        fix_hairline=True,
-    )
+    Returns:
+    list: A list of dictionaries, each containing URL, Title, and Description from the search results.
+    """
+    with DDGS() as ddgs:
+        results = [r for r in ddgs.text(query, max_results=max_results)]
+        result_data = []
+        for result in results:
+            # Ensure all keys exist to avoid key errors
+            url = result.get("url", "No URL available")
+            title = result.get("title", "No title available")
+            description = result.get("description", "No description available")
+            result_data.append({"URL": url, "Title": title, "Description": description})
+        
+        return json.dumps(result_data, indent=4)
 
-    n_pages = 2
-    results = []
-    counter = 0
-    for page in range(1, n_pages):
-        url = (
-            "http://www.google.com/search?q="
-            + str(query)
-            + "&start="
-            + str((page - 1) * 10)
-        )
-
-        driver.get(url)
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-        search = soup.find_all("div", class_="yuRUbf")
-        for h in search:
-            counter = counter + 1
-            title = h.a.h3.text
-            link = h.a.get("href")
-            rank = counter
-            results.append(
-                {
-                    "title": h.a.h3.text,
-                    "url": link,
-                    "domain": urlparse(link).netloc,
-                    "rank": rank,
-                }
-            )
-    return results[:3]
 

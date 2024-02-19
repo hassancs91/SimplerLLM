@@ -1,6 +1,6 @@
 from SimplerLLM.langauge.llm import LLM, LLMProvider
 import SimplerLLM.prompts.prompt_builder as pr
-from SimplerLLM.tools.blogs import read_content_from_url
+from SimplerLLM.tools.web import read_content_from_url
 from SimplerLLM.tools.serp import search_with_value_serp_api
 
 # Example usage:

@@ -1,8 +1,9 @@
+python-dotenv
 openai
+google-generativeai  
+instructor
 newspaper3k
 youtube-transcript-api
-selenium
-python-dotenv
-instructor
 duckduckgo_search
-selenium_stealth
+aiohttp
+
