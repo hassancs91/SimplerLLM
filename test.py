@@ -1,13 +1,13 @@
 from SimplerLLM.langauge.llm import LLM, LLMProvider
 import SimplerLLM.prompts.prompt_builder as pr
-from SimplerLLM.tools.web import read_content_from_url
-from SimplerLLM.tools.serp import search_with_value_serp_api
+from SimplerLLM.tools.content_loader import read_content_from_url
+
 
 # Example usage:
 llm_instance = LLM.create(provider=LLMProvider.OPENAI,model_name="gpt-3.5-turbo-1106")
-gemeni_instanat = LLM.create(provider=LLMProvider.GEMENI,model_name="gemini-pro")
+#gemeni_instanat = LLM.create(provider=LLMProvider.GEMENI,model_name="gemini-pro")
 
-print(gemeni_instanat.generate_full_response("generate a 5 words sentence"))
+#print(gemeni_instanat.generate_full_response("generate a 5 words sentence"))
 
 
 prompt_template_plain = '''
@@ -60,8 +60,8 @@ generate a list of 100 questions without numbering, just questions without answe
 #     print(prompt)
 #results = search_with_value_serp_api("baseball",5)
 #print(results[0]["link"])
-#url = "https://learnwithhasan.com/keyword-research-with-ai/"
+url = "https://learnwithhasan.com/keyword-research-with-ai/"
 
-#content = read_content_from_url(url)
+content = read_content_from_url(url)
 
-#print ("ok")
+print (content.title)

@@ -31,7 +31,7 @@ async def search_with_duck_duck_go_async(query, max_results=50):
             description = result.get("body", "No description available")
             result_data.append({"URL": url, "Title": title, "Description": description})
         
-        return json.dumps(result_data, indent=4)
+        return result_data
 
 
 def search_with_duck_duck_go(query, max_results=10):
@@ -55,6 +55,6 @@ def search_with_duck_duck_go(query, max_results=10):
             description = result.get("description", "No description available")
             result_data.append({"URL": url, "Title": title, "Description": description})
         
-        return json.dumps(result_data, indent=4)
+        return result_data
 
 

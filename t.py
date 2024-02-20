@@ -10,7 +10,7 @@ class QuesionsModel(BaseModel):
     Questions: List[str]
 
 
-llm_instance = LLM.create(model=LLMProvider.OPENAI)
+llm_instance = LLM.create(provider=LLMProvider.OPENAI)
 
 
 #prompt = " generate 5 random catchy titles in a json format"
@@ -78,17 +78,42 @@ topics = [
     "The Universe and Galaxies"
 ]
 
-with open('output.txt', 'w', encoding='utf-8') as file:
-    for topic in topics:
-        prompt = pr.create_template(prompt_template_plain)
-        prompt.assign_parms(topic=topic)
-        result : QuesionsModel = llm_instance.generate_json_with_pydantic(prompt.content, QuesionsModel, "gpt-3.5-turbo-1106")
+# with open('output.txt', 'w', encoding='utf-8') as file:
+#     for topic in topics:
+#         prompt = pr.create_template(prompt_template_plain)
+#         prompt.assign_parms(topic=topic)
+#         result : QuesionsModel = llm_instance.generate_json_with_pydantic(prompt.content, QuesionsModel, "gpt-3.5-turbo-1106")
 
-        for q in result.Questions:
-            file.write(q + '\n')
+#         for q in result.Questions:
+#             file.write(q + '\n')
 
 
 
+class Topics(BaseModel):
+    list: List[str]
+
+generate_sub_topics_prompt_test = "Your task is to generate of list 3 child topics for this parent topic: [Science]. the output should be a Valid JSON list."
+generate_list_of_topics= """
+I'm working on exploring the subtopics under a specific top-level topic. The topic I'm interested in is [Tech]. Could you help me by generating a comprehensive list of 5 
+child topics that fall under this main topic? Please consider various aspects, 
+related fields, subfields, and any specific areas that are commonly associated with it. 
+the output should me a json list.
+example output: 
+list = [
+    "AI",
+    "Programming",
+    "Web Development"
+]
+
+"""
+basic_result = llm_instance.generate_text(generate_list_of_topics,model_name="gpt-4")
+result = llm_instance.generate_json_with_pydantic(user_prompt=generate_list_of_topics, pydantic_model=Topics,model_name="gpt-4")
+print (basic_result)
+
+# generate_sub_topics_prompt_test = "Your task is to generate of 3 child topics fot this parent topic: [Science]. the output should be a Valid JSON list."
+
+# result : Topics = llm_instance.generate_json_with_pydantic(user_prompt=generate_sub_topics_prompt_test, pydantic_model=Topics,model_name="gpt-4")
+# print (result)
 
 
 
