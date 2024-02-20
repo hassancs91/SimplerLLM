@@ -3,7 +3,7 @@ import asyncio
 
 def main():
     json_data = search_with_duck_duck_go("prompt engineering")
-    print(json_data[0])
+    print(json_data[0].Domain)
 
 main()
 
