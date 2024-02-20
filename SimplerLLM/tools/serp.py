@@ -50,9 +50,9 @@ def search_with_duck_duck_go(query, max_results=10):
         result_data = []
         for result in results:
             # Ensure all keys exist to avoid key errors
-            url = result.get("url", "No URL available")
+            url = result.get("href", "No URL available")
             title = result.get("title", "No title available")
-            description = result.get("description", "No description available")
+            description = result.get("body", "No description available")
             result_data.append({"URL": url, "Title": title, "Description": description})
         
         return result_data
