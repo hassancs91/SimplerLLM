@@ -1,6 +1,7 @@
 from SimplerLLM.langauge.llm import LLM, LLMProvider
 import SimplerLLM.prompts.prompt_builder as pr
-from SimplerLLM.tools.content_loader import read_content_from_url
+from SimplerLLM.prompts.prompt_builder import create_multi_value_prompts,create_prompt_template
+from SimplerLLM.tools.content_loader import read_blog_from_url
 
 
 # Example usage:
@@ -19,8 +20,39 @@ easily from a context. let's start with {topic},
 generate a list of 100 questions without numbering, just questions without answers.'''
 
 
-##prompt = pr.create_template(prompt_template_plain)
-#prompt.assign_parms(topic = "geography")
+# tiny_list = [
+#     "Science",
+#     "Technology",
+#     "Health",
+#     "Business",
+#     "Education",
+# ]
+
+# basic_prompt = "Generate 5 titles for a blog about {topic} and {style}"
+
+# prompt_template = pr.create_prompt_template(basic_prompt)
+
+# prompt_template.assign_parms(topic = "dogs",style = "catchy")
+
+# print(prompt_template.content)
+
+
+# print("-----------------------------------")
+
+multi_value_prompt_template = "Hello {name}, your next meeting is on {date}. and bring a {object} wit you"
+
+params_list = [
+     {"name": "Alice", "date": "January 10th", "object" : "dog"},
+     {"name": "Bob", "date": "January 12th", "object" : "bag"},
+     {"name": "Charlie", "date": "January 15th", "object" : "pen"} 
+]
+
+
+multi_value_prompt = create_multi_value_prompts(multi_value_prompt_template)
+generated_prompts = multi_value_prompt.generate_prompts(params_list)
+
+print(generated_prompts[0])
+
 
 
 #reponse = llm_instance.generate_text(prompt.content,max_tokens=4096,model_name="gpt-3.5-turbo-1106")
@@ -60,8 +92,8 @@ generate a list of 100 questions without numbering, just questions without answe
 #     print(prompt)
 #results = search_with_value_serp_api("baseball",5)
 #print(results[0]["link"])
-url = "https://learnwithhasan.com/keyword-research-with-ai/"
+# url = "https://learnwithhasan.com/keyword-research-with-ai/"
 
-content = read_content_from_url(url)
+# content = read_content_from_url(url)
 
-print (content.title)
+# print (content.title)

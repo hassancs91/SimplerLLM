@@ -34,7 +34,7 @@ class SimplePrompt:
     def __str__(self) -> str:
         return self.content
 
-def create_template(template_string: str) -> SimplePrompt:
+def create_prompt_template(template_string: str) -> SimplePrompt:
     """
     Factory function to create a SimpleTemplate instance.
     """
