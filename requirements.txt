@@ -6,4 +6,5 @@ newspaper3k
 youtube-transcript-api
 duckduckgo_search
 aiohttp
-
+python-docx
+PyPDF2
