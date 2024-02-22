@@ -2,10 +2,8 @@ import re
 import json
 from pydantic import BaseModel, ValidationError
 from typing import get_type_hints
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel
 from typing import List, get_type_hints, Type
-import datetime
-
 
 
 
@@ -103,9 +101,6 @@ def convert_json_to_pydantic_model(model_class, json_data):
     except ValidationError as e:
         print("Validation error:", e)
         return None
-
-
-
 
 # Define a function to provide example values based on type
 def example_value_for_type(field_type: Type):
