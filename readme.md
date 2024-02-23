@@ -35,7 +35,7 @@ from SimplerLLM import LLM, LLMProvider
 # For OpenAI
 llm_instance = LLM.create(provider=LLMProvider.OPENAI)
 # For Google Gemini
-gemini_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-pro")
+gemini_instance = LLM.create(provider=LLMProvider.Gemini,model_name="gemini-pro")
 
 response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
 
