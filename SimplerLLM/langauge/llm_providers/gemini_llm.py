@@ -9,9 +9,9 @@ import time
 load_dotenv()
 
 # Constants
-GEMENI_API_KEY = os.getenv('GEMENI_API_KEY')
-if GEMENI_API_KEY is None:
-    raise ValueError("Please set the OPENAI_API_KEY in .env file.")
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if GEMINI_API_KEY is None:
+    raise ValueError("Please set the GEMINI_API_KEY in .env file.")
 
 MAX_RETRIES = os.getenv('MAX_RETRIES')
 if MAX_RETRIES is not None:
@@ -34,7 +34,7 @@ else:
     STREAMING_DELAY = 0.1  # Default value
 
 
-genai.configure(api_key=GEMENI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 def generate_text_basic(user_prompt, model):

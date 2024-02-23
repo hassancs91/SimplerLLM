@@ -4,3 +4,8 @@ venv/
 .pytest_cache/
 /Tests
 /my_tests
+/dist
+/codes
+/build
+/SimplerLLM.egg-info
+.pypirc 

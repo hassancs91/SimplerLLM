@@ -1,11 +1,11 @@
 import SimplerLLM.langauge.llm_providers.openai_llm as openai_llm
-import SimplerLLM.langauge.llm_providers.gemeni_llm as gemeni_llm
+import SimplerLLM.langauge.llm_providers.gemini_llm as gemini_llm
 from enum import Enum
 
 
 class LLMProvider(Enum):
     OPENAI = 1
-    GEMENI = 2
+    Gemini = 2
 
 
 class LLM:
@@ -21,8 +21,8 @@ class LLM:
     def create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo", temperature=0.7,top_p=1.0):
         if provider == LLMProvider.OPENAI:
             return OpenAILLM(provider, model_name, temperature, top_p)
-        if provider == LLMProvider.GEMENI:
-            return GemeniLLM(provider, model_name, temperature,top_p)
+        if provider == LLMProvider.Gemini:
+            return GeminiLLM(provider, model_name, temperature,top_p)
         else:
             return LLM(provider, model_name, temperature)
 
@@ -35,8 +35,8 @@ class LLM:
     def generate_text(self, input_text):
         if self.provider == LLMProvider.OPENAI:
             return openai_llm.generate(input_text)
-        elif self.provider == LLMProvider.GEMENI:
-            return "generated with Gemeni"
+        elif self.provider == LLMProvider.gemini:
+            return "generated with gemini"
         else:
             raise ValueError("Unsupported model")
 
@@ -102,7 +102,7 @@ class OpenAILLM(LLM):
 
 
     
-class GemeniLLM(LLM):
+class GeminiLLM(LLM):
     def __init__(self, model, model_name, temperature,top_p):
         super().__init__(model, model_name, temperature,top_p)
 
@@ -111,7 +111,7 @@ class GemeniLLM(LLM):
         model_name = model_name if model_name is not None else self.model_name
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
-        return gemeni_llm.generate_text(user_prompt=user_prompt, 
+        return gemini_llm.generate_text(user_prompt=user_prompt, 
                                          model=model_name,temperature=temperature, 
                                          top_p=top_p, max_tokens=max_tokens)
 
@@ -121,7 +121,7 @@ class GemeniLLM(LLM):
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
 
-        return gemeni_llm.generate_full_response(user_prompt=user_prompt,
+        return gemini_llm.generate_full_response(user_prompt=user_prompt,
                                         model=model_name, temperature=temperature, 
                                         top_p=top_p, max_tokens=max_tokens)
     
