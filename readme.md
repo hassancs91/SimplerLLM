@@ -1,5 +1,5 @@
 
-# ⚪ SimplerLLM
+# ⚪ SimplerLLM (Beta)
 
 ⚡ Your Easy Pass to Advanced AI ⚡
 
