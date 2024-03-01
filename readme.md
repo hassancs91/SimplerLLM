@@ -35,7 +35,7 @@ from SimplerLLM import LLM, LLMProvider
 # For OpenAI
 llm_instance = LLM.create(provider=LLMProvider.OPENAI)
 # For Google Gemini
-gemini_instance = LLM.create(provider=LLMProvider.Gemini,model_name="gemini-pro")
+gemini_instance = LLM.create(provider=LLMProvider.GEMINI,model_name="gemini-pro")
 
 response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
 
@@ -55,7 +55,7 @@ search_results = search_with_duck_duck_go("penut",3)
 
 #### Generic Text Loader
 ```python
-from SimplerLLM.tools.generic_text_loader import load_text
+from SimplerLLM.tools.generic_loader import load_content
 
 text_file = load_text("file.txt")
 
@@ -122,14 +122,3 @@ print(generated_prompts[0])
 - Document Chunker
 - Advanced Document Loader
 - Integration With More Providers 
-
-
-
-## License
-### MIT
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
