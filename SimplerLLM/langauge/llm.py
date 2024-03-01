@@ -5,7 +5,7 @@ from enum import Enum
 
 class LLMProvider(Enum):
     OPENAI = 1
-    Gemini = 2
+    GEMINI = 2
 
 
 class LLM:
@@ -21,7 +21,7 @@ class LLM:
     def create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo", temperature=0.7,top_p=1.0):
         if provider == LLMProvider.OPENAI:
             return OpenAILLM(provider, model_name, temperature, top_p)
-        if provider == LLMProvider.Gemini:
+        if provider == LLMProvider.GEMINI:
             return GeminiLLM(provider, model_name, temperature,top_p)
         else:
             return LLM(provider, model_name, temperature)
@@ -35,8 +35,8 @@ class LLM:
     def generate_text(self, input_text):
         if self.provider == LLMProvider.OPENAI:
             return openai_llm.generate(input_text)
-        elif self.provider == LLMProvider.gemini:
-            return "generated with gemini"
+        elif self.provider == LLMProvider.GEMINI:
+            return "generated with Gemini"
         else:
             raise ValueError("Unsupported model")
 
@@ -91,11 +91,11 @@ class OpenAILLM(LLM):
                                         model=model_name, temperature=temperature, 
                                         top_p=top_p, max_tokens=max_tokens)
     
-    def generate_json_with_pydantic(self, user_prompt, pydantic_model,model_name):
-        return openai_llm.generate_json_with_pydantic(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
+    # def generate_json_with_pydantic(self, user_prompt, pydantic_model,model_name):
+    #     return openai_llm.generate_json_with_pydantic(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
     
-    async def generate_json_with_pydantic_async(self, user_prompt, pydantic_model,model_name):
-        return await openai_llm.generate_json_with_pydantic_async(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
+    # async def generate_json_with_pydantic_async(self, user_prompt, pydantic_model,model_name):
+    #     return await openai_llm.generate_json_with_pydantic_async(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
 
 
 
@@ -125,7 +125,7 @@ class GeminiLLM(LLM):
                                         model=model_name, temperature=temperature, 
                                         top_p=top_p, max_tokens=max_tokens)
     
-
+    #Add Async Functions
 
     
 

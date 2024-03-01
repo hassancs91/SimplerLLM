@@ -3,6 +3,7 @@ import os
 import PyPDF2
 import docx
 from youtube_transcript_api import YouTubeTranscriptApi
+from pytube import YouTube
 import re
 from urllib.parse import urlparse
 from pydantic import BaseModel
@@ -18,20 +19,22 @@ class TextDocument(BaseModel):
     title: Optional[str] = None
     url_or_path: Optional[str] = None
 
-def load_text(input_path_or_url):
+def load_content(input_path_or_url):
     # Check if the input is a URL
-    input_path_or_url = str.lower(input_path_or_url)
     if re.match(r'http[s]?://', input_path_or_url):
         # Process based on URL content
         if "youtube.com" in input_path_or_url or "youtu.be" in input_path_or_url:
-            content = __read_youtube_video_transcript(input_path_or_url)
-            file_size = len(content.encode('utf-8'))  # Size in bytes
+            video_details = __read_youtube_video(input_path_or_url)
+            video_title = video_details['title']
+            video_content = video_details['transcript']
+            file_size = len(video_content.encode('utf-8'))  # Size in bytes
             return TextDocument(
-                word_count=len(content.split()),
-                character_count=len(content),
-                content=content,
+                word_count=len(video_content.split()),
+                character_count=len(video_content),
+                content=video_content,
                 file_size = file_size,
-                url_or_path=input_path_or_url
+                url_or_path=input_path_or_url,
+                title=video_title
             )
         else:
             article = __read_blog_from_url(input_path_or_url)
@@ -70,11 +73,6 @@ def load_text(input_path_or_url):
             raise ValueError(f"Error processing file: {e}")
 
     raise ValueError("Unable to process the input")
-
-
-
-
-
 
 def __read_text_file(file_path):
     with open(file_path, 'r',encoding='utf-8') as file:
@@ -135,15 +133,15 @@ def __read_blog_from_url(url):
         print(f"An error occurred while fetching the article: {e}")
         return None
 
-def __read_youtube_video_transcript(video_url):
+def __read_youtube_video(video_url):
     """
-    Fetches the transcript of a YouTube video given its URL.
+    Fetches the title and transcript of a YouTube video given its URL.
 
     Parameters:
     video_url (str): The URL of the YouTube video.
 
     Returns:
-    str: The transcript of the video if available, raises an error otherwise.
+    dict: A dictionary containing the title and transcript of the video if available, raises an error otherwise.
     """
     # Enhanced regex to handle different YouTube URL formats
     match = re.search(r"(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]+)", video_url)
@@ -153,8 +151,15 @@ def __read_youtube_video_transcript(video_url):
         raise ValueError("Invalid YouTube URL")
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        transcript_text = " ".join([line["text"] for line in transcript])
-        return transcript_text
+        yt = YouTube(video_url)
+
+        # Get the title of the video
+        title = yt.title
+
+        # Get the transcript of the video
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_text = " ".join([line["text"] for line in transcript_list])
+
+        return {"title": title, "transcript": transcript_text}
     except Exception as e:
-        raise f"An error occurred while fetching the transcript: {e}"
+        raise Exception(f"An error occurred while fetching the video details: {e}")
