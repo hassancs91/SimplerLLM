@@ -30,7 +30,7 @@ And Much More Coming Soon!
 ### Creating an LLM Instance
 
 ```python
-from SimplerLLM import LLM, LLMProvider
+from SimplerLLM.langauge.llm import LLM, LLMProvider
 
 # For OpenAI
 llm_instance = LLM.create(provider=LLMProvider.OPENAI)
@@ -57,7 +57,7 @@ search_results = search_with_duck_duck_go("penut",3)
 ```python
 from SimplerLLM.tools.generic_loader import load_content
 
-text_file = load_text("file.txt")
+text_file = load_content("file.txt")
 
 print(text_file.content)
 
