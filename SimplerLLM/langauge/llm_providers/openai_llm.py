@@ -12,8 +12,7 @@ load_dotenv()
 
 # Constants
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-if OPENAI_API_KEY is None:
-    raise ValueError("Please set the OPENAI_API_KEY in .env file.")
+
 
 MAX_RETRIES = os.getenv('MAX_RETRIES')
 if MAX_RETRIES is not None:
@@ -319,11 +318,6 @@ async def async_generate(user_prompt, model="gpt-3.5-turbo", max_retries=MAX_RET
 #     )
 
     return response.choices[0].message.content
-
-
-
-
-
 
 def print_responses(responses,streaming_delay = STREAMING_DELAY):
     """

@@ -10,8 +10,7 @@ load_dotenv()
 
 # Constants
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if GEMINI_API_KEY is None:
-    raise ValueError("Please set the GEMINI_API_KEY in .env file.")
+
 
 MAX_RETRIES = os.getenv('MAX_RETRIES')
 if MAX_RETRIES is not None:

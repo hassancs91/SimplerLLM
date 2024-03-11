@@ -91,11 +91,6 @@ class OpenAILLM(LLM):
                                         model=model_name, temperature=temperature, 
                                         top_p=top_p, max_tokens=max_tokens)
     
-    # def generate_json_with_pydantic(self, user_prompt, pydantic_model,model_name):
-    #     return openai_llm.generate_json_with_pydantic(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
-    
-    # async def generate_json_with_pydantic_async(self, user_prompt, pydantic_model,model_name):
-    #     return await openai_llm.generate_json_with_pydantic_async(user_prompt=user_prompt,pydantic_model = pydantic_model,model_name=model_name)
 
 
 
