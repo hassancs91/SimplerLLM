@@ -6,6 +6,7 @@ from typing import Optional, List
 import os
 import aiohttp
 import requests
+import json
 
 
 class SearchResult(BaseModel):
@@ -25,6 +26,68 @@ load_dotenv()
 
 VALUE_SERP_API_KEY = os.getenv('VALUE_SERP_API_KEY')
 
+SERPER_API_KEY = os.getenv('SERPER_API_KEY')
+
+
+
+def search_with_serpapi(query, num_results=50):
+    url = "https://google.serper.dev/search"
+    payload = json.dumps({
+        "q": query,
+        "num": num_results
+    })
+    headers = {
+        'X-API-KEY': SERPER_API_KEY,
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    results = response.json()
+
+    response = requests.post(url, headers=headers, data=payload)
+    results = response.json()
+
+    organic_results = results.get('organic', [])
+    # Extract desired data from the organic results
+    search_results = []
+    for result in organic_results:
+        search_results.append(SearchResult(
+                        URL=result.get('link'),
+                        Domain=get_domain_from_url(result.get('link')),
+                        Title=result.get('title'),
+                        Description=result.get('snippet')
+                    ))
+    return search_results
+
+
+async def search_with_serpapi_async(query: str, num_results: int = 50) -> List[SearchResult]:
+    url = "https://google.serper.dev/search"
+    payload = json.dumps({
+        "q": query,
+        "num": num_results
+    })
+    headers = {
+        'X-API-KEY': SERPER_API_KEY,
+        'Content-Type': 'application/json'
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers, data=payload) as response:
+            results = await response.json()
+
+    organic_results = results.get('organic', [])
+
+    # Extract desired data from the organic results
+    search_results = []
+    for result in organic_results:
+        search_results.append(SearchResult(
+            URL=result.get('link'),
+            Domain=get_domain_from_url(result.get('link')),
+            Title=result.get('title'),
+            Description=result.get('snippet')
+        ))
+
+    return search_results
 
 async def search_with_value_serp_async(keyword,num_results=50)-> List[SearchResult]:
     async with aiohttp.ClientSession() as session:

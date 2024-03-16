@@ -10,7 +10,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name='SimplerLLM',
-    version='0.1.4',
+    version='0.1.6',
     author='Hasan Aboul Hasan',
     author_email='hasan@learnwithhasan.com',
     description='An easy-to-use Library for interacting with language models.',
