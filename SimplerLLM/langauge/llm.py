@@ -50,7 +50,6 @@ class OpenAILLM(LLM):
         super().__init__(model, model_name, temperature,top_p)
 
 
-
     def generate_text(self, user_prompt, system_prompt="", model_name=None, temperature=None, top_p=None, max_tokens=500):
         # Use instance values as defaults if not provided
         model_name = model_name if model_name is not None else self.model_name

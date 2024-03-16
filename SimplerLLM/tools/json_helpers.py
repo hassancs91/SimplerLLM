@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from typing import List, get_type_hints, Type
 
 
-
 def convert_pydantic_to_json(model_instance):
     """
     Converts a Pydantic model instance to a JSON string.

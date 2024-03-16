@@ -3,6 +3,10 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 from pydantic import BaseModel, HttpUrl
 from typing import Optional, List
+import os
+import aiohttp
+import requests
+
 
 class SearchResult(BaseModel):
     URL: HttpUrl
@@ -19,8 +23,50 @@ def get_domain_from_url(url):
 load_dotenv()
 
 
+VALUE_SERP_API_KEY = os.getenv('VALUE_SERP_API_KEY')
 
-async def search_with_duck_duck_go_async(query, max_results=50):
+
+async def search_with_value_serp_async(keyword,num_results=50)-> List[SearchResult]:
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get("https://api.valueserp.com/search", params={"q": keyword, "num": num_results, "api_key": VALUE_SERP_API_KEY}) as response:
+                response.raise_for_status()
+                results = await response.json()
+                search_results = []
+                for result in results.get('organic_results', [])[:num_results]:
+                    search_results.append(SearchResult(
+                        URL=result.get('link'),
+                        Domain=get_domain_from_url(result.get('link')),
+                        Title=result.get('title'),
+                        Description=result.get('snippet')
+                    ))
+                return search_results
+        except aiohttp.ClientError as e:
+            return []
+        
+
+
+def search_with_value_serp(keyword, num_results=50)-> List[SearchResult]:
+    try:
+        response = requests.get("https://api.valueserp.com/search", params={"q": keyword, "num": num_results, "api_key": VALUE_SERP_API_KEY})
+        response.raise_for_status()
+        results = response.json()
+        search_results = []
+        for result in results.get('organic_results', [])[:num_results]:
+            search_results.append(SearchResult(
+                URL=result.get('link'),
+                Domain=get_domain_from_url(result.get('link')),
+                Title=result.get('title'),
+                Description=result.get('snippet')
+            ))
+        return search_results
+    except requests.RequestException as e:
+        return []
+
+
+
+
+async def search_with_duck_duck_go_async(query, max_results=50) -> List[SearchResult]:
     """
     Perform an asynchronous search using the DuckDuckGo search engine.
 
@@ -48,7 +94,6 @@ async def search_with_duck_duck_go_async(query, max_results=50):
                 result_data.append(SearchResult(URL=url, Title=title, Description=description))
         
         return result_data
-
 
 def search_with_duck_duck_go(query: str, max_results: int = 10) -> List[SearchResult]:
     """
