@@ -9,3 +9,5 @@ venv/
 /build
 /SimplerLLM.egg-info
 .pypirc 
+generate_images.py
+generate_text.py
