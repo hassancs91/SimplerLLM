@@ -27,6 +27,27 @@ pip install simplerllm
 And Much More Coming Soon!
 
 
+### Setting Up Environment Variables
+To use this library, you need to set several API keys in your environment. Start by creating a .env file in the root directory of your project and adding your API keys there. 
+
+🔴 This file should be kept private and not committed to version control to protect your keys.
+
+Here is an example of what your .env file should look like:
+
+``` 
+OPENAI_API_KEY="your_openai_api_key_here"
+GEMENI_API_KEY="your_gemeni_api_key_here"
+CLAUDE_API_KEY="your_claude_api_key_here"
+RAPIDAPI_API_KEY="your_rapidapi_key_here" # for accessing APIs on RapidAPI
+VALUE_SERP_API_KEY="your_value_serp_api_key_here" #for Google search
+SERPER_API_KEY="your_serper_api_key_here" #for Google search
+STABILITY_API_KEY="your_stability_api_key_here" #for image generation
+
+```
+
+
+
+
 ### Creating an LLM Instance
 
 ```python
@@ -34,8 +55,14 @@ from SimplerLLM.language.llm import LLM, LLMProvider
 
 # For OpenAI
 llm_instance = LLM.create(provider=LLMProvider.OPENAI)
+
 # For Google Gemini
-gemini_instance = LLM.create(provider=LLMProvider.GEMINI,model_name="gemini-pro")
+#llm_instance = LLM.create(provider=LLMProvider.GEMINI,model_name="gemini-pro")
+
+# For Claude Gemini
+#llm_instance = LLM.create(LLMProvider.CLAUDE, model_name="claude-3-opus-20240229")
+
+
 
 response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
 
@@ -45,9 +72,9 @@ response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
 
 #### SERP
 ```python
-from SimplerLLM.tools.serp import search_with_duck_duck_go
+from SimplerLLM.tools.serp import search_with_serper_api
 
-search_results = search_with_duck_duck_go("penut",3)
+search_results = search_with_serper_api("your search query", num_results=3)
 
 # use the search results the way you want!
 
@@ -111,6 +138,34 @@ print(generated_prompts[0])
 
 ```
 
+
+## Chunking Functions
+We have introduced new functions to help you split texts into manageable chunks based on different criteria. These functions are part of the chunker tool.
+
+### chunk_by_max_chunk_size
+This function splits text into chunks with a maximum size, optionally preserving sentence structure.
+
+### chunk_by_sentences
+This function splits the text into chunks based on sentences.
+
+### chunk_by_paragraphs
+This function splits text into chunks based on paragraphs.
+
+Example
+
+```python
+from SimplerLLM.tools import text_chunker as chunker
+
+blog_url = "https://www.semrush.com/blog/digital-marketing/"
+blog_post = loader.load_content(blog_url)
+
+text = blog_post.content
+
+chunks = chunker.chunk_by_max_chunk_size(text, 100, True)
+
+
+
+```
 
 
 ### Next Updates
