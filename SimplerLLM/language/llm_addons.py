@@ -1,17 +1,23 @@
 import time
 from typing import Type
 from pydantic import BaseModel
-from SimplerLLM.langauge.llm import LLM
+from SimplerLLM.language.llm import LLM
 
 from SimplerLLM.tools.json_helpers import (
     extract_json_from_text,
     convert_json_to_pydantic_model,
     validate_json_with_pydantic_model,
-    generate_json_example_from_pydantic
-    )
+    generate_json_example_from_pydantic,
+)
 
 
-def generate_basic_pydantic_json_model(model_class: Type[BaseModel], prompt: str, llm_instance : LLM, max_retries: int = 3, initial_delay: float = 1.0) -> BaseModel:
+def generate_basic_pydantic_json_model(
+    model_class: Type[BaseModel],
+    prompt: str,
+    llm_instance: LLM,
+    max_retries: int = 3,
+    initial_delay: float = 1.0,
+) -> BaseModel:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
 
@@ -25,32 +31,37 @@ def generate_basic_pydantic_json_model(model_class: Type[BaseModel], prompt: str
     for attempt in range(max_retries + 1):
         try:
             json_model = generate_json_example_from_pydantic(model_class)
-            optimized_prompt = prompt + f'\n\n.The response should me a structured JSON format that matches the following JSON: {json_model}'
+            optimized_prompt = (
+                prompt
+                + f"\n\n.The response should me a structured JSON format that matches the following JSON: {json_model}"
+            )
             ai_response = llm_instance.generate_text(optimized_prompt)
-            
+
             if ai_response:
                 json_object = extract_json_from_text(ai_response)
 
-                validated, errors = validate_json_with_pydantic_model(model_class, json_object)
+                validated, errors = validate_json_with_pydantic_model(
+                    model_class, json_object
+                )
 
                 if not errors:
-                    model_object = convert_json_to_pydantic_model(model_class, json_object[0])
+                    model_object = convert_json_to_pydantic_model(
+                        model_class, json_object[0]
+                    )
                     return model_object
 
         except Exception as e:  # Replace with specific exception if possible
             return f"Exception occurred: {e}"
 
         if not ai_response and attempt < max_retries:
-            time.sleep(initial_delay * (2 ** attempt))  # Exponential backoff
+            time.sleep(initial_delay * (2**attempt))  # Exponential backoff
             continue
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
-        
+
         # Retry logic for validation errors
         if errors and attempt < max_retries:
-            time.sleep(initial_delay * (2 ** attempt))  # Exponential backoff
+            time.sleep(initial_delay * (2**attempt))  # Exponential backoff
             continue
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
-        
-        

@@ -1,11 +1,13 @@
-import SimplerLLM.langauge.llm_providers.openai_llm as openai_llm
-import SimplerLLM.langauge.llm_providers.gemini_llm as gemini_llm
+import SimplerLLM.language.llm_providers.openai_llm as openai_llm
+import SimplerLLM.language.llm_providers.gemini_llm as gemini_llm
+import SimplerLLM.language.llm_providers.claude_llm as claude_llm
 from enum import Enum
 
 
 class LLMProvider(Enum):
     OPENAI = 1
     GEMINI = 2
+    CLAUDE = 3
 
 
 class LLM:
@@ -32,6 +34,8 @@ class LLM:
             return OpenAILLM(provider, model_name, temperature, top_p)
         if provider == LLMProvider.GEMINI:
             return GeminiLLM(provider, model_name, temperature, top_p)
+        if provider == LLMProvider.CLAUDE:
+            return ClaudeiLLM(provider, model_name, temperature, top_p)
         else:
             return LLM(provider, model_name, temperature)
 
@@ -62,7 +66,7 @@ class OpenAILLM(LLM):
         return openai_llm.generate_text(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
-            model=model_name,
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             max_tokens=max_tokens,
@@ -85,7 +89,7 @@ class OpenAILLM(LLM):
         return await openai_llm.generate_text_async(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
-            model=model_name,
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             max_tokens=max_tokens,
@@ -108,7 +112,7 @@ class OpenAILLM(LLM):
         return openai_llm.generate_full_response(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
-            model=model_name,
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             max_tokens=max_tokens,
@@ -131,7 +135,7 @@ class OpenAILLM(LLM):
         return await openai_llm.generate_full_response_async(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
-            model=model_name,
+            model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             max_tokens=max_tokens,
@@ -188,4 +192,145 @@ class GeminiLLM(LLM):
             max_tokens=max_tokens,
         )
 
-    # Add Async Functions
+    async def generate_text_async(
+        self,
+        user_prompt,
+        system_prompt=None,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return await gemini_llm.generate_text_async(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )
+
+    async def generate_full_response(
+        self,
+        user_prompt,
+        system_prompt,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return await gemini_llm.generate_full_response_async(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )
+
+
+class ClaudeiLLM(LLM):
+    def __init__(self, model, model_name, temperature, top_p):
+        super().__init__(model, model_name, temperature, top_p)
+
+    def generate_text(
+        self,
+        user_prompt,
+        system_prompt=None,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return claude_llm.generate_text(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )
+
+    def generate_full_response(
+        self,
+        user_prompt,
+        system_prompt,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return claude_llm.generate_full_response(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )
+
+    async def generate_text_async(
+        self,
+        user_prompt,
+        system_prompt=None,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return await claude_llm.generate_text_async(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )
+
+    async def generate_full_response(
+        self,
+        user_prompt,
+        system_prompt,
+        model_name=None,
+        temperature=None,
+        top_p=None,
+        max_tokens=2024,
+    ):
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        temperature = temperature if temperature is not None else self.temperature
+        top_p = top_p if top_p is not None else self.top_p
+
+        return await claude_llm.generate_full_response_async(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            model_name=model_name,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+        )

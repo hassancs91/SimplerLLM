@@ -30,7 +30,7 @@ And Much More Coming Soon!
 ### Creating an LLM Instance
 
 ```python
-from SimplerLLM.langauge.llm import LLM, LLMProvider
+from SimplerLLM.language.llm import LLM, LLMProvider
 
 # For OpenAI
 llm_instance = LLM.create(provider=LLMProvider.OPENAI)

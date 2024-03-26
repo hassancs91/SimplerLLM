@@ -4,6 +4,7 @@ venv/
 .pytest_cache/
 /Tests
 /my_tests
+/old_codes
 /dist
 /codes
 /build
@@ -11,3 +12,4 @@ venv/
 .pypirc 
 generate_images.py
 generate_text.py
+chunk_text.py

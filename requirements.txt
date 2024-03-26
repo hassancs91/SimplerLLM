@@ -1,7 +1,6 @@
 python-dotenv
 openai
 google-generativeai  
-instructor
 newspaper3k
 youtube-transcript-api
 pytube
