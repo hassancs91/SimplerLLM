@@ -60,7 +60,7 @@ llm_instance = LLM.create(provider=LLMProvider.OPENAI)
 #llm_instance = LLM.create(provider=LLMProvider.GEMINI,model_name="gemini-pro")
 
 # For Anthropic Claude 
-#llm_instance = LLM.create(LLMProvider.CLAUDE, model_name="claude-3-opus-20240229")
+#llm_instance = LLM.create(LLMProvider.ANTHROPIC, model_name="claude-3-opus-20240229")
 
 
 response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")

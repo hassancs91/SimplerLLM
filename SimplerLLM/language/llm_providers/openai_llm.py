@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import asyncio
 import os
 import time
+from .llm_response_models import LLMFullResponse
 
 # Load environment variables
 load_dotenv()
@@ -32,7 +33,7 @@ def generate_text(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     if not user_prompt or not isinstance(user_prompt, str):
         raise ValueError("user_prompt must be a non-empty string.")
     for attempt in range(MAX_RETRIES):
@@ -67,7 +68,7 @@ async def generate_text_async(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     if not user_prompt or not isinstance(user_prompt, str):
         raise ValueError("user_prompt must be a non-empty string.")
     for attempt in range(MAX_RETRIES):
@@ -102,7 +103,10 @@ def generate_full_response(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> LLMFullResponse:
+
+    start_time = time.time()  # Record the start time
+
     if not user_prompt or not isinstance(user_prompt, str):
         raise ValueError("user_prompt must be a non-empty string.")
     for attempt in range(MAX_RETRIES):
@@ -117,15 +121,29 @@ def generate_full_response(
                 max_tokens=max_tokens,
                 top_p=top_p,
             )
-            return completion
+
+            end_time = time.time()  # Record the end time before returning
+            process_time = end_time - start_time
+
+            full_reponse = LLMFullResponse(
+                generated_text=[completion.choices[0].message.content][0],
+                model=model_name,
+                process_time=process_time,
+                llm_provider_response=completion,
+            )
+
+            return full_reponse
 
         except Exception as e:  # Consider catching more specific exceptions
             if attempt < MAX_RETRIES - 1:
                 time.sleep(RETRY_DELAY * (2**attempt))
             else:
+
+                end_time = time.time()  # Record the end time in case of failure
+                process_time = end_time - start_time
                 # Log the error or inform the user
                 print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
+                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
                 )
                 return None
 
@@ -137,7 +155,9 @@ async def generate_full_response_async(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> LLMFullResponse:
+    start_time = time.time()  # Record the start time
+
     if not user_prompt or not isinstance(user_prompt, str):
         raise ValueError("user_prompt must be a non-empty string.")
     for attempt in range(MAX_RETRIES):
@@ -152,14 +172,27 @@ async def generate_full_response_async(
                 max_tokens=max_tokens,
                 top_p=top_p,
             )
-            return completion
+
+            end_time = time.time()  # Record the end time before returning
+            process_time = end_time - start_time
+
+            full_reponse = LLMFullResponse(
+                generated_text=[completion.choices[0].message.content][0],
+                model=model_name,
+                process_time=process_time,
+                llm_provider_response=completion,
+            )
+
+            return full_reponse
 
         except Exception as e:  # Consider catching more specific exceptions
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(RETRY_DELAY * (2**attempt))
             else:
+                end_time = time.time()  # Record the end time in case of failure
+                process_time = end_time - start_time
                 # Log the error or inform the user
                 print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
+                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
                 )
                 return None

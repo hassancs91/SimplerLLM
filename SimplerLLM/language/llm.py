@@ -1,13 +1,13 @@
 import SimplerLLM.language.llm_providers.openai_llm as openai_llm
 import SimplerLLM.language.llm_providers.gemini_llm as gemini_llm
-import SimplerLLM.language.llm_providers.claude_llm as claude_llm
+import SimplerLLM.language.llm_providers.anthropic_llm as anthropic_llm
 from enum import Enum
 
 
 class LLMProvider(Enum):
     OPENAI = 1
     GEMINI = 2
-    CLAUDE = 3
+    ANTHROPIC = 3
 
 
 class LLM:
@@ -25,8 +25,8 @@ class LLM:
 
     @staticmethod
     def create(
-        provider=LLMProvider.OPENAI,
-        model_name="gpt-3.5-turbo",
+        provider=None,
+        model_name=None,
         temperature=0.7,
         top_p=1.0,
     ):
@@ -34,10 +34,10 @@ class LLM:
             return OpenAILLM(provider, model_name, temperature, top_p)
         if provider == LLMProvider.GEMINI:
             return GeminiLLM(provider, model_name, temperature, top_p)
-        if provider == LLMProvider.CLAUDE:
-            return ClaudeiLLM(provider, model_name, temperature, top_p)
+        if provider == LLMProvider.ANTHROPIC:
+            return AnthropicLLM(provider, model_name, temperature, top_p)
         else:
-            return LLM(provider, model_name, temperature)
+            return None
 
     def set_model(self, provider):
         if not isinstance(provider, LLMProvider):
@@ -215,7 +215,7 @@ class GeminiLLM(LLM):
             max_tokens=max_tokens,
         )
 
-    async def generate_full_response(
+    async def generate_full_response_async(
         self,
         user_prompt,
         system_prompt,
@@ -239,7 +239,7 @@ class GeminiLLM(LLM):
         )
 
 
-class ClaudeiLLM(LLM):
+class AnthropicLLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
         super().__init__(model, model_name, temperature, top_p)
 
@@ -257,7 +257,7 @@ class ClaudeiLLM(LLM):
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
 
-        return claude_llm.generate_text(
+        return anthropic_llm.generate_text(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             model_name=model_name,
@@ -280,7 +280,7 @@ class ClaudeiLLM(LLM):
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
 
-        return claude_llm.generate_full_response(
+        return anthropic_llm.generate_full_response(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             model_name=model_name,
@@ -303,7 +303,7 @@ class ClaudeiLLM(LLM):
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
 
-        return await claude_llm.generate_text_async(
+        return await anthropic_llm.generate_text_async(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             model_name=model_name,
@@ -312,7 +312,7 @@ class ClaudeiLLM(LLM):
             max_tokens=max_tokens,
         )
 
-    async def generate_full_response(
+    async def generate_full_response_async(
         self,
         user_prompt,
         system_prompt,
@@ -326,7 +326,7 @@ class ClaudeiLLM(LLM):
         temperature = temperature if temperature is not None else self.temperature
         top_p = top_p if top_p is not None else self.top_p
 
-        return await claude_llm.generate_full_response_async(
+        return await anthropic_llm.generate_full_response_async(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             model_name=model_name,
