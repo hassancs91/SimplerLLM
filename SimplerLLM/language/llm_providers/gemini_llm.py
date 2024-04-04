@@ -5,6 +5,7 @@ import aiohttp
 import asyncio
 import time
 import requests
+from .llm_response_models import LLMFullResponse
 
 # Load environment variables
 load_dotenv()
@@ -50,7 +51,6 @@ def __call_gemeni(
             {"role": "user", "parts": [{"text": user_prompt}]},
         ],
         "generationConfig": {
-            "stopSequences": ["Title"],
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
             "topP": top_p,
@@ -77,6 +77,8 @@ def __generate_response(
     top_p,
     full_response=False,
 ):
+
+    start_time = time.time()  # Record the start time
     """
     Generates a response from the generative language model.
 
@@ -113,7 +115,19 @@ def __generate_response(
             )
 
             if full_response:
-                return response
+                end_time = time.time()  # Record the end time before returning
+                process_time = end_time - start_time
+
+                full_reponse = LLMFullResponse(
+                    generated_text=response["candidates"][0]["content"]["parts"][0][
+                        "text"
+                    ],
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=response,
+                )
+
+                return full_reponse
             else:
                 return response["candidates"][0]["content"]["parts"][0]["text"]
 
@@ -122,9 +136,11 @@ def __generate_response(
                 delay = RETRY_DELAY * 2**attempt
                 time.sleep(delay)
             else:
+                end_time = time.time()  # Record the end time in case of failure
+                process_time = end_time - start_time
                 # Log the error or inform the user
                 print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
+                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
                 )
                 return None
 
@@ -136,7 +152,7 @@ def generate_text(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     """
     Generates using Gemini and returns only the text.
     """
@@ -158,7 +174,7 @@ def generate_full_response(
     max_tokens=2000,
     top_p=1.0,
     temperature=0.7,
-):
+) -> LLMFullResponse:
     """
     Generates the full response from Gemini.
     """
@@ -213,7 +229,6 @@ async def __call_gemeni_async(
             },
         ],
         "generationConfig": {
-            "stopSequences": ["Title"],
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
             "topP": top_p,
@@ -241,6 +256,8 @@ async def __generate_response_async(
     top_p,
     full_response=False,
 ):
+    start_time = time.time()  # Record the start time before making the request
+
     """
     Generates a response from the generative language model.
 
@@ -277,7 +294,19 @@ async def __generate_response_async(
             )
 
             if full_response:
-                return response
+                end_time = time.time()  # Record the end time before returning
+                process_time = end_time - start_time
+
+                full_reponse = LLMFullResponse(
+                    generated_text=response["candidates"][0]["content"]["parts"][0][
+                        "text"
+                    ],
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=response,
+                )
+
+                return full_reponse
             else:
                 return response["candidates"][0]["content"]["parts"][0]["text"]
 
@@ -285,9 +314,11 @@ async def __generate_response_async(
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(RETRY_DELAY * (2**attempt))
             else:
+                end_time = time.time()  # Record the end time in case of failure
+                process_time = end_time - start_time
                 # Log the error or inform the user
                 print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
+                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
                 )
                 return None
 
@@ -299,7 +330,7 @@ async def generate_text_async(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     """
     Generates using Gemini and returns only the text.
     """
@@ -322,7 +353,7 @@ async def generate_full_response_async(
     max_tokens=2000,
     top_p=1.0,
     temperature=0.7,
-):
+) -> LLMFullResponse:
     """
     Generates the full response from Gemini.
     """

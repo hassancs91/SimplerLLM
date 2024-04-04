@@ -5,6 +5,7 @@ import aiohttp
 import asyncio
 import time
 import requests
+from .llm_response_models import LLMFullResponse
 
 # Load environment variables
 load_dotenv()
@@ -65,6 +66,7 @@ def __generate_response(
     top_p,
     full_response=False,
 ):
+    start_time = time.time()  # Record the start time before making the request
     """
     Generates a response from the Anthropic model.
     """
@@ -89,7 +91,17 @@ def __generate_response(
             )
 
             if full_response:
-                return response
+                end_time = time.time()  # Record the end time before returning
+                process_time = end_time - start_time
+
+                full_reponse = LLMFullResponse(
+                    generated_text=response["content"][0]["text"],
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=response,
+                )
+
+                return full_reponse
             else:
                 # Extracting the text from the first item in the 'content' array
                 if "content" in response and response["content"]:
@@ -115,7 +127,7 @@ def generate_text(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     """
     Generates text using the Anthropic model and returns only the text.
     """
@@ -137,7 +149,7 @@ def generate_full_response(
     max_tokens=2000,
     top_p=1.0,
     temperature=0.7,
-):
+) -> LLMFullResponse:
     """
     Generates the full response from Claude.
     """
@@ -201,6 +213,7 @@ async def __generate_response_async(
     top_p,
     full_response=False,
 ):
+    start_time = time.time()  # Record the start time before making the request
     """
     Generates a response from the generative language model.
 
@@ -237,7 +250,17 @@ async def __generate_response_async(
             )
 
             if full_response:
-                return response
+                end_time = time.time()  # Record the end time before returning
+                process_time = end_time - start_time
+
+                full_reponse = LLMFullResponse(
+                    generated_text=response["content"][0]["text"],
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=response,
+                )
+
+                return full_reponse
             else:
                 if "content" in response and response["content"]:
                     return response["content"][0]["text"]
@@ -262,7 +285,7 @@ async def generate_text_async(
     temperature=0.7,
     max_tokens=2024,
     top_p=0.8,
-):
+) -> str:
     """
     Generates using Claude and returns only the text.
     """
@@ -285,7 +308,7 @@ async def generate_full_response_async(
     max_tokens=2000,
     top_p=1.0,
     temperature=0.7,
-):
+) -> LLMFullResponse:
     """
     Generates the full response from Claude.
     """
