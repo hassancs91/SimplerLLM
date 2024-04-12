@@ -13,3 +13,5 @@ venv/
 generate_images.py
 generate_text.py
 chunk_text.py
+generate_code.py
+generate_embeddings.py

@@ -49,288 +49,174 @@ class OpenAILLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
         super().__init__(model, model_name, temperature, top_p)
 
-    def generate_text(
+    def generate_response(
         self,
-        user_prompt,
-        system_prompt="",
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=500,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return openai_llm.generate_text(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return openai_llm.generate_response(**params)
 
-    async def generate_text_async(
+    async def generate_response_async(
         self,
-        user_prompt,
-        system_prompt="",
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=500,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await openai_llm.generate_text_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return await openai_llm.generate_response_async(**params)
 
-    def generate_full_response(
-        self,
-        user_prompt,
-        system_prompt="",
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=500,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return openai_llm.generate_full_response(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
-
-    async def generate_full_response_async(
-        self,
-        user_prompt,
-        system_prompt="",
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=500,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await openai_llm.generate_full_response_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
+    def prepare_params(self, model_name, temperature, top_p):
+        # Use instance values as defaults if parameters are not provided
+        return {
+            "model_name": model_name if model_name else self.model_name,
+            "temperature": temperature if temperature else self.temperature,
+            "top_p": top_p if top_p else self.top_p,
+        }
 
 
 class GeminiLLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
         super().__init__(model, model_name, temperature, top_p)
 
-    def generate_text(
+    def generate_response(
         self,
-        user_prompt,
-        system_prompt=None,
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=2024,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return gemini_llm.generate_text(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return gemini_llm.generate_response(**params)
 
-    def generate_full_response(
+    async def generate_response_async(
         self,
-        user_prompt,
-        system_prompt,
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=2024,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return gemini_llm.generate_full_response(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return await gemini_llm.generate_response_async(**params)
 
-    async def generate_text_async(
-        self,
-        user_prompt,
-        system_prompt=None,
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=2024,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await gemini_llm.generate_text_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
-
-    async def generate_full_response_async(
-        self,
-        user_prompt,
-        system_prompt,
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=2024,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await gemini_llm.generate_full_response_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
+    def prepare_params(self, model_name, temperature, top_p):
+        # Use instance values as defaults if parameters are not provided
+        return {
+            "model_name": model_name if model_name else self.model_name,
+            "temperature": temperature if temperature else self.temperature,
+            "top_p": top_p if top_p else self.top_p,
+        }
 
 
 class AnthropicLLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
         super().__init__(model, model_name, temperature, top_p)
 
-    def generate_text(
+    def generate_response(
         self,
-        user_prompt,
-        system_prompt=None,
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=2024,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return anthropic_llm.generate_text(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return anthropic_llm.generate_response(**params)
 
-    def generate_full_response(
+    async def generate_response_async(
         self,
-        user_prompt,
-        system_prompt,
         model_name=None,
+        prompt=None,
+        messages=None,
+        system_prompt="You are a helpful AI Assistant",
         temperature=None,
+        max_tokens=300,
         top_p=None,
-        max_tokens=2024,
+        full_response=False,
     ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return anthropic_llm.generate_full_response(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
+        params = self.prepare_params(model_name, temperature, top_p)
+        params.update(
+            {
+                "prompt": prompt,
+                "messages": messages,
+                "system_prompt": system_prompt,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
         )
+        return await anthropic_llm.generate_response_async(**params)
 
-    async def generate_text_async(
-        self,
-        user_prompt,
-        system_prompt=None,
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=2024,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await anthropic_llm.generate_text_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
-
-    async def generate_full_response_async(
-        self,
-        user_prompt,
-        system_prompt,
-        model_name=None,
-        temperature=None,
-        top_p=None,
-        max_tokens=2024,
-    ):
-        # Use instance values as defaults if not provided
-        model_name = model_name if model_name is not None else self.model_name
-        temperature = temperature if temperature is not None else self.temperature
-        top_p = top_p if top_p is not None else self.top_p
-
-        return await anthropic_llm.generate_full_response_async(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            model_name=model_name,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-        )
+    def prepare_params(self, model_name, temperature, top_p):
+        # Use instance values as defaults if parameters are not provided
+        return {
+            "model_name": model_name if model_name else self.model_name,
+            "temperature": temperature if temperature else self.temperature,
+            "top_p": top_p if top_p else self.top_p,
+        }

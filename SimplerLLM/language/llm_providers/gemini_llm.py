@@ -6,6 +6,7 @@ import asyncio
 import time
 import requests
 from .llm_response_models import LLMFullResponse
+from typing import Optional, Dict, List
 
 # Load environment variables
 load_dotenv()
@@ -16,40 +17,67 @@ MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
 
-def __call_gemeni(
+def generate_response(
     model_name: str,
-    user_prompt: str,
-    system_prompt: str,
+    prompt: Optional[str] = None,
+    system_prompt: str = "You are a helpful AI Assistant",
+    messages: Optional[List[Dict]] = None,
     temperature: float = 0.7,
-    max_tokens: int = 2024,
+    max_tokens: int = 300,
     top_p: float = 0.8,
+    full_response: bool = False,
 ) -> Optional[Dict]:
+    start_time = time.time()  # Record the start time
     """
-    Makes a POST request to the generativelanguage API to generate content based on the provided text
-    with specified generation configuration settings.
+    Sends a POST request to the generativelanguage API to generate content based on the provided text
+    or a list of messages with specified generation configuration settings.
 
     Parameters:
-    - model_name (str): The name of the model to use for generation.
-    - user_prompt (str): The text prompt for content generation.
-    - system_prompt (str): The system-generated text prompt.
-    - temperature (float): Controls randomness in generation. Higher values mean more random completions.
+    - model_name (str): The name of the model to use for content generation.
+    - prompt (Optional[str]): The single text prompt for content generation. Required if 'messages' is not provided.
+    - system_prompt (str): The default system-generated prompt used if 'prompt' is provided.
+    - messages (Optional[List[Dict]]): A structured list of message parts for complex conversations. Required if 'prompt' is not provided.
+    - temperature (float): Controls randomness in generation. Higher values result in more random completions.
     - max_tokens (int): The maximum number of tokens to generate.
     - top_p (float): Nucleus sampling parameter controlling the size of the probability mass to consider for token generation.
+    - full_response (bool): If True, returns the full response from the API instead of just the generated text.
 
     Returns:
-    - dict: The response from the API.
+    - Optional[Dict]: The generated text or full response depending on the 'full_response' flag.
     """
-    # Define the URL and headers
+
+    retry_attempts = 3
+    retry_delay = 1  # initial delay between retries in seconds
+
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
     headers = {"Content-Type": "application/json"}
 
-    # Create the data payload
+    if messages is None:
+        if prompt is None:
+            raise ValueError("Either 'prompt' or 'messages' must be provided.")
+        if system_prompt:
+            contents = [
+                {"role": "user", "parts": [{"text": system_prompt}]},
+                {"role": "model", "parts": [{"text": "ok"}]},
+                {"role": "user", "parts": [{"text": prompt}]},
+            ]
+        else:
+            contents = [{"role": "user", "parts": [{"text": prompt}]}]
+
+    else:
+        if prompt is not None:
+            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+        if system_prompt:
+            contents = [
+                {"role": "user", "parts": [{"text": system_prompt}]},
+                {"role": "model", "parts": [{"text": "ok"}]},
+            ]
+            contents.append(messages)
+        else:
+            contents = messages
+
     payload = {
-        "contents": [
-            {"role": "user", "parts": [{"text": system_prompt}]},
-            {"role": "model", "parts": [{"text": "ok"}]},
-            {"role": "user", "parts": [{"text": user_prompt}]},
-        ],
+        "contents": contents,
         "generationConfig": {
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
@@ -57,177 +85,97 @@ def __call_gemeni(
         },
     }
 
-    try:
-        response = requests.post(
-            url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
-        )
-        response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-        return response.json()
-    except requests.RequestException as e:
-        print(f"An error occurred: {e}")
-        return None
-
-
-def __generate_response(
-    model_name,
-    user_prompt,
-    system_prompt,
-    temperature,
-    max_tokens,
-    top_p,
-    full_response=False,
-):
-
-    start_time = time.time()  # Record the start time
-    """
-    Generates a response from the generative language model.
-
-    Parameters:
-    model_name (str): Name of the model to use for generation.
-    user_prompt (str): The text prompt for content generation.
-    system_prompt (str): The system-generated text prompt.
-    temperature (float): Controls randomness in generation.
-    max_tokens (int): Maximum number of tokens to generate.
-    top_p (float): Nucleus sampling parameter.
-    full_response (bool): If True, returns the full API response, else returns the generated text.
-
-    Returns:
-    str or dict: The generated text or the full response from the API, based on the 'full_response' flag.
-    """
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
-
-    if not system_prompt:
-        system_prompt = "You are a helpful AI Assitant"
-
-    if not model_name or not isinstance(model_name, str):
-        raise ValueError("model must be a non-empty string.")
-
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(retry_attempts):
         try:
-            response = __call_gemeni(
-                model_name=model_name,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
+            response = requests.post(
+                url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
             )
+            response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
 
             if full_response:
-                end_time = time.time()  # Record the end time before returning
-                process_time = end_time - start_time
-
-                full_reponse = LLMFullResponse(
-                    generated_text=response["candidates"][0]["content"]["parts"][0][
-                        "text"
-                    ],
+                return LLMFullResponse(
+                    generated_text=response.json()["candidates"][0]["content"]["parts"][
+                        0
+                    ]["text"],
                     model=model_name,
-                    process_time=process_time,
-                    llm_provider_response=response,
+                    process_time=time.time() - start_time,
+                    llm_provider_response=response.json(),
                 )
 
-                return full_reponse
             else:
-                return response["candidates"][0]["content"]["parts"][0]["text"]
+                return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
-        except Exception as e:  # Consider catching more specific exceptions
-            if attempt < MAX_RETRIES - 1:
-                delay = RETRY_DELAY * 2**attempt
-                time.sleep(delay)
-            else:
-                end_time = time.time()  # Record the end time in case of failure
-                process_time = end_time - start_time
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
-                )
-                return None
+        except requests.RequestException as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            time.sleep(retry_delay)
+            retry_delay *= 2  # Double the delay each retry
+
+    print("All retry attempts failed.")
+    return None
 
 
-def generate_text(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    temperature=0.7,
-    max_tokens=2024,
-    top_p=0.8,
-) -> str:
+async def generate_response_async(
+    model_name: str,
+    prompt: Optional[str] = None,
+    system_prompt: str = "You are a helpful AI Assistant",
+    messages: Optional[List[Dict]] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 300,
+    top_p: float = 0.8,
+    full_response: bool = False,
+) -> Optional[Dict]:
     """
-    Generates using Gemini and returns only the text.
-    """
-    return __generate_response(
-        model_name,
-        user_prompt,
-        system_prompt,
-        temperature,
-        max_tokens,
-        top_p,
-        full_response=False,
-    )
-
-
-def generate_full_response(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    max_tokens=2000,
-    top_p=1.0,
-    temperature=0.7,
-) -> LLMFullResponse:
-    """
-    Generates the full response from Gemini.
-    """
-    return __generate_response(
-        model_name,
-        user_prompt,
-        system_prompt,
-        temperature,
-        max_tokens,
-        top_p,
-        full_response=True,
-    )
-
-
-async def __call_gemeni_async(
-    model_name,
-    user_prompt,
-    system_prompt,
-    temperature=0.7,
-    max_tokens=2024,
-    top_p=0.8,
-):
-    """
-    Asynchronously makes a POST request to the generativelanguage API to generate content based on the provided text
-    with specified generation configuration settings.
+    Sends a POST request to the generativelanguage API to generate content based on the provided text
+    or a list of messages with specified generation configuration settings.
 
     Parameters:
-    user_prompt (str): The text prompt for content generation.
-    temperature (float): Controls randomness in generation. Higher values mean more random completions.
-    max_output_tokens (int): The maximum number of tokens to generate.
-    top_p (float): Nucleus sampling parameter controlling the size of the probability mass to consider for token generation.
-    top_k (int): Truncates the number of tokens considered based on their probability.
+    - model_name (str): The name of the model to use for content generation.
+    - prompt (Optional[str]): The single text prompt for content generation. Required if 'messages' is not provided.
+    - system_prompt (str): The default system-generated prompt used if 'prompt' is provided.
+    - messages (Optional[List[Dict]]): A structured list of message parts for complex conversations. Required if 'prompt' is not provided.
+    - temperature (float): Controls randomness in generation. Higher values result in more random completions.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - top_p (float): Nucleus sampling parameter controlling the size of the probability mass to consider for token generation.
+    - full_response (bool): If True, returns the full response from the API instead of just the generated text.
 
     Returns:
-    dict: The response from the API.
+    - Optional[Dict]: The generated text or full response depending on the 'full_response' flag.
     """
+
+    start_time = time.time()  # Record the start time
+
+    retry_attempts = 3
+    retry_delay = 1  # initial delay between retries in seconds
+
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
     headers = {"Content-Type": "application/json"}
+
+    if messages is None:
+        if prompt is None:
+            raise ValueError("Either 'prompt' or 'messages' must be provided.")
+        if system_prompt:
+            contents = [
+                {"role": "user", "parts": [{"text": system_prompt}]},
+                {"role": "model", "parts": [{"text": "ok"}]},
+                {"role": "user", "parts": [{"text": prompt}]},
+            ]
+        else:
+            contents = [{"role": "user", "parts": [{"text": prompt}]}]
+
+    else:
+        if prompt is not None:
+            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+        if system_prompt:
+            contents = [
+                {"role": "user", "parts": [{"text": system_prompt}]},
+                {"role": "model", "parts": [{"text": "ok"}]},
+            ]
+            contents.append(messages)
+        else:
+            contents = messages
+
     payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": system_prompt}],
-            },
-            {
-                "role": "model",
-                "parts": [{"text": "ok"}],
-            },
-            {
-                "role": "user",
-                "parts": [{"text": user_prompt}],
-            },
-        ],
+        "contents": contents,
         "generationConfig": {
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
@@ -236,134 +184,31 @@ async def __call_gemeni_async(
     }
 
     async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(
-                url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
-            ) as response:
-                response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-                return await response.json()
-        except aiohttp.ClientError as e:
-            print(f"An error occurred: {e}")
-            return None
+        for attempt in range(retry_attempts):
+            try:
+                async with session.post(
+                    url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
+                ) as response:
 
+                    data = await response.json()
 
-async def __generate_response_async(
-    model_name,
-    user_prompt,
-    system_prompt,
-    temperature,
-    max_tokens,
-    top_p,
-    full_response=False,
-):
-    start_time = time.time()  # Record the start time before making the request
+                    if full_response:
+                        return LLMFullResponse(
+                            generated_text=data["candidates"][0]["content"]["parts"][0][
+                                "text"
+                            ],
+                            model=model_name,
+                            process_time=time.time() - start_time,
+                            llm_provider_response=data,
+                        )
 
-    """
-    Generates a response from the generative language model.
+                    else:
+                        return data["candidates"][0]["content"]["parts"][0]["text"]
 
-    Parameters:
-    model_name (str): Name of the model to use for generation.
-    user_prompt (str): The text prompt for content generation.
-    system_prompt (str): The system-generated text prompt.
-    temperature (float): Controls randomness in generation.
-    max_tokens (int): Maximum number of tokens to generate.
-    top_p (float): Nucleus sampling parameter.
-    full_response (bool): If True, returns the full API response, else returns the generated text.
+            except aiohttp.ClientError as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                await asyncio.sleep(retry_delay)
+                retry_delay *= 2  # Double the delay each retry
 
-    Returns:
-    str or dict: The generated text or the full response from the API, based on the 'full_response' flag.
-    """
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
-
-    if not system_prompt:
-        system_prompt = "You are a helpful AI Assitant"
-
-    if not model_name or not isinstance(model_name, str):
-        raise ValueError("model must be a non-empty string.")
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            response = await __call_gemeni_async(
-                model_name=model_name,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-            )
-
-            if full_response:
-                end_time = time.time()  # Record the end time before returning
-                process_time = end_time - start_time
-
-                full_reponse = LLMFullResponse(
-                    generated_text=response["candidates"][0]["content"]["parts"][0][
-                        "text"
-                    ],
-                    model=model_name,
-                    process_time=process_time,
-                    llm_provider_response=response,
-                )
-
-                return full_reponse
-            else:
-                return response["candidates"][0]["content"]["parts"][0]["text"]
-
-        except Exception as e:  # Consider catching more specific exceptions
-            if attempt < MAX_RETRIES - 1:
-                await asyncio.sleep(RETRY_DELAY * (2**attempt))
-            else:
-                end_time = time.time()  # Record the end time in case of failure
-                process_time = end_time - start_time
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
-                )
-                return None
-
-
-async def generate_text_async(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    temperature=0.7,
-    max_tokens=2024,
-    top_p=0.8,
-) -> str:
-    """
-    Generates using Gemini and returns only the text.
-    """
-    result = await __generate_response_async(
-        model_name,
-        user_prompt,
-        system_prompt,
-        temperature,
-        max_tokens,
-        top_p,
-        full_response=False,
-    )
-    return result
-
-
-async def generate_full_response_async(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    max_tokens=2000,
-    top_p=1.0,
-    temperature=0.7,
-) -> LLMFullResponse:
-    """
-    Generates the full response from Gemini.
-    """
-    result = await __generate_response_async(
-        model_name,
-        user_prompt,
-        system_prompt,
-        temperature,
-        max_tokens,
-        top_p,
-        full_response=True,
-    )
-    return result
+    print("All retry attempts failed.")
+    return None

@@ -18,9 +18,40 @@ def convert_pydantic_to_json(model_instance):
     """
     return model_instance.model_dump_json()
 
+
 def extract_json_from_text(text_response):
+    pattern = r"\{.*?\}"
+    matches = re.finditer(pattern, text_response, re.DOTALL)
+    json_objects = []
+
+    for match in matches:
+        json_str = __json_extend_search(text_response, match.span())
+        try:
+            json_obj = json.loads(json_str)
+            json_objects.append(json_obj)
+        except json.JSONDecodeError:
+            continue
+
+    return json_objects if json_objects else None
+
+
+def __json_extend_search(text, span):
+    start, end = span
+    nest_count = 1  # Starts with 1 since we know '{' is at the start position
+    for i in range(end, len(text)):
+        if text[i] == "{":
+            nest_count += 1
+        elif text[i] == "}":
+            nest_count -= 1
+            if nest_count == 0:
+                return text[start : i + 1]
+    return text[start:end]
+
+
+@DeprecationWarning
+def __extract_json_from_text_deprecated(text_response):
     # This pattern matches a string that starts with '{' and ends with '}'
-    pattern = r'\{[^{}]*\}'
+    pattern = r"\{[^{}]*\}"
 
     matches = re.finditer(pattern, text_response)
     json_objects = []
@@ -46,18 +77,21 @@ def extract_json_from_text(text_response):
     else:
         return None  # Or handle this case as you prefer
 
-def extend_search(text, span):
+
+@DeprecationWarning
+def __extend_search_deprecated(text, span):
     # Extend the search to try to capture nested structures
     start, end = span
     nest_count = 0
     for i in range(start, len(text)):
-        if text[i] == '{':
+        if text[i] == "{":
             nest_count += 1
-        elif text[i] == '}':
+        elif text[i] == "}":
             nest_count -= 1
             if nest_count == 0:
-                return text[start:i+1]
+                return text[start : i + 1]
     return text[start:end]
+
 
 def validate_json_with_pydantic_model(model_class, json_data):
     """
@@ -65,7 +99,7 @@ def validate_json_with_pydantic_model(model_class, json_data):
 
     Args:
         model_class (BaseModel): The Pydantic model class to validate against.
-        json_data (dict or list): JSON data to validate. Can be a dict for a single JSON object, 
+        json_data (dict or list): JSON data to validate. Can be a dict for a single JSON object,
                                   or a list for multiple JSON objects.
 
     Returns:
@@ -93,6 +127,7 @@ def validate_json_with_pydantic_model(model_class, json_data):
 
     return validated_data, validation_errors
 
+
 def convert_json_to_pydantic_model(model_class, json_data):
     try:
         model_instance = model_class(**json_data)
@@ -100,6 +135,7 @@ def convert_json_to_pydantic_model(model_class, json_data):
     except ValidationError as e:
         print("Validation error:", e)
         return None
+
 
 # Define a function to provide example values based on type
 def example_value_for_type(field_type: Type):
@@ -118,12 +154,12 @@ def example_value_for_type(field_type: Type):
     else:
         return "Unsupported type"
 
+
 # Function to generate a JSON example for any Pydantic model
 def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
     example_data = {}
     for field_name, field_type in get_type_hints(model_class).items():
         example_data[field_name] = example_value_for_type(field_type)
-    
+
     model_instance = model_class(**example_data)
     return model_instance.json()
-

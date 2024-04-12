@@ -26,173 +26,123 @@ def initialize_openai_clients():
 async_openai_client, openai_client = initialize_openai_clients()
 
 
-def generate_text(
+def generate_response(
     model_name,
-    user_prompt,
+    prompt=None,
+    messages=None,
     system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
-    max_tokens=2024,
+    max_tokens=300,
     top_p=0.8,
-) -> str:
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
+    full_response=False,
+):
+    start_time = time.time() if full_response else None
+
+    # Validate inputs
+    if prompt and messages:
+        raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+    if not prompt and not messages:
+        raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+    # Prepare messages based on input type
+    if prompt:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
     for attempt in range(MAX_RETRIES):
         try:
             completion = openai_client.chat.completions.create(
                 model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
+                messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 top_p=top_p,
             )
-            return [completion.choices[0].message.content][0]
+            generated_text = completion.choices[0].message.content
 
-        except Exception as e:  # Consider catching more specific exceptions
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=completion,
+                )
+            return generated_text
+
+        except Exception as e:
             if attempt < MAX_RETRIES - 1:
                 time.sleep(RETRY_DELAY * (2**attempt))
             else:
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
-                )
+                error_msg = f"Failed after {MAX_RETRIES} attempts"
+                if full_response:
+                    end_time = time.time()
+                    process_time = end_time - start_time
+                    error_msg += f" and {process_time} seconds"
+                error_msg += f" due to: {e}"
+                print(error_msg)
                 return None
 
 
-async def generate_text_async(
+async def generate_response_async(
     model_name,
-    user_prompt,
+    prompt=None,
+    messages=None,
     system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
-    max_tokens=2024,
+    max_tokens=300,
     top_p=0.8,
-) -> str:
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
+    full_response=False,
+):
+    start_time = time.time() if full_response else None
+
+    # Validate inputs
+    if prompt and messages:
+        raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+    if not prompt and not messages:
+        raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+    # Prepare messages based on input type
+    if prompt:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
     for attempt in range(MAX_RETRIES):
         try:
             completion = await async_openai_client.chat.completions.create(
                 model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
+                messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 top_p=top_p,
             )
-            return [completion.choices[0].message.content][0]
+            generated_text = completion.choices[0].message.content
 
-        except Exception as e:  # Consider catching more specific exceptions
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=completion,
+                )
+            return generated_text
+
+        except Exception as e:
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(RETRY_DELAY * (2**attempt))
             else:
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts due to: {e}"
-                )
-                return None
-
-
-def generate_full_response(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    temperature=0.7,
-    max_tokens=2024,
-    top_p=0.8,
-) -> LLMFullResponse:
-
-    start_time = time.time()  # Record the start time
-
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
-    for attempt in range(MAX_RETRIES):
-        try:
-            completion = openai_client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-            )
-
-            end_time = time.time()  # Record the end time before returning
-            process_time = end_time - start_time
-
-            full_reponse = LLMFullResponse(
-                generated_text=[completion.choices[0].message.content][0],
-                model=model_name,
-                process_time=process_time,
-                llm_provider_response=completion,
-            )
-
-            return full_reponse
-
-        except Exception as e:  # Consider catching more specific exceptions
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(RETRY_DELAY * (2**attempt))
-            else:
-
-                end_time = time.time()  # Record the end time in case of failure
-                process_time = end_time - start_time
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
-                )
-                return None
-
-
-async def generate_full_response_async(
-    model_name,
-    user_prompt,
-    system_prompt="You are a helpful AI Assistant",
-    temperature=0.7,
-    max_tokens=2024,
-    top_p=0.8,
-) -> LLMFullResponse:
-    start_time = time.time()  # Record the start time
-
-    if not user_prompt or not isinstance(user_prompt, str):
-        raise ValueError("user_prompt must be a non-empty string.")
-    for attempt in range(MAX_RETRIES):
-        try:
-            completion = await async_openai_client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-            )
-
-            end_time = time.time()  # Record the end time before returning
-            process_time = end_time - start_time
-
-            full_reponse = LLMFullResponse(
-                generated_text=[completion.choices[0].message.content][0],
-                model=model_name,
-                process_time=process_time,
-                llm_provider_response=completion,
-            )
-
-            return full_reponse
-
-        except Exception as e:  # Consider catching more specific exceptions
-            if attempt < MAX_RETRIES - 1:
-                await asyncio.sleep(RETRY_DELAY * (2**attempt))
-            else:
-                end_time = time.time()  # Record the end time in case of failure
-                process_time = end_time - start_time
-                # Log the error or inform the user
-                print(
-                    f"Failed to generate response after {MAX_RETRIES} attempts and {process_time} seconds due to: {e}"
-                )
+                error_msg = f"Failed after {MAX_RETRIES} attempts"
+                if full_response:
+                    end_time = time.time()
+                    process_time = end_time - start_time
+                    error_msg += f" and {process_time} seconds"
+                error_msg += f" due to: {e}"
+                print(error_msg)
                 return None
