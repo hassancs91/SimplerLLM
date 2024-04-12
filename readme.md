@@ -1,21 +1,20 @@
-
 # ⚪ SimplerLLM (Beta)
 
 ⚡ Your Easy Pass to Advanced AI ⚡
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
 ## 🤔 What is SimplerLLM?
 
 SimplerLLM is an open-source Python library designed to simplify interactions with Large Language Models (LLMs) for researchers and beginners. It offers a unified interface for different LLM providers and a suite of tools to enhance language model capabilities and make it Super easy for anyone to develop AI-powered tools and apps.
 
 ## Easy Installation
+
 With pip:
+
 ```bash
 pip install simplerllm
 ```
-
 
 ## Features
 
@@ -24,17 +23,17 @@ pip install simplerllm
 - **RapidAPI Connector**: Connect with AI services on RapidAPI.
 - **SERP Integration**: Perform searches using DuckDuckGo, with more search engines coming soon.
 - **Prompt Template Builder**: Easily create and manage prompt templates.
-And Much More Coming Soon!
-
+  And Much More Coming Soon!
 
 ### Setting Up Environment Variables
-To use this library, you need to set several API keys in your environment. Start by creating a .env file in the root directory of your project and adding your API keys there. 
+
+To use this library, you need to set several API keys in your environment. Start by creating a .env file in the root directory of your project and adding your API keys there.
 
 🔴 This file should be kept private and not committed to version control to protect your keys.
 
 Here is an example of what your .env file should look like:
 
-``` 
+```
 OPENAI_API_KEY="your_openai_api_key_here"
 GEMENI_API_KEY="your_gemeni_api_key_here"
 CLAUDE_API_KEY="your_claude_api_key_here"
@@ -45,16 +44,13 @@ STABILITY_API_KEY="your_stability_api_key_here" #for image generation
 
 ```
 
-
-
-
 ### Creating an LLM Instance
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
 
 # For OpenAI
-llm_instance = LLM.create(provider=LLMProvider.OPENAI)
+llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo")
 
 # For Google Gemini
 #llm_instance = LLM.create(provider=LLMProvider.GEMINI,model_name="gemini-pro")
@@ -70,6 +66,7 @@ response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
 ### Using Tools
 
 #### SERP
+
 ```python
 from SimplerLLM.tools.serp import search_with_serper_api
 
@@ -80,6 +77,7 @@ search_results = search_with_serper_api("your search query", num_results=3)
 ```
 
 #### Generic Text Loader
+
 ```python
 from SimplerLLM.tools.generic_loader import load_content
 
@@ -90,6 +88,7 @@ print(text_file.content)
 ```
 
 #### Calling any RapidAPI API
+
 ```python
 from  SimplerLLM.tools.rapid_api import RapidAPIClient
 
@@ -103,7 +102,6 @@ response = api_client.call_api(api_url, method='GET', params=api_params)
 
 
 ```
-
 
 #### Prompt Template Builder
 
@@ -126,7 +124,7 @@ multi_value_prompt_template = """Hello {name}, your next meeting is on {date}.
 params_list = [
      {"name": "Alice", "date": "January 10th", "object" : "dog"},
      {"name": "Bob", "date": "January 12th", "object" : "bag"},
-     {"name": "Charlie", "date": "January 15th", "object" : "pen"} 
+     {"name": "Charlie", "date": "January 15th", "object" : "pen"}
 ]
 
 
@@ -137,17 +135,20 @@ print(generated_prompts[0])
 
 ```
 
-
 ## Chunking Functions
+
 We have introduced new functions to help you split texts into manageable chunks based on different criteria. These functions are part of the chunker tool.
 
 ### chunk_by_max_chunk_size
+
 This function splits text into chunks with a maximum size, optionally preserving sentence structure.
 
 ### chunk_by_sentences
+
 This function splits the text into chunks based on sentences.
 
 ### chunk_by_paragraphs
+
 This function splits text into chunks based on paragraphs.
 
 Example
@@ -166,8 +167,8 @@ chunks = chunker.chunk_by_max_chunk_size(text, 100, True)
 
 ```
 
-
 ### Next Updates
+
 - Adding More Tools
 - Interacting With Local LLMs
 - Prompt Optimization
@@ -175,4 +176,4 @@ chunks = chunker.chunk_by_max_chunk_size(text, 100, True)
 - GPT Trainer
 - Document Chunker
 - Advanced Document Loader
-- Integration With More Providers 
+- Integration With More Providers
