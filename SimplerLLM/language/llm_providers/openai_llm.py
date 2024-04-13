@@ -33,7 +33,7 @@ def generate_response(
     system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
     max_tokens=300,
-    top_p=0.8,
+    top_p=1.0,
     full_response=False,
 ):
     start_time = time.time() if full_response else None
@@ -94,7 +94,7 @@ async def generate_response_async(
     system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
     max_tokens=300,
-    top_p=0.8,
+    top_p=1.0,
     full_response=False,
 ):
     start_time = time.time() if full_response else None
@@ -137,6 +137,57 @@ async def generate_response_async(
         except Exception as e:
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(RETRY_DELAY * (2**attempt))
+            else:
+                error_msg = f"Failed after {MAX_RETRIES} attempts"
+                if full_response:
+                    end_time = time.time()
+                    process_time = end_time - start_time
+                    error_msg += f" and {process_time} seconds"
+                error_msg += f" due to: {e}"
+                print(error_msg)
+                return None
+
+
+def generate_embeddings(
+    model_name,
+    user_input=None,
+):
+
+    if not user_input:
+        raise ValueError("user_input must be provided.")
+
+    # Prepare messages based on input type
+    if prompt:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            completion = openai_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+            )
+            generated_text = completion.choices[0].message.content
+
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=completion,
+                )
+            return generated_text
+
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(RETRY_DELAY * (2**attempt))
             else:
                 error_msg = f"Failed after {MAX_RETRIES} attempts"
                 if full_response:

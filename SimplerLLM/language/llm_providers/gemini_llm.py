@@ -24,7 +24,7 @@ def generate_response(
     messages: Optional[List[Dict]] = None,
     temperature: float = 0.7,
     max_tokens: int = 300,
-    top_p: float = 0.8,
+    top_p: float = 1.0,
     full_response: bool = False,
 ) -> Optional[Dict]:
     start_time = time.time()  # Record the start time
@@ -121,7 +121,7 @@ async def generate_response_async(
     messages: Optional[List[Dict]] = None,
     temperature: float = 0.7,
     max_tokens: int = 300,
-    top_p: float = 0.8,
+    top_p: float = 1.0,
     full_response: bool = False,
 ) -> Optional[Dict]:
     """

@@ -8,4 +8,4 @@ duckduckgo_search
 aiohttp
 python-docx
 PyPDF2
-
+numpy

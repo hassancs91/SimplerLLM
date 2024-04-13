@@ -111,118 +111,118 @@ def chunk_by_paragraphs(text: str) -> TextChunks:
     return TextChunks(num_chunks=len(chunk_infos), chunks=chunk_infos)
 
 
-def chunk_by_semantics(text: str, threshold_percentage=95) -> TextChunks:
+# def chunk_by_semantics(text: str, threshold_percentage=95) -> TextChunks:
 
-    # Split the input text into individual sentences.
-    single_sentences_list = _split_sentences(text)
+#     # Split the input text into individual sentences.
+#     single_sentences_list = _split_sentences(text)
 
-    # Combine adjacent sentences to form a context window around each sentence.
-    combined_sentences = _combine_sentences(single_sentences_list)
+#     # Combine adjacent sentences to form a context window around each sentence.
+#     combined_sentences = _combine_sentences(single_sentences_list)
 
-    # Convert the combined sentences into vector representations using a neural network model.
-    embeddings = convert_to_vector(combined_sentences)
+#     # Convert the combined sentences into vector representations using a neural network model.
+#     embeddings = convert_to_vector(combined_sentences)
 
-    # Calculate the cosine distances between consecutive combined sentence embeddings to measure similarity.
-    distances = _calculate_cosine_distances(embeddings)
+#     # Calculate the cosine distances between consecutive combined sentence embeddings to measure similarity.
+#     distances = _calculate_cosine_distances(embeddings)
 
-    # Determine the threshold distance for identifying breakpoints based on the 80th percentile of all distances.
-    breakpoint_percentile_threshold = threshold_percentage
-    breakpoint_distance_threshold = np.percentile(
-        distances, breakpoint_percentile_threshold
-    )
+#     # Determine the threshold distance for identifying breakpoints based on the 80th percentile of all distances.
+#     breakpoint_percentile_threshold = threshold_percentage
+#     breakpoint_distance_threshold = np.percentile(
+#         distances, breakpoint_percentile_threshold
+#     )
 
-    # Find all indices where the distance exceeds the calculated threshold, indicating a potential chunk breakpoint.
-    indices_above_thresh = [
-        i
-        for i, distance in enumerate(distances)
-        if distance > breakpoint_distance_threshold
-    ]
+#     # Find all indices where the distance exceeds the calculated threshold, indicating a potential chunk breakpoint.
+#     indices_above_thresh = [
+#         i
+#         for i, distance in enumerate(distances)
+#         if distance > breakpoint_distance_threshold
+#     ]
 
-    # Initialize the list of chunks and a variable to track the start of the next chunk.
-    chunks = []
-    start_index = 0
+#     # Initialize the list of chunks and a variable to track the start of the next chunk.
+#     chunks = []
+#     start_index = 0
 
-    # Loop through the identified breakpoints and create chunks accordingly.
-    for index in indices_above_thresh:
-        chunk = " ".join(single_sentences_list[start_index : index + 1])
-        chunks.append(chunk)
-        start_index = index + 1
+#     # Loop through the identified breakpoints and create chunks accordingly.
+#     for index in indices_above_thresh:
+#         chunk = " ".join(single_sentences_list[start_index : index + 1])
+#         chunks.append(chunk)
+#         start_index = index + 1
 
-    # If there are any sentences left after the last breakpoint, add them as the final chunk.
-    if start_index < len(single_sentences_list):
-        chunk = " ".join(single_sentences_list[start_index:])
-        chunks.append(chunk)
+#     # If there are any sentences left after the last breakpoint, add them as the final chunk.
+#     if start_index < len(single_sentences_list):
+#         chunk = " ".join(single_sentences_list[start_index:])
+#         chunks.append(chunk)
 
-    chunk_infos = [
-        ChunkInfo(
-            text=chunk.strip(),
-            num_characters=len(chunk.strip()),
-            num_words=len(chunk.strip().split()),
-        )
-        for chunk in chunks
-        if chunk.strip()  # This condition filters out empty or whitespace-only paragraphs
-    ]
+#     chunk_infos = [
+#         ChunkInfo(
+#             text=chunk.strip(),
+#             num_characters=len(chunk.strip()),
+#             num_words=len(chunk.strip().split()),
+#         )
+#         for chunk in chunks
+#         if chunk.strip()  # This condition filters out empty or whitespace-only paragraphs
+#     ]
 
-    # Return the list of text chunks.
-    return TextChunks(num_chunks=len(chunks), chunks=chunk_infos)
-
-
-def _split_sentences(text):
-    # Use regular expressions to split the text into sentences based on punctuation followed by whitespace.
-    sentences = re.split(r"(?<=[.?!])\s+", text)
-    return sentences
+#     # Return the list of text chunks.
+#     return TextChunks(num_chunks=len(chunks), chunks=chunk_infos)
 
 
-def _combine_sentences(sentences):
-    # Create a buffer by combining each sentence with its previous and next sentence to provide a wider context.
-    combined_sentences = []
-    for i in range(len(sentences)):
-        combined_sentence = sentences[i]
-        if i > 0:
-            combined_sentence = sentences[i - 1] + " " + combined_sentence
-        if i < len(sentences) - 1:
-            combined_sentence += " " + sentences[i + 1]
-        combined_sentences.append(combined_sentence)
-    return combined_sentences
+# def _split_sentences(text):
+#     # Use regular expressions to split the text into sentences based on punctuation followed by whitespace.
+#     sentences = re.split(r"(?<=[.?!])\s+", text)
+#     return sentences
 
 
-def convert_to_vector(texts):
-    # Try to generate embeddings for a list of texts using a pre-trained model and handle any exceptions.
-    try:
-        response = openai.embeddings.create(input=texts, model="text-embedding-3-small")
-        embeddings = np.array([item.embedding for item in response.data])
-        return embeddings
-    except Exception as e:
-        print("An error occurred:", e)
-        return np.array([])  # Return an empty array in case of an error
+# def _combine_sentences(sentences):
+#     # Create a buffer by combining each sentence with its previous and next sentence to provide a wider context.
+#     combined_sentences = []
+#     for i in range(len(sentences)):
+#         combined_sentence = sentences[i]
+#         if i > 0:
+#             combined_sentence = sentences[i - 1] + " " + combined_sentence
+#         if i < len(sentences) - 1:
+#             combined_sentence += " " + sentences[i + 1]
+#         combined_sentences.append(combined_sentence)
+#     return combined_sentences
 
 
-def calculate_cosine_similarities_manual(embeddings):
-    # Manually calculate the cosine similarities between consecutive embeddings.
-    similarities = []
-    for i in range(len(embeddings) - 1):
-        vec1 = embeddings[i].flatten()
-        vec2 = embeddings[i + 1].flatten()
-        dot_product = np.dot(vec1, vec2)
-        norm_vec1 = np.linalg.norm(vec1)
-        norm_vec2 = np.linalg.norm(vec2)
-
-        if norm_vec1 == 0 or norm_vec2 == 0:
-            # If either vector is zero, similarity is undefined (could also return 0)
-            similarity = float("nan")
-        else:
-            similarity = dot_product / (norm_vec1 * norm_vec2)
-        similarities.append(similarity)
-    return similarities
+# def convert_to_vector(texts):
+#     # Try to generate embeddings for a list of texts using a pre-trained model and handle any exceptions.
+#     try:
+#         response = openai.embeddings.create(input=texts, model="text-embedding-3-small")
+#         embeddings = np.array([item.embedding for item in response.data])
+#         return embeddings
+#     except Exception as e:
+#         print("An error occurred:", e)
+#         return np.array([])  # Return an empty array in case of an error
 
 
-def _calculate_cosine_distances(embeddings):
-    # Calculate the cosine distance (1 - cosine similarity) between consecutive embeddings.
-    distances = []
-    for i in range(len(embeddings) - 1):
-        similarity = calculate_cosine_similarities_manual(
-            [embeddings[i]], [embeddings[i + 1]]
-        )[0][0]
-        distance = 1 - similarity
-        distances.append(distance)
-    return distances
+# def calculate_cosine_similarities_manual(embeddings):
+#     # Manually calculate the cosine similarities between consecutive embeddings.
+#     similarities = []
+#     for i in range(len(embeddings) - 1):
+#         vec1 = embeddings[i].flatten()
+#         vec2 = embeddings[i + 1].flatten()
+#         dot_product = np.dot(vec1, vec2)
+#         norm_vec1 = np.linalg.norm(vec1)
+#         norm_vec2 = np.linalg.norm(vec2)
+
+#         if norm_vec1 == 0 or norm_vec2 == 0:
+#             # If either vector is zero, similarity is undefined (could also return 0)
+#             similarity = float("nan")
+#         else:
+#             similarity = dot_product / (norm_vec1 * norm_vec2)
+#         similarities.append(similarity)
+#     return similarities
+
+
+# def _calculate_cosine_distances(embeddings):
+#     # Calculate the cosine distance (1 - cosine similarity) between consecutive embeddings.
+#     distances = []
+#     for i in range(len(embeddings) - 1):
+#         similarity = calculate_cosine_similarities_manual(
+#             [embeddings[i]], [embeddings[i + 1]]
+#         )[0][0]
+#         distance = 1 - similarity
+#         distances.append(distance)
+#     return distances

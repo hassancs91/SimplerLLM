@@ -23,7 +23,7 @@ def generate_response(
     messages=None,
     temperature: float = 0.7,
     max_tokens: int = 300,
-    top_p: float = 0.8,
+    top_p: float = 1.0,
     full_response: bool = False,
 ) -> Optional[Dict]:
     """
@@ -93,7 +93,7 @@ async def generate_response_async(
     messages=None,
     temperature: float = 0.7,
     max_tokens: int = 300,
-    top_p: float = 0.8,
+    top_p: float = 1.0,
     full_response: bool = False,
 ) -> Optional[Dict]:
     """
@@ -138,12 +138,12 @@ async def generate_response_async(
                     response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
                     data = await response.json()
                     if full_response:
-                        return {
-                            "generated_text": data["content"][0]["text"],
-                            "model": model_name,
-                            "process_time": time.time() - start_time,
-                            "llm_provider_response": data,
-                        }
+                        return LLMFullResponse(
+                            generated_text=data["content"][0]["text"],
+                            model=model_name,
+                            process_time=time.time() - start_time,
+                            llm_provider_response=data,
+                        )
                     else:
                         return data["content"][0]["text"]
 

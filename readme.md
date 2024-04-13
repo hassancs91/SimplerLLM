@@ -58,8 +58,7 @@ llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo
 # For Anthropic Claude 
 #llm_instance = LLM.create(LLMProvider.ANTHROPIC, model_name="claude-3-opus-20240229")
 
-
-response = llm_instance.generate_text(user_prompt="generate a 5 words sentence")
+response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 
 ```
 

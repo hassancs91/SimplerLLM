@@ -44,6 +44,14 @@ class LLM:
             raise ValueError("Provider must be an instance of LLMProvider Enum")
         self.provider = provider
 
+    def prepare_params(self, model_name, temperature, top_p):
+        # Use instance values as defaults if parameters are not provided
+        return {
+            "model_name": model_name if model_name else self.model_name,
+            "temperature": temperature if temperature else self.temperature,
+            "top_p": top_p if top_p else self.top_p,
+        }
+
 
 class OpenAILLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
@@ -55,9 +63,9 @@ class OpenAILLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -78,9 +86,9 @@ class OpenAILLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -95,14 +103,6 @@ class OpenAILLM(LLM):
         )
         return await openai_llm.generate_response_async(**params)
 
-    def prepare_params(self, model_name, temperature, top_p):
-        # Use instance values as defaults if parameters are not provided
-        return {
-            "model_name": model_name if model_name else self.model_name,
-            "temperature": temperature if temperature else self.temperature,
-            "top_p": top_p if top_p else self.top_p,
-        }
-
 
 class GeminiLLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
@@ -114,9 +114,9 @@ class GeminiLLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -137,9 +137,9 @@ class GeminiLLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -154,14 +154,6 @@ class GeminiLLM(LLM):
         )
         return await gemini_llm.generate_response_async(**params)
 
-    def prepare_params(self, model_name, temperature, top_p):
-        # Use instance values as defaults if parameters are not provided
-        return {
-            "model_name": model_name if model_name else self.model_name,
-            "temperature": temperature if temperature else self.temperature,
-            "top_p": top_p if top_p else self.top_p,
-        }
-
 
 class AnthropicLLM(LLM):
     def __init__(self, model, model_name, temperature, top_p):
@@ -173,9 +165,9 @@ class AnthropicLLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -196,9 +188,9 @@ class AnthropicLLM(LLM):
         prompt=None,
         messages=None,
         system_prompt="You are a helpful AI Assistant",
-        temperature=None,
+        temperature=0.7,
         max_tokens=300,
-        top_p=None,
+        top_p=1.0,
         full_response=False,
     ):
         params = self.prepare_params(model_name, temperature, top_p)
@@ -212,11 +204,3 @@ class AnthropicLLM(LLM):
             }
         )
         return await anthropic_llm.generate_response_async(**params)
-
-    def prepare_params(self, model_name, temperature, top_p):
-        # Use instance values as defaults if parameters are not provided
-        return {
-            "model_name": model_name if model_name else self.model_name,
-            "temperature": temperature if temperature else self.temperature,
-            "top_p": top_p if top_p else self.top_p,
-        }
