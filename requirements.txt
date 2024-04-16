@@ -1,6 +1,5 @@
 python-dotenv
 openai
-google-generativeai
 newspaper3k
 youtube-transcript-api
 pytube
@@ -9,3 +8,4 @@ aiohttp
 python-docx
 PyPDF2
 numpy
+lxml[html_clean]
