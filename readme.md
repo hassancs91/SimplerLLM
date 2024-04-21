@@ -3,6 +3,8 @@
 ⚡ Your Easy Pass to Advanced AI ⚡
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Join Discord](https://img.shields.io/badge/Join-Discord-7289DA.svg)](https://discord.gg/HUrtZXyp3j)
+
 
 ## 🤔 What is SimplerLLM?
 
