@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import asyncio
 import os
 import time
-from .llm_response_models import LLMFullResponse
+from .llm_response_models import LLMFullResponse,LLMEmbeddingsResponse
 
 # Load environment variables
 load_dotenv()
@@ -151,43 +151,79 @@ async def generate_response_async(
 def generate_embeddings(
     model_name,
     user_input=None,
+    full_response = False
 ):
-
+    
     if not user_input:
         raise ValueError("user_input must be provided.")
-
-    # Prepare messages based on input type
-    if prompt:
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
-        ]
-
+    
+    start_time = time.time() if full_response else None
     for attempt in range(MAX_RETRIES):
         try:
-            completion = openai_client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
+            
+            response = openai_client.embeddings.create(
+                model= model_name,
+                input=user_input
             )
-            generated_text = completion.choices[0].message.content
+            generate_embeddings = response.data
 
             if full_response:
                 end_time = time.time()
                 process_time = end_time - start_time
-                return LLMFullResponse(
-                    generated_text=generated_text,
+                return LLMEmbeddingsResponse(
+                    generated_embedding=generate_embeddings,
                     model=model_name,
                     process_time=process_time,
-                    llm_provider_response=completion,
+                    llm_provider_response=response,
                 )
-            return generated_text
+            return generate_embeddings
 
         except Exception as e:
             if attempt < MAX_RETRIES - 1:
                 time.sleep(RETRY_DELAY * (2**attempt))
+            else:
+                error_msg = f"Failed after {MAX_RETRIES} attempts"
+                if full_response:
+                    end_time = time.time()
+                    process_time = end_time - start_time
+                    error_msg += f" and {process_time} seconds"
+                error_msg += f" due to: {e}"
+                print(error_msg)
+                return None
+
+
+async def generate_embeddings_async(
+    model_name,
+    user_input=None,
+    full_response = False
+):
+    
+    if not user_input:
+        raise ValueError("user_input must be provided.")
+    
+    start_time = time.time() if full_response else None
+    for attempt in range(MAX_RETRIES):
+        try:
+            result = await async_openai_client.embeddings.create(
+                model=model_name,
+                input=user_input,
+            )
+            generate_embeddings = result.data
+
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMEmbeddingsResponse(
+                    generated_embedding=generate_embeddings,
+                    model=model_name,
+                    process_time=process_time,
+                    llm_provider_response=result,
+                )
+            return generate_embeddings
+
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                await asyncio.sleep(RETRY_DELAY * (2**attempt))
             else:
                 error_msg = f"Failed after {MAX_RETRIES} attempts"
                 if full_response:

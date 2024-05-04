@@ -3,7 +3,8 @@ import json
 from pydantic import BaseModel, ValidationError
 from typing import get_type_hints
 from pydantic import BaseModel
-from typing import List, get_type_hints, Type
+from typing import Type, get_type_hints, List, get_origin, get_args
+
 
 
 def convert_pydantic_to_json(model_instance):
@@ -19,8 +20,10 @@ def convert_pydantic_to_json(model_instance):
     return model_instance.model_dump_json()
 
 
+    
+
 def extract_json_from_text(text_response):
-    pattern = r"\{.*?\}"
+    pattern = r'\{.*?\}'
     matches = re.finditer(pattern, text_response, re.DOTALL)
     json_objects = []
 
@@ -39,13 +42,13 @@ def __json_extend_search(text, span):
     start, end = span
     nest_count = 1  # Starts with 1 since we know '{' is at the start position
     for i in range(end, len(text)):
-        if text[i] == "{":
+        if text[i] == '{':
             nest_count += 1
-        elif text[i] == "}":
+        elif text[i] == '}':
             nest_count -= 1
             if nest_count == 0:
-                return text[start : i + 1]
-    return text[start:end]
+                return text[start:i+1]
+    return text[start:end] 
 
 
 @DeprecationWarning
@@ -139,23 +142,31 @@ def convert_json_to_pydantic_model(model_class, json_data):
 
 # Define a function to provide example values based on type
 def example_value_for_type(field_type: Type):
-    if field_type == str:
-        return "example_string"
-    elif field_type == int:
-        return 0
-    elif field_type == float:
-        return 0.0
-    elif field_type == bool:
-        return True
-    elif field_type == List[str]:
-        return ["generated text 1", "generated text 2"]
-    elif field_type == List[int]:
-        return [1, 2, 3]
-    else:
-        return "Unsupported type"
+    origin = get_origin(field_type)
+    if origin is None:  # Not a generic type
+        if issubclass(field_type, BaseModel):  # Check if it's a custom Pydantic model
+            # Generate an example using all fields of the model
+            example_data = {field_name: example_value_for_type(field_type)
+                            for field_name, field_type in get_type_hints(field_type).items()}
+            return field_type(**example_data)
+        elif field_type == str:
+            return "example_string"
+        elif field_type == int:
+            return 0
+        elif field_type == float:
+            return 0.0
+        elif field_type == bool:
+            return True
+        else:
+            return "Unsupported type"
+    elif origin == list:  # It's a List
+        args = get_args(field_type)
+        if not args:
+            return []  # No type specified for elements, return empty list
+        element_type = args[0]
+        # Create a list with 3 elements of the specified type
+        return [example_value_for_type(element_type) for _ in range(3)]
 
-
-# Function to generate a JSON example for any Pydantic model
 def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
     example_data = {}
     for field_name, field_type in get_type_hints(model_class).items():

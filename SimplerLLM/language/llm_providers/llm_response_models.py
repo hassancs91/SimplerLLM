@@ -7,3 +7,10 @@ class LLMFullResponse(BaseModel):
     model: str
     process_time: float
     llm_provider_response: Any
+
+
+class LLMEmbeddingsResponse(BaseModel):
+    generated_embedding: Any
+    model: str
+    process_time: float
+    llm_provider_response: Any

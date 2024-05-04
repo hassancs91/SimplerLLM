@@ -155,6 +155,10 @@ This function splits the text into chunks based on sentences.
 
 This function splits text into chunks based on paragraphs.
 
+### chunk_by_semantics
+
+This functions splits text into chunks based on semantics.
+
 Example
 
 ```python
@@ -181,3 +185,7 @@ chunks = chunker.chunk_by_max_chunk_size(text, 100, True)
 - Document Chunker
 - Advanced Document Loader
 - Integration With More Providers
+- Simple RAG With SimplerVectors
+- Integration with Vector Databases
+- Agent Builder
+- LLM Server 

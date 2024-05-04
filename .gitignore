@@ -15,3 +15,6 @@ generate_text.py
 chunk_text.py
 generate_code.py
 generate_embeddings.py
+test_embed.py
+test_generate.py
+test_chunker.py
