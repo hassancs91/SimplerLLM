@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+
 # Read requirements
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
@@ -10,7 +11,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="SimplerLLM",
-    version="0.2.1",
+    version="0.2.3",
     author="Hasan Aboul Hasan",
     author_email="hasan@learnwithhasan.com",
     description="An easy-to-use Library for interacting with language models.",
@@ -20,6 +21,7 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     python_requires=">=3.6",
+    license='MIT',
     keywords="text generation, openai, LLM, RAG",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -35,5 +37,7 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+
+
     # Add additional fields as necessary
 )

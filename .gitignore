@@ -18,3 +18,6 @@ generate_embeddings.py
 test_embed.py
 test_generate.py
 test_chunker.py
+lib_test.py
+/SimplerLLM/tools/web_crawler.py
+/SimplerLLM/language/llm_providers/transformers_llm.py

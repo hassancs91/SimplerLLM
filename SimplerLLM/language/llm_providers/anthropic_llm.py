@@ -11,7 +11,7 @@ from .llm_response_models import LLMFullResponse
 load_dotenv()
 
 # Constants
-CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
@@ -46,7 +46,7 @@ def generate_response(
     # Define the URL and headers
     url = "https://api.anthropic.com/v1/messages"
     headers = {
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
@@ -77,7 +77,7 @@ def generate_response(
             else:
                 return response.json()["content"][0]["text"]
 
-        except requests.RequestException as e:
+        except Exception as e:
             print(f"Attempt {attempt + 1} failed: {e}")
             time.sleep(retry_delay)
             retry_delay *= 2  # Double the delay each retry
@@ -116,7 +116,7 @@ async def generate_response_async(
     # Define the URL and headers
     url = "https://api.anthropic.com/v1/messages"
     headers = {
-        "x-api-key": CLAUDE_API_KEY,
+        "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }

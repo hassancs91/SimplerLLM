@@ -19,7 +19,7 @@ class ChunkInfo(BaseModel):
 
 class TextChunks(BaseModel):
     num_chunks: int = Field(description="Total number of chunks")
-    chunks: List[ChunkInfo]
+    chunk_list: List[ChunkInfo]
 
 
 def chunk_by_max_chunk_size(
@@ -76,7 +76,7 @@ def chunk_by_max_chunk_size(
         for chunk in chunks
     ]
 
-    return TextChunks(num_chunks=len(chunk_infos), chunks=chunk_infos)
+    return TextChunks(num_chunks=len(chunk_infos), chunk_list=chunk_infos)
 
 
 def chunk_by_sentences(text: str) -> TextChunks:
@@ -94,7 +94,7 @@ def chunk_by_sentences(text: str) -> TextChunks:
             )
             chunk_infos.append(chunk_info)
 
-    return TextChunks(num_chunks=len(chunk_infos), chunks=chunk_infos)
+    return TextChunks(num_chunks=len(chunk_infos), chunk_list=chunk_infos)
 
 
 def chunk_by_paragraphs(text: str) -> TextChunks:
@@ -111,7 +111,7 @@ def chunk_by_paragraphs(text: str) -> TextChunks:
         if paragraph.strip()  # This condition filters out empty or whitespace-only paragraphs
     ]
 
-    return TextChunks(num_chunks=len(chunk_infos), chunks=chunk_infos)
+    return TextChunks(num_chunks=len(chunk_infos), chunk_list=chunk_infos)
 
 
 def chunk_by_semantics(text: str,  llm_embeddings_instance: llm_embeddings_instance, threshold_percentage=90) -> TextChunks:
@@ -167,7 +167,7 @@ def chunk_by_semantics(text: str,  llm_embeddings_instance: llm_embeddings_insta
     ]
 
     # Return the list of text chunks.
-    return TextChunks(num_chunks=len(chunks), chunks=chunk_infos)
+    return TextChunks(num_chunks=len(chunks), chunk_list=chunk_infos)
 
 
 

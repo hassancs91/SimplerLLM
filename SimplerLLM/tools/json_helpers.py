@@ -136,7 +136,6 @@ def convert_json_to_pydantic_model(model_class, json_data):
         model_instance = model_class(**json_data)
         return model_instance
     except ValidationError as e:
-        print("Validation error:", e)
         return None
 
 
