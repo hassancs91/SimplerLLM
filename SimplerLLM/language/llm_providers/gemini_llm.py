@@ -19,7 +19,6 @@ RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
 def generate_response(
     model_name: str,
-    prompt: Optional[str] = None,
     system_prompt: str = "You are a helpful AI Assistant",
     messages: Optional[List[Dict]] = None,
     temperature: float = 0.7,
@@ -52,32 +51,17 @@ def generate_response(
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
     headers = {"Content-Type": "application/json"}
 
-    if messages is None:
-        if prompt is None:
-            raise ValueError("Either 'prompt' or 'messages' must be provided.")
-        if system_prompt:
-            contents = [
-                {"role": "user", "parts": [{"text": system_prompt}]},
-                {"role": "model", "parts": [{"text": "ok"}]},
-                {"role": "user", "parts": [{"text": prompt}]},
-            ]
-        else:
-            contents = [{"role": "user", "parts": [{"text": prompt}]}]
-
-    else:
-        if prompt is not None:
-            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-        if system_prompt:
-            contents = [
-                {"role": "user", "parts": [{"text": system_prompt}]},
-                {"role": "model", "parts": [{"text": "ok"}]},
-            ]
-            contents.append(messages)
-        else:
-            contents = messages
 
     payload = {
-        "contents": contents,
+        "contents": messages,
+        # "system_instruction":
+        #     {
+        #         "parts": [
+        #             {
+        #                 "text": system_prompt
+        #             }
+        #         ]
+        #     },
         "generationConfig": {
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
@@ -116,7 +100,6 @@ def generate_response(
 
 async def generate_response_async(
     model_name: str,
-    prompt: Optional[str] = None,
     system_prompt: str = "You are a helpful AI Assistant",
     messages: Optional[List[Dict]] = None,
     temperature: float = 0.7,
@@ -150,32 +133,9 @@ async def generate_response_async(
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
     headers = {"Content-Type": "application/json"}
 
-    if messages is None:
-        if prompt is None:
-            raise ValueError("Either 'prompt' or 'messages' must be provided.")
-        if system_prompt:
-            contents = [
-                {"role": "user", "parts": [{"text": system_prompt}]},
-                {"role": "model", "parts": [{"text": "ok"}]},
-                {"role": "user", "parts": [{"text": prompt}]},
-            ]
-        else:
-            contents = [{"role": "user", "parts": [{"text": prompt}]}]
-
-    else:
-        if prompt is not None:
-            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-        if system_prompt:
-            contents = [
-                {"role": "user", "parts": [{"text": system_prompt}]},
-                {"role": "model", "parts": [{"text": "ok"}]},
-            ]
-            contents.append(messages)
-        else:
-            contents = messages
-
+    
     payload = {
-        "contents": contents,
+        "contents": messages,
         "generationConfig": {
             "temperature": temperature,
             "maxOutputTokens": max_tokens,

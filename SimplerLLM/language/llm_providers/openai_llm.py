@@ -28,9 +28,7 @@ async_openai_client, openai_client = initialize_openai_clients()
 
 def generate_response(
     model_name,
-    prompt=None,
     messages=None,
-    system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
     max_tokens=300,
     top_p=1.0,
@@ -38,19 +36,7 @@ def generate_response(
 ):
     start_time = time.time() if full_response else None
 
-    # Validate inputs
-    if prompt and messages:
-        raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-    if not prompt and not messages:
-        raise ValueError("Either 'prompt' or 'messages' must be provided.")
-
-    # Prepare messages based on input type
-    if prompt:
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
-        ]
-
+    
     for attempt in range(MAX_RETRIES):
         try:
             completion = openai_client.chat.completions.create(
@@ -86,12 +72,9 @@ def generate_response(
                 print(error_msg)
                 return None
 
-
 async def generate_response_async(
     model_name,
-    prompt=None,
     messages=None,
-    system_prompt="You are a helpful AI Assistant",
     temperature=0.7,
     max_tokens=300,
     top_p=1.0,
@@ -99,19 +82,7 @@ async def generate_response_async(
 ):
     start_time = time.time() if full_response else None
 
-    # Validate inputs
-    if prompt and messages:
-        raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-    if not prompt and not messages:
-        raise ValueError("Either 'prompt' or 'messages' must be provided.")
-
-    # Prepare messages based on input type
-    if prompt:
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
-        ]
-
+   
     for attempt in range(MAX_RETRIES):
         try:
             completion = await async_openai_client.chat.completions.create(

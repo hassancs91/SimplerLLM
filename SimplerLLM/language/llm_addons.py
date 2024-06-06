@@ -18,6 +18,7 @@ def generate_pydantic_json_model(
     prompt: str,
     llm_instance: LLM,
     max_retries: int = 3,
+    max_tokens: int = 4096,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
 ) -> BaseModel:
@@ -42,7 +43,7 @@ def generate_pydantic_json_model(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response = llm_instance.generate_response(prompt=optimized_prompt)
+            ai_response = llm_instance.generate_response(prompt=optimized_prompt, max_tokens = max_tokens)
 
             if ai_response:
                 json_object = extract_json_from_text(ai_response)

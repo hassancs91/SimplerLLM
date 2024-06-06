@@ -20,6 +20,31 @@ class TextDocument(BaseModel):
 
 
 def load_content(input_path_or_url):
+    """
+    Load content from a given input path or URL and return a TextDocument object.
+
+    This function handles the following types of input:
+    - URLs: Supports both YouTube videos and blog articles.
+        - For YouTube videos, it retrieves the title and transcript.
+        - For blog articles, it retrieves the text and title.
+    - Local files: Supports .txt, .csv, .docx, and .pdf file extensions.
+        - For each file type, it reads the content and calculates the file size, word count, and character count.
+
+    Args:
+        input_path_or_url (str): The path to a local file or a URL to online content.
+
+    Returns:
+        TextDocument: An object containing the following attributes:
+            - word_count (int): The number of words in the content.
+            - character_count (int): The number of characters in the content.
+            - content (str): The loaded content.
+            - file_size (int): The size of the content in bytes.
+            - url_or_path (str): The original input path or URL.
+            - title (str, optional): The title of the content (for YouTube videos and blog articles).
+
+    Raises:
+        ValueError: If the input cannot be processed or an error occurs during processing.
+    """
     # Check if the input is a URL
     if re.match(r"http[s]?://", input_path_or_url):
         # Process based on URL content

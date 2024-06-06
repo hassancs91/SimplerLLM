@@ -21,3 +21,8 @@ test_chunker.py
 lib_test.py
 /SimplerLLM/tools/web_crawler.py
 /SimplerLLM/language/llm_providers/transformers_llm.py
+test_agents.py
+test_pydantic.py
+test_tool.py
+/SimplerLLM/tools/predefined_tools.py
+/SimplerLLM/agents

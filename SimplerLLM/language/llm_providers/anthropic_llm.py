@@ -18,7 +18,6 @@ RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
 def generate_response(
     model_name: str,
-    prompt: Optional[str] = None,
     system_prompt: str = "You are a helpful AI Assistant",
     messages=None,
     temperature: float = 0.7,
@@ -34,14 +33,7 @@ def generate_response(
     retry_attempts = 3
     retry_delay = 1  # initial delay between retries in seconds
 
-    if messages is None:
-        if prompt is None:
-            raise ValueError("Either 'prompt' or 'messages' must be provided.")
-        messages = [{"role": "user", "content": prompt}]
-    else:
-        if prompt is not None:
-            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-        messages = messages
+
 
     # Define the URL and headers
     url = "https://api.anthropic.com/v1/messages"
@@ -88,7 +80,6 @@ def generate_response(
 
 async def generate_response_async(
     model_name: str,
-    prompt: Optional[str] = None,
     system_prompt: str = "You are a helpful AI Assistant",
     messages=None,
     temperature: float = 0.7,
@@ -103,15 +94,6 @@ async def generate_response_async(
     start_time = time.time()  # Record the start time
     retry_attempts = 3
     retry_delay = 1  # initial delay between retries in seconds
-
-    if messages is None:
-        if prompt is None:
-            raise ValueError("Either 'prompt' or 'messages' must be provided.")
-        messages = [{"role": "user", "content": prompt}]
-    else:
-        if prompt is not None:
-            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
-        messages = messages
 
     # Define the URL and headers
     url = "https://api.anthropic.com/v1/messages"
