@@ -1,7 +1,8 @@
-import SimplerLLM.language.llm_providers.openai_llm as openai_llm
-import SimplerLLM.language.llm_providers.gemini_llm as gemini_llm
-import SimplerLLM.language.llm_providers.anthropic_llm as anthropic_llm
-from SimplerLLM.prompts.messages_template import MessagesTemplate
+import os
+from dotenv import load_dotenv
+from SimplerLLM.tools.vector_db import VectorDB
+from SimplerLLM.language.llm_providers.openai_llm import generate_response as openai_generate_response
+from SimplerLLM.language.llm_providers.openai_llm import generate_response_async as openai_generate_response_async
 from enum import Enum
 
 
@@ -23,6 +24,8 @@ class LLM:
         self.model_name = model_name
         self.temperature = temperature
         self.top_p = top_p
+        self.vector_db = VectorDB()
+
 
     @staticmethod
     def create(
@@ -52,6 +55,11 @@ class LLM:
             "temperature": temperature if temperature else self.temperature,
             "top_p": top_p if top_p else self.top_p,
         }
+    def store_response_as_vector(self, texts):
+        self.vector_db.store_vectors(texts)
+
+    def find_similar_responses(self, text):
+        return self.vector_db.query_similar(text)
 
 
 class OpenAILLM(LLM):
