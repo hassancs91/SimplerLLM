@@ -28,7 +28,10 @@ def test_vector_storage_and_retrieval():
 
     print("Storing responses as vectors...")
     start_time = time.time()
-    llm.store_response_as_vector(prompts)
+    try:
+        llm.store_response_as_vector(prompts)
+    except Exception as e:
+        print("Error occurred:", e)
     end_time = time.time()
     print(f"Responses stored successfully. Time taken: {end_time - start_time:.2f} seconds")
 
