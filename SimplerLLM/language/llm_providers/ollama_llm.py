@@ -4,16 +4,17 @@ from dotenv import load_dotenv
 import aiohttp
 import asyncio
 import time
+import json
 import requests
 from .llm_response_models import LLMFullResponse
 
 # Load environment variables
 load_dotenv()
 
-# Constants
+
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
-
+OLLAMA_URL = str(os.getenv("OLLAMA_URL", "http://localhost:11434/")) + "api/chat"
 
 def generate_response(
     model_name: str,
@@ -23,7 +24,6 @@ def generate_response(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
-    api_key= None,
 ) -> Optional[Dict]:
     """
     Makes a POST request to the Anthropic API to generate content based on the provided text
@@ -34,23 +34,17 @@ def generate_response(
     retry_delay = 1  # initial delay between retries in seconds
 
 
-
     # Define the URL and headers
-    url = "https://api.anthropic.com/v1/messages"
+    url = OLLAMA_URL 
     headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
 
     # Create the data payload
     payload = {
         "model": model_name,
-        "max_tokens": max_tokens,
-        "system": system_prompt,  # <-- system prompt
         "messages": messages,
-        "temperature": temperature,
-        "top_p": top_p,
+        "stream": False,
     }
 
     for attempt in range(retry_attempts):
@@ -60,14 +54,14 @@ def generate_response(
 
             if full_response:
                 return LLMFullResponse(
-                    generated_text=response.json()["content"][0]["text"],
+                    generated_text=response.json()["message"]["content"],
                     model=model_name,
                     process_time=time.time() - start_time,
                     llm_provider_response=response.json(),
                 )
 
             else:
-                return response.json()["content"][0]["text"]
+                return response.json()["message"]["content"]
 
         except Exception as e:
             print(f"Attempt {attempt + 1} failed: {e}")
@@ -86,7 +80,6 @@ async def generate_response_async(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
-    api_key= None,
 ) -> Optional[Dict]:
     """
     Makes an asynchronous POST request to the Anthropic API to generate content based on the provided text
@@ -96,22 +89,18 @@ async def generate_response_async(
     retry_attempts = 3
     retry_delay = 1  # initial delay between retries in seconds
 
+
     # Define the URL and headers
-    url = "https://api.anthropic.com/v1/messages"
+    url = OLLAMA_URL 
     headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
 
     # Create the data payload
     payload = {
         "model": model_name,
-        "max_tokens": max_tokens,
-        "system": system_prompt,
         "messages": messages,
-        "temperature": temperature,
-        "top_p": top_p,
+        "stream": False,
     }
 
     async with aiohttp.ClientSession() as session:
@@ -119,16 +108,16 @@ async def generate_response_async(
             try:
                 async with session.post(url, headers=headers, json=payload) as response:
                     response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
-                    data = await response.json()
                     if full_response:
                         return LLMFullResponse(
-                            generated_text=data["content"][0]["text"],
+                            generated_text=response.json()["message"]["content"],
                             model=model_name,
                             process_time=time.time() - start_time,
-                            llm_provider_response=data,
+                            llm_provider_response=response.json(),
                         )
+
                     else:
-                        return data["content"][0]["text"]
+                        return response.json()["message"]["content"]
 
             except aiohttp.ClientError as e:
                 print(f"Attempt {attempt + 1} failed: {e}")

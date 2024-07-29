@@ -5,7 +5,7 @@ class EmbeddingsProvider(Enum):
     OPENAI = 1
 
 
-class LLM:
+class EmbeddingsLLM:
     def __init__(
         self, provider=EmbeddingsProvider.OPENAI, model_name="text-embedding-3-small"
     ):
@@ -28,7 +28,7 @@ class LLM:
         self.provider = provider
 
 
-class OpenAILLM(LLM):
+class OpenAILLM(EmbeddingsLLM):
     def __init__(self, model, model_name):
         super().__init__(model, model_name)
 

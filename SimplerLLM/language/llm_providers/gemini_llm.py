@@ -12,7 +12,6 @@ from typing import Optional, Dict, List
 load_dotenv()
 
 # Constants
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
@@ -25,6 +24,7 @@ def generate_response(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    api_key = None
 ) -> Optional[Dict]:
     start_time = time.time()  # Record the start time
     """
@@ -72,7 +72,7 @@ def generate_response(
     for attempt in range(retry_attempts):
         try:
             response = requests.post(
-                url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
+                url, headers=headers, json=payload, params={"key": api_key}
             )
             response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
 
@@ -97,7 +97,6 @@ def generate_response(
     print("All retry attempts failed.")
     return None
 
-
 async def generate_response_async(
     model_name: str,
     system_prompt: str = "You are a helpful AI Assistant",
@@ -106,6 +105,7 @@ async def generate_response_async(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    api_key = None
 ) -> Optional[Dict]:
     """
     Sends a POST request to the generativelanguage API to generate content based on the provided text
@@ -147,7 +147,7 @@ async def generate_response_async(
         for attempt in range(retry_attempts):
             try:
                 async with session.post(
-                    url, headers=headers, json=payload, params={"key": GEMINI_API_KEY}
+                    url, headers=headers, json=payload, params={"key": api_key}
                 ) as response:
 
                     data = await response.json()

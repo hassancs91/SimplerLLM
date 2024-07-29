@@ -11,19 +11,19 @@ from .llm_response_models import LLMFullResponse,LLMEmbeddingsResponse
 load_dotenv()
 
 # Constants
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
 
 # Initialize the OpenAI clients
-def initialize_openai_clients():
-    async_openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
-    return async_openai_client, openai_client
+# def initialize_openai_clients():
+#     async_openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+#     openai_client = OpenAI(api_key=OPENAI_API_KEY)
+#     return async_openai_client, openai_client
 
 
-async_openai_client, openai_client = initialize_openai_clients()
+# async_openai_client, openai_client = initialize_openai_clients()
 
 
 def generate_response(
@@ -33,9 +33,10 @@ def generate_response(
     max_tokens=300,
     top_p=1.0,
     full_response=False,
+    api_key = None,
 ):
     start_time = time.time() if full_response else None
-
+    openai_client = OpenAI(api_key=api_key)
     
     for attempt in range(MAX_RETRIES):
         try:
@@ -79,9 +80,10 @@ async def generate_response_async(
     max_tokens=300,
     top_p=1.0,
     full_response=False,
+    api_key = None,
 ):
     start_time = time.time() if full_response else None
-
+    async_openai_client = AsyncOpenAI(api_key=api_key)
    
     for attempt in range(MAX_RETRIES):
         try:
@@ -118,17 +120,20 @@ async def generate_response_async(
                 print(error_msg)
                 return None
 
-
 def generate_embeddings(
     model_name,
     user_input=None,
-    full_response = False
+    full_response = False,
+    api_key = None
 ):
     
     if not user_input:
         raise ValueError("user_input must be provided.")
     
     start_time = time.time() if full_response else None
+
+    openai_client = OpenAI(api_key=api_key)
+
     for attempt in range(MAX_RETRIES):
         try:
             
@@ -162,13 +167,13 @@ def generate_embeddings(
                 print(error_msg)
                 return None
 
-
 async def generate_embeddings_async(
     model_name,
     user_input=None,
-    full_response = False
+    full_response = False,
+    api_key = None,
 ):
-    
+    async_openai_client = AsyncOpenAI(api_key=api_key)
     if not user_input:
         raise ValueError("user_input must be provided.")
     
