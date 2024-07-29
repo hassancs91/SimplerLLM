@@ -11,7 +11,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="SimplerLLM",
-    version="0.2.7",
+    version="0.2.9",
     author="Hasan Aboul Hasan",
     author_email="hasan@learnwithhasan.com",
     description="An easy-to-use Library for interacting with language models.",

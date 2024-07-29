@@ -73,7 +73,7 @@ def generate_response(
 
             if full_response:
                 return {
-                    "generated_text": str(json.loads(response.text)["result"]).replace('"', ''),
+                    "generated_text": str(json.loads(response.text)["result"]).strip('"'),
                     "model": model_name,
                     "process_time": time.time() - start_time,
                     "llm_provider_response": response.json(),
@@ -81,7 +81,7 @@ def generate_response(
 
             else:
                 
-                return str(json.loads(response.text)["result"]).replace('"', '')
+                return str(json.loads(response.text)["result"]).strip('"')
 
         except Exception as e:
             print(f"Attempt {attempt + 1} failed: {e}")
