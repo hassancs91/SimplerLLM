@@ -6,7 +6,7 @@ import openai
 import numpy as np
 
 from SimplerLLM.language.llm import LLM as llm_genetation_instance
-from SimplerLLM.language.embeddings import LLM as llm_embeddings_instance
+from SimplerLLM.language.embeddings import EmbeddingsLLM as llm_embeddings_instance
 
 # from sklearn.metrics.pairwise import cosine_similarity
 
