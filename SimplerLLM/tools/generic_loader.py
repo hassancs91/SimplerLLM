@@ -184,7 +184,7 @@ def __read_youtube_video(video_url):
         
         # Get the transcript of the video
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        transcript_text = " ".join([line["text"] for line in transcript_list])
+        transcript_text = " ".join([line["text"].strip() + "." if not line["text"].endswith('.') else line["text"].strip() for line in transcript_list])
 
         return {"title": title, "transcript": transcript_text}
     except Exception as e:
