@@ -14,3 +14,4 @@ youtube_transcript_api==0.6.2
 pandas==2.2.2
 #llama_cpp_python==0.2.81
 colorama==0.4.6
+scipy==1.14.0
