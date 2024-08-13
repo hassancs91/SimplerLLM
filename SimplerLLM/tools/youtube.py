@@ -105,7 +105,7 @@ def get_youtube_transcript_with_timing(video_url):
     except Exception as e:
         raise Exception(f"An error occurred while fetching the video details: {e}")
     
-def get_youtube_transcript(video_id):
+def get_youtube_transcript(video_url):
     """
     Retrieves the transcript of a YouTube video and returns it as a single string with sentences.
 
@@ -120,6 +120,11 @@ def get_youtube_transcript(video_id):
     Raises:
         Exception: If an error occurs while fetching the transcript.
     """
+    match = re.search(r"(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]+)", video_url)
+    if match:
+        video_id = match.group(1)
+    else:
+        raise ValueError("Invalid YouTube URL")
     try:
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
         # Join sentences with a space, adding a period at the end of each sentence if needed
