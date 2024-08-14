@@ -1,5 +1,6 @@
 import SimplerLLM.language.llm_providers.openai_llm as openai_llm
 from enum import Enum
+import os
 
 class EmbeddingsProvider(Enum):
     OPENAI = 1
@@ -7,18 +8,28 @@ class EmbeddingsProvider(Enum):
 
 class EmbeddingsLLM:
     def __init__(
-        self, provider=EmbeddingsProvider.OPENAI, model_name="text-embedding-3-small"
+        self, 
+        provider=EmbeddingsProvider.OPENAI,
+        model_name="text-embedding-3-small",
+        api_key=None,
+        user_id = None,
     ):
         self.provider = provider
         self.model_name = model_name
+        self.api_key = api_key
+        self.user_id = user_id
+        
 
     @staticmethod
     def create(
         provider=None,
         model_name=None,
+        api_key=None,
+        user_id = None,
     ):
         if provider == EmbeddingsProvider.OPENAI:
-            return OpenAILLM(provider, model_name)
+            return OpenAILLM(provider, model_name, api_key)
+
         else:
             return None
 
@@ -29,8 +40,9 @@ class EmbeddingsLLM:
 
 
 class OpenAILLM(EmbeddingsLLM):
-    def __init__(self, model, model_name):
-        super().__init__(model, model_name)
+    def __init__(self, model, model_name,api_key):
+        super().__init__(model, model_name,api_key)
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY", "")
 
 
     def generate_embeddings(

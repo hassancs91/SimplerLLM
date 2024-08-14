@@ -10,20 +10,8 @@ from .llm_response_models import LLMFullResponse,LLMEmbeddingsResponse
 # Load environment variables
 load_dotenv()
 
-# Constants
-#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
-
-
-# Initialize the OpenAI clients
-# def initialize_openai_clients():
-#     async_openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-#     openai_client = OpenAI(api_key=OPENAI_API_KEY)
-#     return async_openai_client, openai_client
-
-
-# async_openai_client, openai_client = initialize_openai_clients()
 
 
 def generate_response(
