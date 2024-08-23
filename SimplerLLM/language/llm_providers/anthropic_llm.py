@@ -23,6 +23,8 @@ def generate_response(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    prompt_caching: bool = False,
+    cached_input: str = "",
     api_key= None,
 ) -> Optional[Dict]:
     """
@@ -43,15 +45,33 @@ def generate_response(
         "content-type": "application/json",
     }
 
-    # Create the data payload
+    if prompt_caching:
+        headers["anthropic-beta"] = "prompt-caching-2024-07-31"
+
+
+    # Base payload
     payload = {
         "model": model_name,
         "max_tokens": max_tokens,
-        "system": system_prompt,  # <-- system prompt
         "messages": messages,
         "temperature": temperature,
         "top_p": top_p,
     }
+
+    if prompt_caching:
+        payload["system"] = [
+            {
+                "type": "text",
+                "text": system_prompt
+            },
+            {
+                "type": "text",
+                "text": cached_input,
+                "cache_control": {"type": "ephemeral"}
+            }
+        ]
+    else:
+        payload["system"] = system_prompt
 
     for attempt in range(retry_attempts):
         try:
