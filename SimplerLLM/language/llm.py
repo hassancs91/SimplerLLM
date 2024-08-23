@@ -287,6 +287,8 @@ class AnthropicLLM(LLM):
         max_tokens: int=300,
         top_p: float=1.0,
         full_response: bool=False,
+        prompt_caching: bool = False,
+        cached_input: str = "",
     ):
         params = self.prepare_params(model_name, temperature, top_p)
 
@@ -312,6 +314,8 @@ class AnthropicLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "prompt_caching": prompt_caching,
+                "cached_input": cached_input,
             }
         )
         return anthropic_llm.generate_response(**params)
