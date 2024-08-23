@@ -8,7 +8,6 @@ venv/
 /dist
 /codes
 /build
-/Documentation
 /SimplerLLM.egg-info
 .pypirc 
 generate_images.py
