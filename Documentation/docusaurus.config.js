@@ -90,6 +90,11 @@ const config = {
           // },
           //{to: '/blog', label: 'Blog', position: 'left'},
           {
+            href: 'https://simplerllm.com/',
+            label: 'Home Page',
+            position: 'left',
+          },
+          {
             href: 'https://github.com/hassancs91/SimplerLLM/blob/main/readme.md',
             label: 'GitHub',
             position: 'right',
@@ -105,11 +110,15 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Navigation',
             items: [
               {
                 label: 'Introduction',
                 to: '/',
+              },
+              {
+                label: 'Home Page',
+                to: 'https://simplerllm.com',
               },
             ],
           },
