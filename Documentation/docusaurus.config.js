@@ -108,33 +108,33 @@ const config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Navigation',
-            items: [
-              {
-                label: 'Introduction',
-                to: '/',
-              },
-              {
-                label: 'Home Page',
-                to: 'https://simplerllm.com',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'GitHub',
-                href: 'https://github.com/hassancs91/SimplerLLM/blob/main/readme.md',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discord.com/invite/HUrtZXyp3j',
-              },
-            ],
-          },
+        // links: [
+        //   {
+        //     title: 'Navigation',
+        //     items: [
+        //       {
+        //         label: 'Introduction',
+        //         to: '/',
+        //       },
+        //       {
+        //         label: 'Home Page',
+        //         to: 'https://simplerllm.com',
+        //       },
+        //     ],
+        //   },
+        //   {
+        //     title: 'Community',
+        //     items: [
+        //       {
+        //         label: 'GitHub',
+        //         href: 'https://github.com/hassancs91/SimplerLLM/blob/main/readme.md',
+        //       },
+        //       {
+        //         label: 'Discord',
+        //         href: 'https://discord.com/invite/HUrtZXyp3j',
+        //       },
+        //     ],
+        //   },
           // {
           //   title: 'More',
           //   items: [
@@ -148,7 +148,7 @@ const config = {
           //     },
           //   ],
           // },
-        ],
+        //],
         copyright: `Copyright © ${new Date().getFullYear()} SimplerLLM. All Rights Reserved`,
       },
       prism: {
