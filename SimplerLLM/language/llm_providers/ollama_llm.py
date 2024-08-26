@@ -18,7 +18,6 @@ OLLAMA_URL = str(os.getenv("OLLAMA_URL", "http://localhost:11434/")) + "api/chat
 
 def generate_response(
     model_name: str,
-    system_prompt: str = "You are a helpful AI Assistant",
     messages=None,
     temperature: float = 0.7,
     max_tokens: int = 300,
@@ -44,6 +43,9 @@ def generate_response(
     payload = {
         "model": model_name,
         "messages": messages,
+        "temperature": temperature,
+        "top_p": top_p,
+        "num_predict": max_tokens,
         "stream": False,
     }
 
@@ -71,10 +73,8 @@ def generate_response(
     print("All retry attempts failed.")
     return None
 
-
 async def generate_response_async(
     model_name: str,
-    system_prompt: str = "You are a helpful AI Assistant",
     messages=None,
     temperature: float = 0.7,
     max_tokens: int = 300,
@@ -100,8 +100,12 @@ async def generate_response_async(
     payload = {
         "model": model_name,
         "messages": messages,
+        "temperature": temperature,
+        "top_p": top_p,
+        "num_predict": max_tokens,
         "stream": False,
     }
+
 
     async with aiohttp.ClientSession() as session:
         for attempt in range(retry_attempts):
