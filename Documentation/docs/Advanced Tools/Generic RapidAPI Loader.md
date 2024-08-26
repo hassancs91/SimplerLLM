@@ -85,3 +85,5 @@ api_params = {
 api_client = RapidAPIClient() 
 response = api_client.call_api_async(api_url, method='GET', params=api_params)
 ```
+
+That's how you can benefit from SimplerLLM to make RapidAPI calling Simpler!

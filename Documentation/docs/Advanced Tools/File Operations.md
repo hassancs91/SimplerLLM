@@ -121,4 +121,4 @@ file_data = load_content("file_name.csv")
 print(file_data.word_count)
 ```
 
-Here's how you can benefit from SimplerLLM to make interaction with files Simpler!
+That's how you can benefit from SimplerLLM to make interaction with files Simpler!

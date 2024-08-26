@@ -82,3 +82,5 @@ Here's the output format of a small section:
 ```
 [{'text': 'hi friends in this video I will show you', 'start': 0.12, 'duration': 6.08}, {'text': 'how to turn any WordPress website into a', 'start': 2.639, 'duration': 7.481}, {'text': 'full SAS business using only three', 'start': 6.2, 'duration': 7.639}, {'text': 'plugins this is exactly what I did on my', 'start': 10.12, 'duration': 6.56}, {'text': 'website you will see here I have a list', 'start': 13.839, 'duration': 5.401}]
 ```
+
+That's how you can benefit from SimplerLLM to make extracting YouTube data Simpler!
