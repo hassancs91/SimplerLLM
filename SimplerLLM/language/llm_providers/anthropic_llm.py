@@ -25,6 +25,7 @@ def generate_response(
     full_response: bool = False,
     prompt_caching: bool = False,
     cached_input: str = "",
+    cache_control_type : str = "ephemeral",
     api_key= None,
 ) -> Optional[Dict]:
     """
@@ -67,7 +68,7 @@ def generate_response(
             {
                 "type": "text",
                 "text": cached_input,
-                "cache_control": {"type": "ephemeral"}
+                "cache_control": {"type": cache_control_type}
             }
         ]
     else:
@@ -106,6 +107,9 @@ async def generate_response_async(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    prompt_caching: bool = False,
+    cached_input: str = "",
+    cache_control_type: str = "ephemeral",
     api_key= None,
 ) -> Optional[Dict]:
     """
@@ -123,6 +127,35 @@ async def generate_response_async(
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
+
+
+    if prompt_caching:
+        headers["anthropic-beta"] = "prompt-caching-2024-07-31"
+
+
+    # Base payload
+    payload = {
+        "model": model_name,
+        "max_tokens": max_tokens,
+        "messages": messages,
+        "temperature": temperature,
+        "top_p": top_p,
+    }
+
+    if prompt_caching:
+        payload["system"] = [
+            {
+                "type": "text",
+                "text": system_prompt
+            },
+            {
+                "type": "text",
+                "text": cached_input,
+                "cache_control": {"type": cache_control_type}
+            }
+        ]
+    else:
+        payload["system"] = system_prompt
 
     # Create the data payload
     payload = {
