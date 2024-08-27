@@ -11,6 +11,33 @@ from SimplerLLM.tools.json_helpers import (
     generate_json_example_from_pydantic,
 )
 
+import tiktoken
+
+
+def calculate_text_generation_costs(input: str, response: str, cost_per_million_input_tokens: float, cost_per_million_output_tokens: float, approximate: bool = True):
+    def count_tokens(text: str) -> int:
+        if approximate:
+            return len(text) // 4
+        else:
+            encoding = tiktoken.get_encoding("cl100k_base")
+            return len(encoding.encode(text))
+    
+    input_tokens = count_tokens(input)
+    output_tokens = count_tokens(response)
+    
+    input_cost = (input_tokens / 1_000_000) * cost_per_million_input_tokens
+    output_cost = (output_tokens / 1_000_000) * cost_per_million_output_tokens
+    
+    total_cost = input_cost + output_cost
+    
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "input_cost": input_cost,
+        "output_cost": output_cost,
+        "total_cost": total_cost
+    }
+
 
 
 def generate_pydantic_json_model(
@@ -124,6 +151,8 @@ async def generate_pydantic_json_model_async(
             return f"Validation failed after {max_retries} retries: {errors}"
 
     return "Maximum retries exceeded without successful validation."
+
+
 
 
 
