@@ -18,6 +18,12 @@ Google search integration is supported through two paid APIs: the Serper API and
 
 ### Serper API Functions
 
+To use the Serper API functions, you'll need to have your Serper API Key in the `.env` file in your project folder in this format:
+
+```
+SERPER_API_KEY="your_serper_api_key"
+```
+
 **Synchronous `search_with_serper_api` Function**
 
 It Takes 2 parameters:
@@ -52,6 +58,12 @@ asyncio.run(fetch_results())
 ```
 
 ### Value SERP API Functions
+
+To use the Value SERP API functions, you'll need to have your Value SERP API Key in the `.env` file in your project folder in this format:
+
+```
+VALUE_SERP_API_KEY="your_value_serp_api_key"
+```
 
 **Synchronous `search_with_value_serp_api` Function**
 
