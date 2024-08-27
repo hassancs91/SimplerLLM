@@ -50,7 +50,7 @@ class LLM:
         if provider == LLMProvider.ANTHROPIC:
             return AnthropicLLM(provider, model_name, temperature, top_p, api_key)
         if provider == LLMProvider.OLLAMA:
-            return OllamaLLM(provider, model_name, temperature, top_p, api_key)
+            return OllamaLLM(provider, model_name, temperature, top_p)
         if provider == LLMProvider.LWH:
             return LwhLLM(provider, model_name, temperature, top_p, api_key, user_id)
         else:
@@ -330,6 +330,8 @@ class AnthropicLLM(LLM):
         max_tokens=300,
         top_p=1.0,
         full_response=False,
+        prompt_caching: bool = False,
+        cached_input: str = "",
     ):
         params = self.prepare_params(model_name, temperature, top_p)
 
