@@ -72,10 +72,16 @@ print(chunks)
 
 Uses semantic similarity to divide text into chunks. It takes 2 parameters:
 - `text` (str): Text to be segmented based on semantic content.
-- `llm_embeddings_instance` (EmbeddingsLLM): An instance of a language model used to generate text embeddings for semantic analysis.
+- `llm_embeddings_instance` [(EmbeddingsLLM)](https://docs.simplerllm.com/Vector%20Storage/Vector%20Embeddings): An instance of a language model used to generate text embeddings for semantic analysis.
 - `threshold_percentage` (int, Optional): The percentile threshold you want to use to chunk the text. It is set by default to 90.
 
-It returns a list of `ChunkInfo` objects, each representing a semantically coherent segment of the original text. Here's an example of how to use it:
+It returns a list of `ChunkInfo` objects, each representing a semantically coherent segment of the original text. However, keep in mind that you need to have your OpenAI API key in the `.env` file so that the llm embedding instance can generate the text embeddings. Enter it in this format:
+
+```
+OPENAI_API_KEY="your_openai_api_key"
+```
+
+Anyways, Here's an example usage of the code:
 
 ```python
 from SimplerLLM.tools.text_chunker import chunk_by_semantics

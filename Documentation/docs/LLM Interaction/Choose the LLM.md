@@ -95,7 +95,7 @@ Now, if an API request fails, the library will retry the request a maximum of 5 
 
 ## 4. API call for each LLM provider
 
-Each LLM provider requires a slight change in the parameters when creating the llm instance, but the most important thing is adding the API key correctly in the `.env` file. So, when you plan on using multiple providers make sure you [set all the keys needed in a correct format](../LLM%20Interaction/Getting%20Started.md#2-set-up-your-environment-env-file) 
+Each LLM provider requires a slight change in the parameters when creating the llm instance, but the most important thing is adding the API key correctly in the `.env` file. So, when you plan on using multiple providers make sure you [set all the keys needed in a correct format](https://docs.simplerllm.com/#2-set-up-your-environment-env-file) 
 
 Anyways, here's a brief overview and example usage for each provider:
 
@@ -132,7 +132,7 @@ response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
 
-### For Ollama (Local Model)
+### For Ollama (Local Model) - The Phi Model
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
