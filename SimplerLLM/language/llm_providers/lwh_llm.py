@@ -44,7 +44,7 @@ def generate_response(
     retry_delay = 1  # initial delay between retries in seconds
 
     # Define the URL and headers
-    url = "https://learnwithhasan.com/wp-json/lwh-user-api/llm-playground/v1/chat"
+    url = "https://learnwithhasan.com/api/v1/llm-playground/chat"
     headers = {
         "X-User-ID": user_id,
         "X-Auth-Key": api_key,
@@ -111,7 +111,7 @@ async def generate_response_async(
     retry_delay = 1  # initial delay between retries in seconds
 
     # Define the URL and headers
-    url = "https://learnwithhasan.com/wp-json/lwh-user-api/llm-playground/v1/chat"
+    url = "https://learnwithhasan.com/api/v1/llm-playground/chat"
     headers = {
         "X-User-ID": user_id,
         "X-Auth-Key": api_key,
