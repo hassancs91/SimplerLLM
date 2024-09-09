@@ -8,6 +8,7 @@ venv/
 /dist
 /codes
 /build
+/SimplerLLM/workflow
 /SimplerLLM.egg-info
 .pypirc 
 generate_images.py
