@@ -80,6 +80,15 @@ If you don't set any of the optional parameters, they'll take the default values
 - `top_p`= 1.0
 - `full_response`= False
 
+### Prompt Caching
+Additionally, beyond the parameters listed above, **Anthropic Claude** uniquely has two additional parameters for prompt caching. Both parameters are optional, so inclusion is not necessary unless there is a need to cache data:
+- `prompt_caching`: (optional, boolean) Determines whether you want to use prompt caching or not.
+- `cached_input`: (optional) The specified text you want to cache.
+
+If you don't set the above parameters yourself they take the following default values:
+- `prompt_caching` = False
+- `cached_input` = ""
+
 ## 3. Handling Retries
 
 If you want to handle how many time's the function retries after a failed api call, and the delay between each retry you'll need to adjust the enviromental variables that handle this.
