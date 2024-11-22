@@ -3,6 +3,8 @@ import SimplerLLM.language.llm_providers.gemini_llm as gemini_llm
 import SimplerLLM.language.llm_providers.anthropic_llm as anthropic_llm
 import SimplerLLM.language.llm_providers.ollama_llm as ollama_llm
 import SimplerLLM.language.llm_providers.lwh_llm as lwh_llm
+import SimplerLLM.language.llm_providers.azureopenai_llm as azureopenai_llm
+
 from SimplerLLM.prompts.messages_template import MessagesTemplate
 from enum import Enum
 import os
@@ -14,6 +16,7 @@ class LLMProvider(Enum):
     ANTHROPIC = 3
     OLLAMA = 4
     LWH = 5
+    AZUREOPENAI = 6
 
 
 class LLM:
@@ -53,6 +56,9 @@ class LLM:
             return OllamaLLM(provider, model_name, temperature, top_p)
         if provider == LLMProvider.LWH:
             return LwhLLM(provider, model_name, temperature, top_p, api_key, user_id)
+        if provider == LLMProvider.AZUREOPENAI:
+            return AzureOpenAILLM(provider, model_name, temperature, top_p, api_key)
+
         else:
             return None
 
@@ -69,6 +75,100 @@ class LLM:
             "top_p": top_p if top_p else self.top_p,
         }
     
+class AzureOpenAILLM(LLM):
+    def __init__(self, provider, model_name, temperature, top_p, api_key):
+        super().__init__(provider, model_name, temperature, top_p, api_key)
+        self.api_key = api_key or os.getenv("AZUREOPENAI_API_KEY", "")
+
+    
+    def append_messages(self, system_prompt : str, messages: list):
+        model_messages = [{"role": "system", "content": system_prompt}]
+        if messages:
+            model_messages.extend(messages)
+        return model_messages
+
+   
+
+    def generate_response(
+        self,
+        model_name: str =None,
+        prompt: str = None,
+        messages: list = None,
+        system_prompt: str="You are a helpful AI Assistant",
+        temperature: float=0.7,
+        max_tokens: int=300,
+        top_p: float=1.0,
+        full_response: bool=False,
+    ):
+        params = self.prepare_params(model_name, temperature, top_p)
+
+        # Validate inputs
+        if prompt and messages:
+            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+        if not prompt and not messages:
+            raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+        # Prepare messages based on input type
+        if prompt:
+            model_messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ]
+
+        if messages:
+            model_messages = self.append_messages(system_prompt, messages)
+
+
+
+        params.update(
+            {
+                "api_key": self.api_key,
+                "messages": model_messages,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
+        )
+        return azureopenai_llm.generate_response(**params)
+
+    async def generate_response_async(
+        self,
+        model_name: str =None,
+        prompt: str = None,
+        messages: list = None,
+        system_prompt: str="You are a helpful AI Assistant",
+        temperature: float=0.7,
+        max_tokens: int=300,
+        top_p: float=1.0,
+        full_response: bool=False,
+    ):
+        params = self.prepare_params(model_name, temperature, top_p)
+
+        # Validate inputs
+        if prompt and messages:
+            raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
+        if not prompt and not messages:
+            raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+        # Prepare messages based on input type
+        if prompt:
+            model_messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ]
+
+        if messages:
+            model_messages = self.append_messages(system_prompt, messages)
+
+
+        params.update(
+            {
+                "api_key": self.api_key,
+                "messages": model_messages,
+                "max_tokens": max_tokens,
+                "full_response": full_response,
+            }
+        )
+        return await azureopenai_llm.generate_response_async(**params)
 
 
 

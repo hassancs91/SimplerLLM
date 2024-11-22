@@ -47,6 +47,9 @@ VALUE_SERP_API_KEY="your_value_serp_api_key_here" #for Google search
 SERPER_API_KEY="your_serper_api_key_here" #for Google search
 STABILITY_API_KEY="your_stability_api_key_here" #for image generation
 
+AZUREOPENAI_API_KEY="your_azureopenai_api_key_here"
+AZURE_OPENAI_ENDPOINT='your_azureopenai_endpoint_url_here'
+
 ```
 
 ### Creating an LLM Instance
