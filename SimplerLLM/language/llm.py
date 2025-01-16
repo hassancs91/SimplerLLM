@@ -87,6 +87,7 @@ class OpenAILLM(LLM):
    
 
     def generate_response(
+        
         self,
         model_name: str =None,
         prompt: str = None,
@@ -97,6 +98,26 @@ class OpenAILLM(LLM):
         top_p: float=1.0,
         full_response: bool=False,
     ):
+        """
+        Generate a response using the OpenAI language model.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+                
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -138,6 +159,27 @@ class OpenAILLM(LLM):
         top_p: float=1.0,
         full_response: bool=False,
     ):
+        
+        """
+        Asynchronously generates a response using the OpenAI API.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -200,6 +242,27 @@ class GeminiLLM(LLM):
         top_p=1.0,
         full_response=False,
     ):
+        
+        """
+        Generate a response using the Gemini model.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response text, or the full API response if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
         # Validate inputs
         if prompt and messages:
@@ -239,6 +302,29 @@ class GeminiLLM(LLM):
         top_p=1.0,
         full_response=False,
     ):
+        """
+        Asynchronously generate a response from the Gemini model.
+
+        This method is the asynchronous version of `generate_response`. It follows the same
+        logic and parameter structure but operates asynchronously.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response text, or the full API response if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
         # Validate inputs
         if prompt and messages:
@@ -290,6 +376,29 @@ class AnthropicLLM(LLM):
         prompt_caching: bool = False,
         cached_input: str = "",
     ):
+        
+        """
+        Generate a response using the Anthropic LLM.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+            prompt_caching (bool, optional): Whether to use prompt caching. Defaults to False.
+            cached_input (str, optional): The cached input to use if prompt_caching is True. Defaults to "".
+
+        Returns:
+            The generated response from the Anthropic LLM.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -333,6 +442,29 @@ class AnthropicLLM(LLM):
         prompt_caching: bool = False,
         cached_input: str = "",
     ):
+        
+        """
+        Asynchronously generate a response from the Anthropic LLM.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+            prompt_caching (bool, optional): Whether to use prompt caching. Defaults to False.
+            cached_input (str, optional): The cached input to use. Defaults to "".
+
+        Returns:
+            The asynchronously generated response from the Anthropic LLM.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -385,6 +517,27 @@ class OllamaLLM(LLM):
         top_p: float=1.0,
         full_response: bool=False,
     ):
+        
+        """
+        Generate a response using the Ollama LLM.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full response object if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -425,6 +578,27 @@ class OllamaLLM(LLM):
         top_p: float=1.0,
         full_response: bool=False,
     ):
+        
+        """
+        Asynchronously generate a response using the Ollama LLM.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full response object if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -479,7 +653,25 @@ class LwhLLM(LLM):
         top_p: float=1.0,
         full_response: bool=False,
     ):
-        
+        """
+        Generate a response using our custom Playground.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full response object if full_response is True.
+
+        Raises:
+            ValueError: If both 'prompt' and 'messages' are provided, or if neither is provided.
+        """
     
         params = self.prepare_params(model_name, temperature, top_p)
 
@@ -529,7 +721,25 @@ class LwhLLM(LLM):
         full_response: bool=False,
     ):
         
-       
+        """
+        Asynchronously generate a response using our custom Playground.
+
+        Args:
+            model_name (str, optional): The name of the model to use. Defaults to the instance's model_name.
+            prompt (str, optional): A single prompt string to generate a response for.
+            messages (list, optional): A list of message dictionaries for chat-based interactions.
+            system_prompt (str, optional): The system prompt to set the context. Defaults to "You are a helpful AI Assistant".
+            temperature (float, optional): Controls randomness in output. Defaults to 0.7.
+            max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
+            top_p (float, optional): Controls diversity of output. Defaults to 1.0.
+            full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+
+        Returns:
+            str or dict: The generated response as a string, or the full response object if full_response is True.
+
+        Raises:
+            ValueError: If both prompt and messages are provided, or if neither is provided.
+        """
 
         params = self.prepare_params(model_name, temperature, top_p)
 
