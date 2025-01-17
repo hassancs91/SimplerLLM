@@ -37,6 +37,14 @@ def generate_response(
         # Use the cached payload if caching is enabled
         payload = {
             "contents": messages,
+            "system_instruction":
+            {
+                "parts": [
+                    {
+                        "text": system_prompt
+                    }
+                ]
+            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
@@ -48,6 +56,14 @@ def generate_response(
         # Use the normal payload if caching is disabled
         payload = {
             "contents": messages,
+            "system_instruction":
+            {
+                "parts": [
+                    {
+                        "text": system_prompt
+                    }
+                ]
+            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
@@ -103,6 +119,14 @@ async def generate_response_async(
         # Use the cached payload if caching is enabled
         payload = {
             "contents": messages,
+            "system_instruction":
+            {
+                "parts": [
+                    {
+                        "text": system_prompt
+                    }
+                ]
+            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
@@ -114,6 +138,14 @@ async def generate_response_async(
         # Use the normal payload if caching is disabled
         payload = {
             "contents": messages,
+            "system_instruction":
+            {
+                "parts": [
+                    {
+                        "text": system_prompt
+                    }
+                ]
+            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
