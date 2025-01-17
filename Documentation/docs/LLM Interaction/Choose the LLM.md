@@ -80,8 +80,15 @@ If you don't set any of the optional parameters, they'll take the default values
 - `top_p`= 1.0
 - `full_response`= False
 
-### Prompt Caching
-Additionally, beyond the parameters listed above, **Anthropic Claude** uniquely has two additional parameters for prompt caching. Both parameters are optional, so inclusion is not necessary unless there is a need to cache data:
+## 3. Prompt Caching
+
+Prompt caching is useful for optimizing performance and reducing API calls which decreases your costs. However, each LLM company has its way of implementing the cache into their API endpoints, so to use caching each LLM Provider has its own syntax:
+
+### OpenAI
+Caching is automatically built into their API infrastructure. This means you don’t need to set up or manage caching yourself when using OpenAI models, so keep your function calls the same as shown in the section above. 
+
+### Anthropic
+Caching involves adding 2 new parameters to the `generate_response` function which are:
 - `prompt_caching`: (optional, boolean) Determines whether you want to use prompt caching or not.
 - `cached_input`: (optional) The specified text you want to cache.
 
@@ -89,7 +96,26 @@ If you don't set the above parameters yourself they take the following default v
 - `prompt_caching` = False
 - `cached_input` = ""
 
-## 3. Handling Retries
+### Google Gemini
+The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. Here's how the code looks like:
+
+```python
+cache_id = llm_instance.create_cache(cached_input = "THE INPUT YOU WANT TO CACHE")
+response = llm_instance.generate_response(
+    prompt="Explain the theory of relativity",
+    messages=None,
+    system_prompt="You are a helpful AI Assistant",
+    temperature=0.6,
+    max_tokens=500,
+    top_p=0.8,
+    full_response=False,
+    prompt_caching=True,
+    cache_id=cache_id 
+)
+print(response)
+```
+
+## 4. Handling Retries
 
 If you want to handle how many time's the function retries after a failed api call, and the delay between each retry you'll need to adjust the enviromental variables that handle this.
 
