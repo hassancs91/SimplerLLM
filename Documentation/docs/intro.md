@@ -64,8 +64,6 @@ ANTHROPIC_API_KEY="your_claude_api_key_here" # For accessing Anthropic's API
 RAPIDAPI_API_KEY="your_rapidapi_api_key_here" # For accessing APIs on RapidAPI
 VALUE_SERP_API_KEY="your_value_serp_api_key_here" # For Google search
 SERPER_API_KEY="your_serper_api_key_here" # For Google search
-LWH_API_KEY="your_lwh_api_key" # For LLM Playground on LearnWithHasan
-LWH_USER_ID="your_lwh_user_id" # For LLM Playground on LearnWithHasan
 STABILITY_API_KEY="your_stability_api_key_here" # For image generation
 ```
 
