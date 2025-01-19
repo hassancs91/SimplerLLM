@@ -4,48 +4,7 @@ sidebar_position: 3
 
 # Extract YouTube Data
 
-The functions in this section are designed to extract detailed information from YouTube videos, including metadata and transcripts. You can benefit from these capabilities to build powerful APIs / tools / applications.
-
-## `get_video_meta(video_url)` Function
-
-This function takes only the `video_url` as input and it fetches detailed metadata from a specified YouTube video. It retrieves a ton of information returning them in a dictionary format: 
-- `video_id`: The unique identifier for the video.
-- `video_title`: The title of the video.
-- `video_description`: A description of the video.
-- `video_length`: The duration of the video in seconds.
-- `video_views`: The number of times the video has been viewed.
-- `video_author`: The creator of the video.
-- `video_publish_date`: The publication date of the video.
-- `video_thumbnail_url`: The URL of the video's thumbnail.
-- `video_rating`: The average user rating of the video.
-- `video_keywords`: Keywords associated with the video.
-
-### Example Usage
-
-```python
-from SimplerLLM.tools.youtube import get_video_meta
-
-video_meta = get_video_meta("https://www.youtube.com/watch?v=r9PjzmUmk1w")
-
-print(video_meta)
-```
-
-The video meta is returned in the following format:
-```
-{'video_id': 'r9PjzmUmk1w', 'video_title': 'Build SaaS with WordPress With 3 Plugins Only!', 'video_description': None, 'video_length': 252, 'video_views': 25845, 'video_author': 'Hasan Aboul Hasan', 'video_publish_date': datetime.datetime(2024, 2, 15, 0, 0), 'video_thumbnail_url': 'https://i.ytimg.com/vi/r9PjzmUmk1w/hqdefault.jpg?sqp=-oaymwEXCJADEOABSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLDLDIEv0NjGrhaAKQ8GL2SpvwDDng', 'video_rating': None, 'video_keywords': []}
-```
-
-Let's say you only want to get the video title, here's how you get it:
-
-```python
-from SimplerLLM.tools.youtube import get_video_meta
-
-video_meta = get_video_meta("https://www.youtube.com/watch?v=r9PjzmUmk1w")
-
-print(video_meta.get('video_title'))
-```
-
-Use the same method to extract any value you want.
+The functions in this section are designed to extract the transcript of any YouTube videoalong with their timestamps if needed. You can benefit from these capabilities to build powerful APIs / tools / applications.
 
 ## `get_youtube_transcript(video_url)` Function
 
