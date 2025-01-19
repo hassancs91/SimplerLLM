@@ -112,16 +112,17 @@ async def generate_response_async(
             try:
                 async with session.post(url, headers=headers, json=payload) as response:
                     response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
+                    data = await response.json()
                     if full_response:
                         return LLMFullResponse(
-                            generated_text=response.json()["message"]["content"],
+                            generated_text=data["message"]["content"],
                             model=model_name,
                             process_time=time.time() - start_time,
                             llm_provider_response=response.json(),
                         )
 
                     else:
-                        return response.json()["message"]["content"]
+                        return data["message"]["content"]
 
             except aiohttp.ClientError as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
