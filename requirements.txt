@@ -8,7 +8,6 @@ pydantic==2.7.1
 PyPDF2==3.0.1
 python-dotenv==1.0.1
 python_docx==1.1.0
-pytube==15.0.0
 Requests==2.31.0
 youtube_transcript_api==0.6.2
 pandas==2.2.2
