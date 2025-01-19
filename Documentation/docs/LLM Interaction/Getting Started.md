@@ -37,9 +37,6 @@ llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo
 # For Ollama (Local Model)
 #llm_instance = LLM.create(provider=LLMProvider.OLLAMA, model_name="ollama-local-model")
 
-# For Playground on LearnWithHasan (Exclusive for Power Memebers)
-#llm_instance = LLM.create(provider=LLMProvider.LWH, model_name="gpt-3.5-turbo")
-
 # Generate a response
 response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)

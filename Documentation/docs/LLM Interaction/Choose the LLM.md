@@ -177,16 +177,3 @@ llm_instance = LLM.create(provider=LLMProvider.OLLAMA, model_name="phi")
 response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
-
-### For [Playground on LearnWithHasan](https://learnwithhasan.com/tools/llm-playground/) (Exclusive for Power Memebers)
-
-```python
-from SimplerLLM.language.llm import LLM, LLMProvider
-
-llm_instance = LLM.create(provider=LLMProvider.LWH, model_name="gpt-3.5-turbo")
-
-response = llm_instance.generate_response(prompt="generate a 5 words sentence")
-print(response)
-```
-
-Make sure you add your API key and user ID in the `.env` file [in the correct format](https://docs.simplerllm.com/#2-set-up-your-environment-env-file) . You can get them by navigating to the [Account Page](https://learnwithhasan.com/my-account/edit-account/) on the website, where you'll find both values in the API section.
