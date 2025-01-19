@@ -3,7 +3,7 @@ duckduckgo_search==5.3.0
 lxml_html_clean==0.1.1
 newspaper3k==0.2.8
 numpy==1.26.4
-openai-1.58.1
+openai==1.58.1
 pydantic==2.7.1
 PyPDF2==3.0.1
 python-dotenv==1.0.1
