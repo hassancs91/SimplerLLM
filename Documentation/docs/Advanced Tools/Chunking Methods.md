@@ -89,10 +89,9 @@ from SimplerLLM.language.embeddings import EmbeddingsLLM, EmbeddingsProvider
 
 text = "Discussing AI. Artificial intelligence has many applications. However, Dogs like bones"
 embeddings_model = EmbeddingsLLM.create(provider=EmbeddingsProvider.OPENAI,
-                                        model_name="text-embedding-3-small"
-                                        threshold_percentage=80) 
+                                        model_name="text-embedding-3-small")
 
-semantic_chunks = chunk_by_semantics(text, embeddings_model)
+semantic_chunks = chunk_by_semantics(text, embeddings_model, threshold_percentage=80)
 
 print(semantic_chunks)
 ```
