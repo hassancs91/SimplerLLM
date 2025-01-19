@@ -25,12 +25,17 @@ However, we'll need to setup our API keys to use the LLM. We have 2 ways:
 
 ### Add them to a `.env` file (Better Approach):
 
-Set up a a `.env` file at the root of your project. This file should include your API keys for various LLM providers and can also be used to customize default operational settings such as maximum retries and retry delays. 
+Set up a a `.env` file at the root of your project. This file would include your API keys and any other global variable you'll use in your scripts.
 
-As an example, here's how the `.env` file would look like if we're planning to use the OpenAI LLM:
+Here are the different ways to initialize the API keys for the different LLM providers in the `.env` file:
 
 ```
 OPENAI_API_KEY="your_openai_api_key_here"
+GEMINI_API_KEY = "your_gemini_api_key_here"
+ANTHROPIC_API_KEY = "your_anthropic_api_key_here"
+OLLAMA_API_KEY = "your_ollama_api_key_here"
+SERER_API_KEY = "your_serper_api_key_here"
+VALUE_SERP_API_KEY = "your_valueserp_api_key_here"
 ```
 
 The script will automatically load these enviromental variables and use them when you want to generate anything. 
