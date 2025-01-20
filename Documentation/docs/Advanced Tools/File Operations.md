@@ -9,7 +9,7 @@ SimplerLLM supports creating and loading the content of various file types. This
 The file operations available are categorized into three primary areas:
 - **Saving Text to Files**: This functionality allows for the writing of text data to files ensuring errors are handled correctly.
 - **Loading CSV Files**: This functionality allows easy reading of any CSV file document, where it returns specific strucutred data.
-- **Generic File Loading**: This includes loading the details of various types of files, such as plain text, PDFs, DOCX, web pages, and even youtube video data. 
+- **Generic File Loading**: This includes loading the details of various types of files, such as plain text, PDFs, DOCX, and even web pages.
 
 Here's how each of them works:
 
@@ -79,7 +79,6 @@ print(csv_data.column_count)
 
 This generic loader supports a ton of file types which are:
 - Web Articles
-- YouTube video transcripts
 - Traditional formats like TXT, PDF, CSV, and DOCX.
 
 The `load_content` function takes the file name as input, and returns a `Text Document` object that has the following attributes:

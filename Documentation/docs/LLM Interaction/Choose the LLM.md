@@ -25,7 +25,7 @@ However, we'll need to setup our API keys to use the LLM. We have 2 ways:
 
 ### Add them to a `.env` file (Better Approach):
 
-Set up a a `.env` file at the root of your project. This file should include your API keys for various LLM providers and can also be used to customize default operational settings such as maximum retries and retry delays. 
+Set up a a `.env` file at the root of your project. This file would include your API keys and any other global variable you'll use in your scripts.
 
 As an example, here's how the `.env` file would look like if we're planning to use the OpenAI LLM:
 
@@ -80,8 +80,15 @@ If you don't set any of the optional parameters, they'll take the default values
 - `top_p`= 1.0
 - `full_response`= False
 
-### Prompt Caching
-Additionally, beyond the parameters listed above, **Anthropic Claude** uniquely has two additional parameters for prompt caching. Both parameters are optional, so inclusion is not necessary unless there is a need to cache data:
+## 3. Prompt Caching
+
+Prompt caching is useful for optimizing performance and reducing API calls which decreases your costs. However, each LLM company has its way of implementing the cache into their API endpoints, so to use caching each LLM Provider has its own syntax:
+
+### OpenAI
+Caching is automatically built into their API infrastructure. This means you don’t need to set up or manage caching yourself when using OpenAI models, so keep your function calls the same as shown in the section above. 
+
+### Anthropic
+Caching involves adding 2 new parameters to the `generate_response` function which are:
 - `prompt_caching`: (optional, boolean) Determines whether you want to use prompt caching or not.
 - `cached_input`: (optional) The specified text you want to cache.
 
@@ -89,7 +96,26 @@ If you don't set the above parameters yourself they take the following default v
 - `prompt_caching` = False
 - `cached_input` = ""
 
-## 3. Handling Retries
+### Google Gemini
+The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. Here's how the code looks like:
+
+```python
+cache_id = llm_instance.create_cache(cached_input = "THE INPUT YOU WANT TO CACHE")
+response = llm_instance.generate_response(
+    prompt="Explain the theory of relativity",
+    messages=None,
+    system_prompt="You are a helpful AI Assistant",
+    temperature=0.6,
+    max_tokens=500,
+    top_p=0.8,
+    full_response=False,
+    prompt_caching=True,
+    cache_id=cache_id 
+)
+print(response)
+```
+
+## 4. Handling Retries
 
 If you want to handle how many time's the function retries after a failed api call, and the delay between each retry you'll need to adjust the enviromental variables that handle this.
 
@@ -151,16 +177,3 @@ llm_instance = LLM.create(provider=LLMProvider.OLLAMA, model_name="phi")
 response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
-
-### For [Playground on LearnWithHasan](https://learnwithhasan.com/tools/llm-playground/) (Exclusive for Power Memebers)
-
-```python
-from SimplerLLM.language.llm import LLM, LLMProvider
-
-llm_instance = LLM.create(provider=LLMProvider.LWH, model_name="gpt-3.5-turbo")
-
-response = llm_instance.generate_response(prompt="generate a 5 words sentence")
-print(response)
-```
-
-Make sure you add your API key and user ID in the `.env` file [in the correct format](https://docs.simplerllm.com/#2-set-up-your-environment-env-file) . You can get them by navigating to the [Account Page](https://learnwithhasan.com/my-account/edit-account/) on the website, where you'll find both values in the API section.

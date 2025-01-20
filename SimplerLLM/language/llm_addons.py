@@ -3,6 +3,7 @@ from typing import Type
 from pydantic import BaseModel
 from SimplerLLM.language.llm import LLM
 import asyncio
+import tiktoken
 
 from SimplerLLM.tools.json_helpers import (
     extract_json_from_text,
@@ -10,8 +11,6 @@ from SimplerLLM.tools.json_helpers import (
     validate_json_with_pydantic_model,
     generate_json_example_from_pydantic,
 )
-
-import tiktoken
 
 
 def calculate_text_generation_costs(input: str, response: str, cost_per_million_input_tokens: float, cost_per_million_output_tokens: float, approximate: bool = True):

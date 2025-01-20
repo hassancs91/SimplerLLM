@@ -3,12 +3,11 @@ duckduckgo_search==5.3.0
 lxml_html_clean==0.1.1
 newspaper3k==0.2.8
 numpy==1.26.4
-openai-1.58.1
-pydantic==2.7.1
+openai==1.59.8
+pydantic==2.10.5
 PyPDF2==3.0.1
 python-dotenv==1.0.1
 python_docx==1.1.0
-pytube==15.0.0
 Requests==2.31.0
 youtube_transcript_api==0.6.2
 pandas==2.2.2

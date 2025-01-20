@@ -65,7 +65,7 @@ To use the Value SERP API functions, you'll need to have your Value SERP API Key
 VALUE_SERP_API_KEY="your_value_serp_api_key"
 ```
 
-**Synchronous `search_with_value_serp_api` Function**
+**Synchronous `search_with_value_serp` Function**
 
 It takes 2 parameters:
 - `query` (string): The search query.
@@ -74,14 +74,14 @@ It takes 2 parameters:
 It returns a list of `SearchResult` objects depending on the maximum number of results you specify. Here's an example usage:
 
 ```python
-from SimplerLLM.tools.serp import search_with_value_serp_api
+from SimplerLLM.tools.serp import search_with_value_serp
 
-search_results = search_with_value_serp_api("What is SEO", 5)
+search_results = search_with_value_serp("What is SEO", 5)
 
 print(search_results)
 ```
 
-**Asynchronous `search_with_value_serp_api_async` Function**
+**Asynchronous `search_with_value_serp_async` Function**
 
 It's the same as the normal function, however it asynchronously fetches search results from Google using the Value SERP API.
 
@@ -89,10 +89,10 @@ It also takes the same 2 parameters, and returns a list of `SearchResult` object
 
 ```python
 import asyncio
-from SimplerLLM.tools.serp import search_with_value_serp_api_async
+from SimplerLLM.tools.serp import search_with_value_serp_async
 
 async def fetch_results():
-    search_results = await search_with_value_serp_api_async("Latest AI advancements", 5)
+    search_results = await search_with_value_serp_async("Latest AI advancements", 5)
     print(search_results)
 
 asyncio.run(fetch_results())
