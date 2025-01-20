@@ -237,31 +237,31 @@ class GeminiLLM(LLM):
 
         encoded_content = base64.b64encode(cached_input.encode()).decode()
         cache_url = f"https://generativelanguage.googleapis.com/v1beta/cachedContents?key={self.api_key}"
+        headers = {"Content-Type": "application/json"}
 
         cache_payload = {
-            "model": f"models/{self.model_name}",
-            "contents": [
-                {
-                    "parts": [
-                        {
-                            "inline_data": {
-                                "mime_type": "text/plain",
-                                "data": encoded_content
+                "model": f"models/{self.model_name}",
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "inline_data": {
+                                    "mime_type": "text/plain",
+                                    "data": encoded_content
+                                }
                             }
-                        }
-                    ],
-                    "role": "user"
-                }
-            ],
-            "ttl": f"{ttl}s" 
+                        ],
+                        "role": "user"
+                    }
+                ],
+                "ttl": f"{ttl}s"
         }
-
-        response = requests.post(cache_url, headers={"Content-Type": "application/json"}, data=json.dumps(cache_payload))
+        
+        response = requests.post(cache_url, headers=headers, data=json.dumps(cache_payload))
         response.raise_for_status()
 
-        cache_id = response.json().get("name")
+        cache_id = response.json()["name"]
         return cache_id
-
 
     def generate_response(
         self,

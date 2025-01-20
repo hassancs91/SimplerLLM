@@ -116,13 +116,13 @@ def validate_json_with_pydantic_model(model_class, json_data):
         for item in json_data:
             try:
                 model_instance = model_class(**item)
-                validated_data.append(model_instance.dict())
+                validated_data.append(model_instance.model_dump())
             except ValidationError as e:
                 validation_errors.append({"error": str(e), "data": item})
     elif isinstance(json_data, dict):
         try:
             model_instance = model_class(**json_data)
-            validated_data.append(model_instance.dict())
+            validated_data.append(model_instance.model_dump())
         except ValidationError as e:
             validation_errors.append({"error": str(e), "data": json_data})
     else:
@@ -172,4 +172,4 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
         example_data[field_name] = example_value_for_type(field_type)
 
     model_instance = model_class(**example_data)
-    return model_instance.json()
+    return model_instance.model_dump_json()
