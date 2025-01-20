@@ -10,7 +10,7 @@ from typing import Optional, Dict, List
 import json
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Constants
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
@@ -38,12 +38,12 @@ def generate_response(
         # Use the cached payload if caching is enabled
         payload = {
             "contents": messages,
-            "cachedContent": cache_id,
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
                 "topP": top_p,
             },
+            "cachedContent": cache_id
         }
 
     else:

@@ -240,28 +240,27 @@ class GeminiLLM(LLM):
         headers = {"Content-Type": "application/json"}
 
         cache_payload = {
-                "model": f"models/{self.model_name}",
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "inline_data": {
-                                    "mime_type": "text/plain",
-                                    "data": encoded_content
-                                }
+            "model": f"models/{self.model_name}",
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "inline_data": {
+                                "mime_type": "text/plain",
+                                "data": encoded_content
                             }
-                        ],
-                        "role": "user"
-                    }
-                ],
-                "ttl": f"{ttl}s"
+                        }
+                    ],
+                    "role": "user"
+                }
+            ],
+            "ttl": f"{ttl}s"
         }
         
         response = requests.post(cache_url, headers=headers, data=json.dumps(cache_payload))
         response.raise_for_status()
 
-        cache_id = response.json()["name"]
-        return cache_id
+        return response.json()["name"]
 
     def generate_response(
         self,
