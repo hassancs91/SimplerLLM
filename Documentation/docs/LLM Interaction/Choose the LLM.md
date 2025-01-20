@@ -96,10 +96,14 @@ If you don't set the above parameters yourself they take the following default v
 - `prompt_caching` = False
 - `cached_input` = ""
 
+Don't forget the `cached_input` should be at least 1024 tokens for it to work as stated by Anthropic's documentation.
+
 ### Google Gemini
 The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. 
 
 Make sure when you want to use caching with Gemini to use a stable model when creating the LLM instance, because it doesnt work with unstable models. [Visit this page to check which models are stable](https://ai.google.dev/gemini-api/docs/models/gemini)
+
+In addition, the `cached_input` should be at least 32000 tokens for it to work as stated by Gemini's documentation.
 
 Here's an example of using caching with Gemini:
 
