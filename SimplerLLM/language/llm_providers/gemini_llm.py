@@ -10,7 +10,7 @@ from typing import Optional, Dict, List
 import json
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Constants
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
