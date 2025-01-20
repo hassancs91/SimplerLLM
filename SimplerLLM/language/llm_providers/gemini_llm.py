@@ -7,6 +7,7 @@ import time
 import requests
 from .llm_response_models import LLMFullResponse
 from typing import Optional, Dict, List
+import json
 
 # Load environment variables
 load_dotenv()
@@ -37,33 +38,18 @@ def generate_response(
         # Use the cached payload if caching is enabled
         payload = {
             "contents": messages,
-            "system_instruction":
-            {
-                "parts": [
-                    {
-                        "text": system_prompt
-                    }
-                ]
-            },
+            "cachedContent": cache_id,
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
                 "topP": top_p,
             },
-            "cachedContent": cache_id
         }
+
     else:
         # Use the normal payload if caching is disabled
         payload = {
             "contents": messages,
-            "system_instruction":
-            {
-                "parts": [
-                    {
-                        "text": system_prompt
-                    }
-                ]
-            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
@@ -75,10 +61,8 @@ def generate_response(
 
     for attempt in range(retry_attempts):
         try:
-            response = requests.post(
-                url, headers=headers, json=payload)
+            response = requests.post(url, headers=headers, data=json.dumps(payload))
             response.raise_for_status()
-
             if full_response:
                 return LLMFullResponse(
                     generated_text=response.json()["candidates"][0]["content"]["parts"][0]["text"],
