@@ -240,7 +240,7 @@ class GeminiLLM(LLM):
         headers = {"Content-Type": "application/json"}
 
         cache_payload = {
-            "model": f"models/{self.model_name}",
+            "model": f"models/gemini-1.5-flash-001",
             "contents": [
                 {
                     "parts": [

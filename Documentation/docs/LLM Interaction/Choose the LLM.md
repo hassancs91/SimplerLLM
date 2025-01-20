@@ -97,13 +97,17 @@ If you don't set the above parameters yourself they take the following default v
 - `cached_input` = ""
 
 ### Google Gemini
-The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. Here's how the code looks like:
+The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. 
+
+Make sure when you want to use caching with Gemini to use a stable model when creating the LLM instance, because it doesnt work with unstable models. [Visit this page to check which models are stable](https://ai.google.dev/gemini-api/docs/models/gemini)
+
+Here's an example of using caching with Gemini:
 
 ```python
+llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash-001") #This is a stable model
 cache_id = llm_instance.create_cache(cached_input = "THE INPUT YOU WANT TO CACHE")
 response = llm_instance.generate_response(
     prompt="Explain the theory of relativity",
-    messages=None,
     system_prompt="You are a helpful AI Assistant",
     temperature=0.6,
     max_tokens=500,
