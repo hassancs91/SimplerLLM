@@ -48,6 +48,7 @@ def generate_pydantic_json_model(
     max_tokens: int = 4096,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
+    system_prompt: str = "The Output is a VALID Structured JSON",
 ) -> BaseModel:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
@@ -70,7 +71,7 @@ def generate_pydantic_json_model(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response = llm_instance.generate_response(prompt=optimized_prompt, max_tokens = max_tokens)
+            ai_response = llm_instance.generate_response(prompt=optimized_prompt,system_prompt = system_prompt, max_tokens = max_tokens)
 
             if ai_response:
                 json_object = extract_json_from_text(ai_response)
@@ -104,6 +105,7 @@ async def generate_pydantic_json_model_async(
     max_tokens: int = 4096,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
+    system_prompt: str = "The Output is a VALID Structured JSON",
 ) -> BaseModel:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
@@ -126,7 +128,7 @@ async def generate_pydantic_json_model_async(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response = await llm_instance.generate_response_async(prompt=optimized_prompt, max_tokens = max_tokens)
+            ai_response = await llm_instance.generate_response_async(prompt=optimized_prompt,system_prompt=system_prompt, max_tokens = max_tokens)
 
             if ai_response:
                 json_object = extract_json_from_text(ai_response)

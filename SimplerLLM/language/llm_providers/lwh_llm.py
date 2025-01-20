@@ -10,7 +10,7 @@ from .llm_response_models import LLMFullResponse
 from pydantic import BaseModel
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
@@ -157,4 +157,4 @@ async def generate_response_async(
                 retry_delay *= 2  # Double the delay each retry
 
     print("All retry attempts failed.")
-    return None
+    return None 
