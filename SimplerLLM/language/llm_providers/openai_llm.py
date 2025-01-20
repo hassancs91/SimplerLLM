@@ -8,7 +8,7 @@ import time
 from .llm_response_models import LLMFullResponse,LLMEmbeddingsResponse
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))

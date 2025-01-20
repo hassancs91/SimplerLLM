@@ -98,38 +98,23 @@ async def generate_response_async(
     retry_attempts = 3
     retry_delay = 1  # Initial retry delay in seconds
     headers = {"Content-Type": "application/json"}
-
+    
     if prompt_caching:
         # Use the cached payload if caching is enabled
         payload = {
             "contents": messages,
-            "system_instruction":
-            {
-                "parts": [
-                    {
-                        "text": system_prompt
-                    }
-                ]
-            },
+            "cachedContent": cache_id,
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
                 "topP": top_p,
             },
-            "cachedContent": cache_id,
         }
+
     else:
         # Use the normal payload if caching is disabled
         payload = {
             "contents": messages,
-            "system_instruction":
-            {
-                "parts": [
-                    {
-                        "text": system_prompt
-                    }
-                ]
-            },
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,

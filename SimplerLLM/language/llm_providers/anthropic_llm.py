@@ -8,7 +8,7 @@ import requests
 from .llm_response_models import LLMFullResponse
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Constants
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
