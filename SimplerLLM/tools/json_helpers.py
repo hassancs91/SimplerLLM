@@ -51,35 +51,6 @@ def __json_extend_search(text, span):
     return text[start:end] 
 
 
-@DeprecationWarning
-def __extract_json_from_text_deprecated(text_response):
-    # This pattern matches a string that starts with '{' and ends with '}'
-    pattern = r"\{[^{}]*\}"
-
-    matches = re.finditer(pattern, text_response)
-    json_objects = []
-
-    for match in matches:
-        json_str = match.group(0)
-        try:
-            # Validate if the extracted string is valid JSON
-            json_obj = json.loads(json_str)
-            json_objects.append(json_obj)
-        except json.JSONDecodeError:
-            # Extend the search for nested structures
-            extended_json_str = extend_search(text_response, match.span())
-            try:
-                json_obj = json.loads(extended_json_str)
-                json_objects.append(json_obj)
-            except json.JSONDecodeError:
-                # Handle cases where the extraction is not valid JSON
-                continue
-
-    if json_objects:
-        return json_objects
-    else:
-        return None  # Or handle this case as you prefer
-
 
 @DeprecationWarning
 def __extend_search_deprecated(text, span):
