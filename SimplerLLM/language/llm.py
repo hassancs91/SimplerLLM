@@ -530,6 +530,8 @@ class AnthropicLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "prompt_caching": prompt_caching,
+                "cached_input": cached_input,                
             }
         )
         return await anthropic_llm.generate_response_async(**params)
