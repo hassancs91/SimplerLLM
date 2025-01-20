@@ -36,8 +36,6 @@ def generate_response(
     retry_attempts = 3
     retry_delay = 1  # initial delay between retries in seconds
 
-
-
     # Define the URL and headers
     url = "https://api.anthropic.com/v1/messages"
     headers = {
@@ -128,7 +126,6 @@ async def generate_response_async(
         "content-type": "application/json",
     }
 
-
     if prompt_caching:
         headers["anthropic-beta"] = "prompt-caching-2024-07-31"
 
@@ -157,31 +154,21 @@ async def generate_response_async(
     else:
         payload["system"] = system_prompt
 
-    # Create the data payload
-    payload = {
-        "model": model_name,
-        "max_tokens": max_tokens,
-        "system": system_prompt,
-        "messages": messages,
-        "temperature": temperature,
-        "top_p": top_p,
-    }
-
     async with aiohttp.ClientSession() as session:
         for attempt in range(retry_attempts):
             try:
                 async with session.post(url, headers=headers, json=payload) as response:
-                    response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
-                    data = await response.json()
+                    response.raise_for_status()
+                    json_response = await response.json()
                     if full_response:
                         return LLMFullResponse(
-                            generated_text=data["content"][0]["text"],
+                            generated_text=json_response["content"][0]["text"],
                             model=model_name,
                             process_time=time.time() - start_time,
-                            llm_provider_response=data,
+                            llm_provider_response=json_response,
                         )
                     else:
-                        return data["content"][0]["text"]
+                        return json_response["content"][0]["text"]
 
             except aiohttp.ClientError as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
