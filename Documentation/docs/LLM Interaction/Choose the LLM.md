@@ -181,7 +181,6 @@ async def main():
     print(response)
 
 asyncio.run(main())
-
 ```
 
 ### For Ollama (Local Model) - The Phi Model
