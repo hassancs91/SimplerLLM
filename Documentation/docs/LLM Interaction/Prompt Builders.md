@@ -39,7 +39,7 @@ from SimplerLLM.prompts.prompt_builder import create_multi_value_prompts
 
 # Define your multi-value prompt template
 multi_value_prompt_template = """Hello {name}, your next meeting is on {date},
-and bring a {object} with you"""
+and bring a {object} with you."""
 
 # Define multiple parameter sets
 params_list = [
@@ -53,13 +53,16 @@ multi_value_prompt = create_multi_value_prompts(multi_value_prompt_template)
 generated_prompts = multi_value_prompt.generate_prompts(params_list)
 
 # Access the generated prompts
-print("This will output the first prompt:", generated_prompts[0])
-print("This will output the second prompt:", generated_prompts[1])
-print("This will output the third prompt:", generated_prompts[2])
+print("This is the updated first prompt:", generated_prompts[0])
+print("This is the updated second prompt:", generated_prompts[1])
+print("This is the updated third prompt:", generated_prompts[2])
 ```
+This will output the following:
 
-This will output the first prompt: **Hello Alice, your next meeting is on January 10th, and bring a dog with you**
-This will output the second prompt: **Hello Bob, your next meeting is on January 12th, and bring a bag with you**
-This will output the third prompt: **Hello Charlie, your next meeting is on January 15th, and bring a pen with you**
+```bash
+This is the updated first prompt: Hello Alice, your next meeting is on January 10th, and bring a dog with you.
+This is the updated second prompt: Hello Bob, your next meeting is on January 12th, and bring a bag with you.
+This is the updated third prompt: Hello Charlie, your next meeting is on January 15th, and bring a pen with you.
+```
 
 That's how you can benefit from SimplerLLM to make managing and creating prompts Simpler!
