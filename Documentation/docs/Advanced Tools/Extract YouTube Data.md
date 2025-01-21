@@ -6,9 +6,9 @@ sidebar_position: 3
 
 The functions in this section are designed to extract the transcript of any YouTube videoalong with their timestamps if needed. You can benefit from these capabilities to build powerful APIs / tools / applications.
 
-## `get_youtube_transcript(video_url)` Function
+## YouTube Video Transcript
 
-This function also takes only the `video_url`, and it returns the transcript of the YouTube video, formatting it into a simple readable string. 
+The `get_youtube_transcript(video_url)` function also takes only the `video_url`, and it returns the transcript of the YouTube video, formatting it into a simple readable string. 
 
 ### Example Usage
 
@@ -20,9 +20,9 @@ video_transcript = get_youtube_transcript("https://www.youtube.com/watch?v=r9Pjz
 print(video_transcript)
 ```
 
-## `get_youtube_transcript_with_timing(video_url)` Function
+## YouTube Video Transcript With Timing
 
-This function also takes only the `video_url`, and retrieves the transcript of a YouTube video, including timing information for each line. It returns a list of dictionaries, where each dictionary refers to a part of the transcript and it contains the following:
+The `get_youtube_transcript_with_timing(video_url)` function also takes only the `video_url`, and retrieves the transcript of a YouTube video, including timing information for each line. It returns a list of dictionaries, where each dictionary refers to a part of the transcript and it contains the following:
 - `text`: The transcript text of a specific segment of the video.
 - `start`: The start time of the segment in seconds.
 - `duration`: The duration of the segment in seconds.
