@@ -12,13 +12,13 @@ The library simplifies the process of integrating AI capabilities into your proj
 
 To interact with an LLM, you first need to create an instance of the model. This process involves specifying which LLM provider you're using and which model you want to interact with.
 
-Here's an example usage of the OpenAI API leveraging the *gpt-3.5-turbo* model.
+Here's an example usage of the OpenAI API leveraging the *gpt-4o* model.
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
 
 # Create an instance of an LLM
-llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo")
+llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-4o")
 ```
 
 However, we'll need to setup our API keys to use the LLM. We have 2 ways:
@@ -80,50 +80,7 @@ If you don't set any of the optional parameters, they'll take the default values
 - `top_p`= 1.0
 - `full_response`= False
 
-## 3. Prompt Caching
-
-Prompt caching is useful for optimizing performance and reducing API calls which decreases your costs. However, each LLM company has its way of implementing the cache into their API endpoints, so to use caching each LLM Provider has its own syntax:
-
-### OpenAI
-Caching is automatically built into their API infrastructure. This means you don’t need to set up or manage caching yourself when using OpenAI models, so keep your function calls the same as shown in the section above. 
-
-### Anthropic
-Caching involves adding 2 new parameters to the `generate_response` function which are:
-- `prompt_caching`: (optional, boolean) Determines whether you want to use prompt caching or not.
-- `cached_input`: (optional) The specified text you want to cache.
-
-If you don't set the above parameters yourself they take the following default values:
-- `prompt_caching` = False
-- `cached_input` = ""
-
-Don't forget the `cached_input` should be at least 1024 tokens for it to work as stated by Anthropic's documentation.
-
-### Google Gemini
-The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. 
-
-Make sure when you want to use caching with Gemini to use a stable model when creating the LLM instance, because it doesnt work with unstable models. [Visit this page to check which models are stable](https://ai.google.dev/gemini-api/docs/models/gemini)
-
-In addition, the `cached_input` should be at least 32000 tokens for it to work as stated by Gemini's documentation.
-
-Here's an example of using caching with Gemini:
-
-```python
-llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash-001") #This is a stable model
-cache_id = llm_instance.create_cache(cached_input = "THE INPUT YOU WANT TO CACHE")
-response = llm_instance.generate_response(
-    prompt="Explain the theory of relativity",
-    system_prompt="You are a helpful AI Assistant",
-    temperature=0.6,
-    max_tokens=500,
-    top_p=0.8,
-    full_response=False,
-    prompt_caching=True,
-    cache_id=cache_id 
-)
-print(response)
-```
-
-## 4. Handling Retries
+## 3. Handling Retries
 
 If you want to handle how many time's the function retries after a failed api call, and the delay between each retry you'll need to adjust the enviromental variables that handle this.
 
@@ -140,9 +97,11 @@ Now, if an API request fails, the library will retry the request a maximum of 5 
 
 Each LLM provider requires a slight change in the parameters when creating the llm instance, but the most important thing is adding the API key correctly in the `.env` file. So, when you plan on using multiple providers make sure you [set all the keys needed in a correct format](https://docs.simplerllm.com/#2-set-up-your-environment-env-file) 
 
-Anyways, here's a brief overview and example usage for each provider:
+In addition, all LLM Providers have the option to generate an asynchronous response; here's a brief overview and example usage for each provider:
 
 ### OpenAI
+
+#### Synchronous Function
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
@@ -153,7 +112,24 @@ response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
 
+#### Asynchronous Function
+
+```python
+import asyncio
+from SimplerLLM.language.llm import LLM, LLMProvider
+
+llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo")
+
+async def main():
+    response = llm_instance.generate_response_async(prompt="generate a 5 words sentence")
+    print(response)
+
+asyncio.run(main())
+```
+
 ### Google Gemini
+
+#### Synchronous Function
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
@@ -164,7 +140,24 @@ response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
 
+#### Asynchronous Function
+
+```python
+import asyncio
+from SimplerLLM.language.llm import LLM, LLMProvider
+
+llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash")
+
+async def main():
+    response = await llm_instance.generate_response_async(prompt="generate a 5 words sentence")
+    print(response)
+
+asyncio.run(main())
+```
+
 ### Anthropic Claude
+
+#### Synchronous Function
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
@@ -175,7 +168,25 @@ response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
 
+#### Asynchronous Function
+
+```python
+import asyncio
+from SimplerLLM.language.llm import LLM, LLMProvider
+
+llm_instance = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20240620")
+
+async def main():
+    response = await llm_instance.generate_response_async(prompt="generate a 5 words sentence")
+    print(response)
+
+asyncio.run(main())
+
+```
+
 ### For Ollama (Local Model) - The Phi Model
+
+#### Synchronous Function
 
 ```python
 from SimplerLLM.language.llm import LLM, LLMProvider
@@ -185,3 +196,155 @@ llm_instance = LLM.create(provider=LLMProvider.OLLAMA, model_name="phi")
 response = llm_instance.generate_response(prompt="generate a 5 words sentence")
 print(response)
 ```
+
+#### Asynchronous Function
+
+```python
+import asyncio
+from SimplerLLM.language.llm import LLM, LLMProvider
+
+llm_instance = LLM.create(provider=LLMProvider.OLLAMA, model_name="phi")
+
+async def main():
+    response = await llm_instance.generate_response_async(prompt="generate a 5 words sentence")
+    print(response)
+
+asyncio.run(main())
+```
+
+## 5. Prompt Caching
+
+Prompt caching is useful for optimizing performance and reducing API calls which decreases your costs. However, each LLM company has its way of implementing the cache into their API endpoints, so to use caching each LLM Provider has its own syntax:
+
+### OpenAI
+Caching is automatically built into their API infrastructure. This means you don’t need to set up or manage caching yourself when using OpenAI models, so keep your function calls the same as shown in the section above. 
+
+### Anthropic
+Caching involves adding 2 new parameters to the `generate_response` function which are:
+- `prompt_caching`: (optional, boolean) Determines whether you want to use prompt caching or not.
+- `cached_input`: (optional) The specified text you want to cache.
+
+If you don't set the above parameters yourself they take the following default values:
+- `prompt_caching` = False
+- `cached_input` = ""
+
+Make sure the `cached_input` is at least 1024 tokens for it to work as stated by Anthropic's documentation. Anyways, here's an example of using caching with Anthropic:
+
+#### Synchronous Function
+
+```python
+from SimplerLLM.language.llm import LLM, LLMProvider
+from SimplerLLM.tools.generic_loader import load_content
+
+#Sample 3000 token input
+file_data = load_content("file.txt")
+input_to_cache = file_data.content
+
+#Caching Process
+llm_instance = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20240620")
+response = llm_instance.generate_response(
+    prompt="Explain the theory of relativity",
+    system_prompt="You are a helpful AI Assistant",
+    temperature=0.6,
+    max_tokens=500,
+    top_p=0.8,
+    full_response=False,
+    prompt_caching=True,
+    cached_input = input_to_cache
+)
+print(response)
+```
+
+#### Asynchronous Function
+
+```python
+from SimplerLLM.language.llm import LLM, LLMProvider
+from SimplerLLM.tools.generic_loader import load_content
+
+#Sample 3000 token input
+file_data = load_content("file.txt")
+input_to_cache = file_data.content
+
+#Caching Process
+async def main():
+    llm_instance = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20240620")
+    response = llm_instance.generate_response_async(
+        prompt="Explain the theory of relativity",
+        system_prompt="You are a helpful AI Assistant",
+        temperature=0.6,
+        max_tokens=500,
+        top_p=0.8,
+        full_response=False,
+        prompt_caching=True,
+        cached_input = input_to_cache
+    )
+    print(response)
+
+asyncio.run(main())
+```
+
+### Google Gemini
+The caching process with Gemini Models is managed differently that the other 2 LLM providers, where you'll have to use an additional function `create_cache` function that generates a unique cache ID. This function is used to create a cache for a specific input, and it returns this specific cache ID, which should be passed to the `generate_response` function. 
+
+Make sure when you want to use caching with Gemini to use a stable model when creating the LLM instance, because it doesnt work with unstable models. [Visit this page to check which models are stable](https://ai.google.dev/gemini-api/docs/models/gemini)
+
+In addition, the `cached_input` should be at least 32000 tokens for it to work as stated by Gemini's documentation.
+
+Here's an example of using caching with Gemini:
+
+#### Synchronous Function
+
+```python
+from SimplerLLM.language.llm import LLM, LLMProvider
+from SimplerLLM.tools.generic_loader import load_content
+
+#Sample 32000 token input
+file_data = load_content("file.txt")
+input_to_cache = file_data.content
+
+#Caching Process
+llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash-001") #This is a stable model
+cache_id = llm_instance.create_cache(cached_input = input_to_cache)
+response = llm_instance.generate_response(
+    prompt="Explain the theory of relativity",
+    system_prompt="You are a helpful AI Assistant",
+    temperature=0.6,
+    max_tokens=500,
+    top_p=0.8,
+    full_response=False,
+    prompt_caching=True,
+    cache_id=cache_id 
+)
+print(response)
+```
+
+#### Asynchronous Function
+
+```python
+from SimplerLLM.language.llm import LLM, LLMProvider
+from SimplerLLM.tools.generic_loader import load_content
+
+#Sample 32000 token input
+file_data = load_content("file.txt")
+input_to_cache = file_data.content
+
+#Caching Process
+async def main():
+    llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash-001") #Stable model
+    cache_id = llm_instance.create_cache(cached_input = input_to_cache)
+    response = llm_instance.generate_response(
+        prompt="Explain the theory of relativity",
+        system_prompt="You are a helpful AI Assistant",
+        temperature=0.6,
+        max_tokens=500,
+        top_p=0.8,
+        full_response=False,
+        prompt_caching=True,
+        cache_id=cache_id 
+    )
+    print(response)
+
+asyncio.run(main())
+```
+
+That's how you can benefit from SimplerLLM to make LLM Interaction Simpler!
