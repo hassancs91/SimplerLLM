@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# JSON-Structured Responses with LLMs
+# Consistent JSON with LLMs
 
 This section introduces how SimplerLLM helps ensure a consistent JSON-structured response from LLMs. This functionality is useful when integrating LLM outputs into your software, where maintaining a stable JSON format is important for processing or automation.
 

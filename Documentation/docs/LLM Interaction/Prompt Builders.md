@@ -2,7 +2,7 @@
 sidebar_position: 4
 ---
 
-# Prompt Builder
+# Prompt Template Builder
 
 Easily create and manage prompt templates with SimplerLLM. This feature allows you to define templates with dynamic placeholders and populate them with single or multiple sets of parameters.
 
