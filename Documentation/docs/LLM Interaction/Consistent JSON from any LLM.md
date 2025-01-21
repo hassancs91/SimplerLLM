@@ -14,7 +14,7 @@ In this way you won't need to include in every prompt you give the LLM, how it s
 
 SimplerLLM offers two functions for this purpose: one synchronous and one asynchronous. Both rely on a Pydantic model that you define, which acts as the structure for the LLM's response.
 
-> **Note:** You can use any LLM provider by modifying the `llm_instance` variable to include the provider of your choice. To learn more about setting up different LLM providers, refer to the [Choose the Right LLM](./Choose the LLM.md) page in this documentation.
+> **Note:** You can use any LLM provider by modifying the `llm_instance` variable to include the provider of your choice. To learn more about setting up different LLM providers, refer to the [Choose the Right LLM](https://docs.simplerllm.com/LLM Interaction/Choose the LLM) page in this documentation.
 
 ### Synchronous Function
 
