@@ -63,14 +63,8 @@ def generate_response(
             if attempt < MAX_RETRIES - 1:
                 time.sleep(RETRY_DELAY * (2**attempt))
             else:
-                error_msg = f"Failed after {MAX_RETRIES} attempts"
-                if full_response:
-                    end_time = time.time()
-                    process_time = end_time - start_time
-                    error_msg += f" and {process_time} seconds"
-                error_msg += f" due to: {e}"
-                print(error_msg)
-                return None
+                error_msg = f"Failed after {MAX_RETRIES} attempts due to: {e}"
+                raise Exception(error_msg)
 
 async def generate_response_async(
     model_name,
@@ -124,11 +118,5 @@ async def generate_response_async(
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(RETRY_DELAY * (2**attempt))
             else:
-                error_msg = f"Failed after {MAX_RETRIES} attempts"
-                if full_response:
-                    end_time = time.time()
-                    process_time = end_time - start_time
-                    error_msg += f" and {process_time} seconds"
-                error_msg += f" due to: {e}"
-                print(error_msg)
-                return None
+                error_msg = f"Failed after {MAX_RETRIES} attempts due to: {e}"
+                raise Exception(error_msg)
