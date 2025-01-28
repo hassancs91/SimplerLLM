@@ -73,13 +73,14 @@ def generate_response(
             else:
                 return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
-        except requests.RequestException as e:
-            print(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(retry_delay)
-            retry_delay *= 2  # Double the delay each retry
-
-    print("All retry attempts failed.")
-    return None
+        except Exception as e:
+            if attempt < retry_attempts - 1:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Double the delay each retry
+            else:
+                error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
+                raise Exception(error_msg)
 
 async def generate_response_async(
     model_name: str,
@@ -141,10 +142,11 @@ async def generate_response_async(
                     else:
                         return json_response["candidates"][0]["content"]["parts"][0]["text"]
 
-        except aiohttp.ClientError as e:
-            print(f"Attempt {attempt + 1} failed: {e}")
-            await asyncio.sleep(retry_delay)
-            retry_delay *= 2  # Double the delay each retry
-
-    print("All retry attempts failed.")
-    return None
+        except Exception as e:
+            if attempt < retry_attempts - 1:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                await asyncio.sleep(retry_delay)
+                retry_delay *= 2  # Double the delay each retry
+            else:
+                error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
+                raise Exception(error_msg)
