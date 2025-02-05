@@ -66,6 +66,7 @@ class GeminiLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cache_id: str = None,
+        json_mode=False,
     ):
         """
         Generate a response using the Gemini model.
@@ -115,6 +116,7 @@ class GeminiLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cache_id": cache_id,
+                "json_mode" : json_mode     
             }
         )
 
@@ -132,6 +134,7 @@ class GeminiLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cache_id: str = None,
+        json_mode=False,
     ):
         """
         Asynchronously generate a response from the Gemini model.
@@ -181,6 +184,7 @@ class GeminiLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cache_id": cache_id,
+                "json_mode" : json_mode     
             }
         )
 

@@ -138,9 +138,16 @@ After your analysis, provide a detailed report in the following structure:
 
 Ensure that your analysis is comprehensive and that your suggestions take into account all the provided information, including the email type and whether it's time-sensitive, a follow-up, or part of a series.
 
-
 """
-openai_instance  = LLM.create(provider=LLMProvider.OPENAI,model_name="gpt-4o")
+
+llm_instance = LLM.create(
+    provider=LLMProvider.DEEPSEEK,
+    model_name="deepseek-chat",
+    temperature=0.7,
+    #api_key="sk-97c443da8177407d8e2c2466906429da"
+) 
+
+#llm_instance  = LLM.create(provider=LLMProvider.OPENAI,model_name="gpt-4o")
 
 generated_prompt = subject_line_grader_prompt_2.format(subject_line="3 seo tips",
                                                                email_type = "Newsletter",
@@ -151,10 +158,10 @@ generated_prompt = subject_line_grader_prompt_2.format(subject_line="3 seo tips"
 
 ai_response = generate_pydantic_json_model(model_class=EmailSubjectLineAnalysis,
                                                             prompt=generated_prompt,
-                                                            llm_instance=openai_instance,
+                                                            llm_instance=llm_instance,
                                                             max_retries=2,
                                                             max_tokens=4096,
-                                                            system_prompt="Generate in Arabic Language")
+                                                            system_prompt="Generate in English Language")
 
 
 print(ai_response)

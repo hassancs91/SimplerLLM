@@ -21,6 +21,7 @@ class OllamaLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Generate a response using the Ollama LLM.
@@ -64,6 +65,7 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode" : json_mode     
             }
         )
         return ollama_llm.generate_response(**params)
@@ -78,6 +80,7 @@ class OllamaLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Asynchronously generate a response using the Ollama LLM.
@@ -121,6 +124,7 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode" : json_mode     
             }
         )
         return await ollama_llm.generate_response_async(**params)

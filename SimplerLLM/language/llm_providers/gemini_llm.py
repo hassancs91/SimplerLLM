@@ -27,6 +27,7 @@ def generate_response(
     prompt_caching: bool = False,
     cache_id: str = None,
     api_key = None,
+    json_mode=False,
 ) -> Optional[Dict]:
 
     start_time = time.time()  
@@ -93,6 +94,7 @@ async def generate_response_async(
     prompt_caching: bool = False,
     cache_id: str = None,
     api_key=None,
+    json_mode=False,
 ) -> Optional[Dict]:
     
     start_time = time.time()

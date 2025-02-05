@@ -1,3 +1,5 @@
+from typing import Type
+from pydantic import BaseModel
 from .base import LLM
 
 class ReliableLLM:
@@ -61,6 +63,7 @@ class ReliableLLM:
         top_p: float = 1.0,
         full_response: bool = False,
         return_provider: bool = False,
+        json_mode=False,
     ):
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
@@ -95,6 +98,7 @@ class ReliableLLM:
                     max_tokens=max_tokens,
                     top_p=top_p,
                     full_response=full_response,
+                    json_mode=json_mode,
                 )
                 return (response, self.primary_llm.provider) if return_provider else response
             except Exception as e:
@@ -108,6 +112,7 @@ class ReliableLLM:
                         max_tokens=max_tokens,
                         top_p=top_p,
                         full_response=full_response,
+                        json_mode=json_mode,
                     )
                     return (response, self.secondary_llm.provider) if return_provider else response
                 raise ValueError("Both providers failed")
@@ -121,6 +126,7 @@ class ReliableLLM:
                 max_tokens=max_tokens,
                 top_p=top_p,
                 full_response=full_response,
+                json_mode=json_mode,
             )
             return (response, self.secondary_llm.provider) if return_provider else response
         raise ValueError("No valid providers available")
@@ -136,6 +142,7 @@ class ReliableLLM:
         top_p: float = 1.0,
         full_response: bool = False,
         return_provider: bool = False,
+        json_mode: bool = False,
     ):
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
@@ -170,6 +177,7 @@ class ReliableLLM:
                     max_tokens=max_tokens,
                     top_p=top_p,
                     full_response=full_response,
+                    json_mode=json_mode,
                 )
                 return (response, self.primary_llm.provider) if return_provider else response
             except Exception as e:
@@ -183,6 +191,7 @@ class ReliableLLM:
                         max_tokens=max_tokens,
                         top_p=top_p,
                         full_response=full_response,
+                        json_mode=json_mode,
                     )
                     return (response, self.secondary_llm.provider) if return_provider else response
                 raise ValueError("Both providers failed")
@@ -196,6 +205,7 @@ class ReliableLLM:
                 max_tokens=max_tokens,
                 top_p=top_p,
                 full_response=full_response,
+                json_mode=json_mode,
             )
             return (response, self.secondary_llm.provider) if return_provider else response
         raise ValueError("No valid providers available")
