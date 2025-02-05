@@ -22,19 +22,25 @@ def generate_response(
     top_p=1.0,
     full_response=False,
     api_key = None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     openai_client = OpenAI(api_key=api_key)
     
     for attempt in range(MAX_RETRIES):
         try:
-            completion = openai_client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-            )
+            params = {
+                "model": model_name,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "top_p": top_p,
+            }
+            
+            if json_mode:
+                params["response_format"] = {"type": "json_object"}
+                
+            completion = openai_client.chat.completions.create(**params)
             generated_text = completion.choices[0].message.content
 
             if full_response:
@@ -63,19 +69,25 @@ async def generate_response_async(
     top_p=1.0,
     full_response=False,
     api_key = None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     async_openai_client = AsyncOpenAI(api_key=api_key)
    
     for attempt in range(MAX_RETRIES):
         try:
-            completion = await async_openai_client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-            )
+            params = {
+                "model": model_name,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "top_p": top_p,
+            }
+            
+            if json_mode:
+                params["response_format"] = {"type": "json_object"}
+                
+            completion = await async_openai_client.chat.completions.create(**params)
             generated_text = completion.choices[0].message.content
 
             if full_response:

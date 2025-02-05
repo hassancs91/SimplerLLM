@@ -27,6 +27,7 @@ def generate_response(
     cached_input: str = "",
     cache_control_type : str = "ephemeral",
     api_key= None,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes a POST request to the Anthropic API to generate content based on the provided text
@@ -97,7 +98,6 @@ def generate_response(
                 error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
                 raise Exception(error_msg)
 
-
 async def generate_response_async(
     model_name: str,
     system_prompt: str = "You are a helpful AI Assistant",
@@ -110,6 +110,7 @@ async def generate_response_async(
     cached_input: str = "",
     cache_control_type: str = "ephemeral",
     api_key= None,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes an asynchronous POST request to the Anthropic API to generate content based on the provided text

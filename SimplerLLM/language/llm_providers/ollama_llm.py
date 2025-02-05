@@ -23,6 +23,7 @@ def generate_response(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes a POST request to the Anthropic API to generate content based on the provided text
@@ -81,6 +82,7 @@ async def generate_response_async(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes an asynchronous POST request to the Anthropic API to generate content based on the provided text

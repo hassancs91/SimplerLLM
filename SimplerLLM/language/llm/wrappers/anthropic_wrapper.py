@@ -25,6 +25,7 @@ class AnthropicLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cached_input: str = "",
+        json_mode=False,
     ):
         """
         Generate a response using the Anthropic LLM.
@@ -73,6 +74,7 @@ class AnthropicLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cached_input": cached_input,
+                "json_mode" : json_mode     
             }
         )
         return anthropic_llm.generate_response(**params)
@@ -89,6 +91,7 @@ class AnthropicLLM(LLM):
         full_response=False,
         prompt_caching: bool = False,
         cached_input: str = "",
+        json_mode=False,
     ):
         """
         Asynchronously generate a response from the Anthropic LLM.
@@ -136,7 +139,8 @@ class AnthropicLLM(LLM):
                 "max_tokens": max_tokens,
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
-                "cached_input": cached_input,                
+                "cached_input": cached_input,  
+                "json_mode" : json_mode           
             }
         )
         return await anthropic_llm.generate_response_async(**params)

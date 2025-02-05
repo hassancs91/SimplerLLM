@@ -1,4 +1,11 @@
+from pydantic import BaseModel
+from typing import List
 from SimplerLLM.language.llm import LLM, LLMProvider, ReliableLLM
+
+class Recipe(BaseModel):
+    name: str
+    ingredients: List[str]
+    instructions: List[str]
 
 def test_reliable_llm():
     # Create primary and secondary LLMs
@@ -26,5 +33,40 @@ def test_reliable_llm():
     except Exception as e:
         print("Both providers failed:", e)
 
+def test_reliable_pydantic_model():
+    # Create primary and secondary LLMs
+    primary_llm = LLM.create(
+        provider=LLMProvider.OPENAI,
+        model_name="gpt-4o"  # Intentionally wrong model name to test fallback
+    )
+    
+    secondary_llm = LLM.create(
+        provider=LLMProvider.DEEPSEEK,
+        model_name="deepseek-chat"
+    )
+    
+    # Create reliable LLM with fallback
+    reliable_llm = ReliableLLM(primary_llm, secondary_llm)
+    
+    # Test the pydantic model generation with fallback
+    try:
+        recipe = reliable_llm.generate_pydantic_model(
+            model_class=Recipe,
+            prompt="Generate a recipe for chocolate chip cookies",
+            max_tokens=1000
+        )
+        print("\nGenerated Recipe:")
+        print(f"Name: {recipe.name}")
+        print("\nIngredients:")
+        for ingredient in recipe.ingredients:
+            print(f"- {ingredient}")
+        print("\nInstructions:")
+        for i, step in enumerate(recipe.instructions, 1):
+            print(f"{i}. {step}")
+    except Exception as e:
+        print("Both providers failed:", e)
+
 if __name__ == "__main__":
     test_reliable_llm()
+    print("\nTesting Pydantic Model Generation:")
+    test_reliable_pydantic_model()

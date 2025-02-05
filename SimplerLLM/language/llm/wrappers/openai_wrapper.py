@@ -23,6 +23,7 @@ class OpenAILLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Generate a response using the OpenAI language model.
@@ -67,6 +68,7 @@ class OpenAILLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode": json_mode
             }
         )
         return openai_llm.generate_response(**params)
@@ -81,6 +83,7 @@ class OpenAILLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Asynchronously generates a response using the OpenAI API.
@@ -125,6 +128,7 @@ class OpenAILLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode": json_mode
             }
         )
         return await openai_llm.generate_response_async(**params)

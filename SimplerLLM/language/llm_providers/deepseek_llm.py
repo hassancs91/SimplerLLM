@@ -20,6 +20,7 @@ def generate_response(
     top_p=1.0,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     headers = {
@@ -36,6 +37,9 @@ def generate_response(
         "top_p": top_p,
         "stream": False
     }
+    
+    if json_mode:
+        data["response_format"] = {"type": "json_object"}
     
     for attempt in range(MAX_RETRIES):
         try:
@@ -74,6 +78,7 @@ async def generate_response_async(
     top_p=1.0,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     headers = {
@@ -90,6 +95,9 @@ async def generate_response_async(
         "top_p": top_p,
         "stream": False
     }
+    
+    if json_mode:
+        data["response_format"] = {"type": "json_object"}
     
     for attempt in range(MAX_RETRIES):
         try:

@@ -1,5 +1,16 @@
 from enum import Enum
 import os
+import time
+import asyncio
+from typing import Type
+from pydantic import BaseModel
+
+from SimplerLLM.tools.json_helpers import (
+    extract_json_from_text,
+    convert_json_to_pydantic_model,
+    validate_json_with_pydantic_model,
+    generate_json_example_from_pydantic,
+)
 
 class LLMProvider(Enum):
     OPENAI = 1
@@ -13,7 +24,7 @@ class LLM:
     def __init__(
         self,
         provider=LLMProvider.OPENAI,
-        model_name="gpt-3.5-turbo",
+        model_name="gpt-4o-mini",
         temperature=0.7,
         top_p=1.0,
         api_key=None,
