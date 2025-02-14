@@ -48,6 +48,7 @@ class EmailSubjectLineAnalysis(BaseModel):
 primary_llm = LLM.create(
     provider=LLMProvider.ANTHROPIC,
     model_name="claude-3-opus-latest",
+    verbose=True
 )
 
 secondary_llm = LLM.create(
@@ -56,7 +57,7 @@ secondary_llm = LLM.create(
 )
 
 # Create ReliableLLM instance
-reliable_llm = ReliableLLM(primary_llm=primary_llm, secondary_llm=secondary_llm)
+reliable_llm = ReliableLLM(primary_llm=primary_llm, secondary_llm=secondary_llm, verbose=True)
 
 # Test prompt
 subject_line_grader_prompt = """
