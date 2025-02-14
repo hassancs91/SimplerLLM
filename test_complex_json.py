@@ -139,13 +139,14 @@ After your analysis, provide a detailed report in the following structure:
 Ensure that your analysis is comprehensive and that your suggestions take into account all the provided information, including the email type and whether it's time-sensitive, a follow-up, or part of a series.
 
 """
+llm_instance = LLM.create( provider=LLMProvider.OPENAI, model_name="gpt-4o", verbose=True)
 
-llm_instance = LLM.create(
-    provider=LLMProvider.DEEPSEEK,
-    model_name="deepseek-chat",
-    temperature=0.7,
-    #api_key="sk-97c443da8177407d8e2c2466906429da"
-) 
+# llm_instance = LLM.create(
+#     provider=LLMProvider.DEEPSEEK,
+#     model_name="deepseek-chat",
+#     temperature=0.7,
+#     #api_key="sk-97c443da8177407d8e2c2466906429da"
+# ) 
 
 #llm_instance  = LLM.create(provider=LLMProvider.OPENAI,model_name="gpt-4o")
 

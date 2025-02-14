@@ -8,19 +8,30 @@ class Recipe(BaseModel):
     instructions: List[str]
 
 def test_reliable_llm():
-    # Create primary and secondary LLMs
+    # Create primary and secondary LLMs with verbose logging
     primary_llm = LLM.create(
         provider=LLMProvider.OPENAI,
-        model_name="gpt-4o"
+        model_name="gpt-4o",  # Intentionally wrong model name to test fallback
+        verbose=True
     )
     
     secondary_llm = LLM.create(
         provider=LLMProvider.DEEPSEEK,
-        model_name="deepseek-chat"
+        model_name="deepseek-chat",
+        verbose=True
     )
     
-    # Create reliable LLM with fallback
-    reliable_llm = ReliableLLM(primary_llm, secondary_llm)
+    # Create reliable LLM with fallback and verbose logging
+    reliable_llm = ReliableLLM(primary_llm, secondary_llm, verbose=True)
+
+
+    response, provider = reliable_llm.generate_response(
+            prompt="What is the meaning of life?",
+            max_tokens=100,return_provider=True
+        )
+    
+    print("Response:", response)
+    print("provider:", provider.name)
     
     # Test the fallback mechanism
     try:
@@ -34,19 +45,21 @@ def test_reliable_llm():
         print("Both providers failed:", e)
 
 def test_reliable_pydantic_model():
-    # Create primary and secondary LLMs
+    # Create primary and secondary LLMs with verbose logging
     primary_llm = LLM.create(
         provider=LLMProvider.OPENAI,
-        model_name="gpt-4o"  # Intentionally wrong model name to test fallback
+        model_name="gpt-4o",  # Intentionally wrong model name to test fallback
+        verbose=True
     )
     
     secondary_llm = LLM.create(
         provider=LLMProvider.DEEPSEEK,
-        model_name="deepseek-chat"
+        model_name="deepseek-chat",
+        verbose=True
     )
     
-    # Create reliable LLM with fallback
-    reliable_llm = ReliableLLM(primary_llm, secondary_llm)
+    # Create reliable LLM with fallback and verbose logging
+    reliable_llm = ReliableLLM(primary_llm, secondary_llm, verbose=True)
     
     # Test the pydantic model generation with fallback
     try:
@@ -67,6 +80,9 @@ def test_reliable_pydantic_model():
         print("Both providers failed:", e)
 
 if __name__ == "__main__":
+    print("\nTesting without verbose logging:")
     test_reliable_llm()
-    print("\nTesting Pydantic Model Generation:")
+    print("\nTesting Pydantic Model Generation without verbose logging:")
     test_reliable_pydantic_model()
+    
+    
