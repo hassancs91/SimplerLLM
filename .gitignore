@@ -26,7 +26,7 @@ test_agents.py
 test_pydantic.py
 test_tool.py
 /SimplerLLM/tools/predefined_tools.py
-/SimplerLLM/agents
+/SimplerLLM/agents_deprecated
 test.csv
 test_data_agent.py
 test_sql_agent.py

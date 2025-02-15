@@ -1,11 +1,13 @@
 from pydantic import BaseModel
-from typing import Any
+from typing import Any, Optional
 
 
 class LLMFullResponse(BaseModel):
     generated_text: str
     model: str
     process_time: float
+    input_token_count: Optional[int] = None
+    output_token_count: Optional[int] = None
     llm_provider_response: Any
 
 

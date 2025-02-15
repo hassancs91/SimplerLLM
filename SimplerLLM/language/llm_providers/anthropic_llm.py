@@ -79,11 +79,14 @@ def generate_response(
             response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
 
             if full_response:
+                response_json = response.json()
                 return LLMFullResponse(
-                    generated_text=response.json()["content"][0]["text"],
+                    generated_text=response_json["content"][0]["text"],
                     model=model_name,
                     process_time=time.time() - start_time,
-                    llm_provider_response=response.json(),
+                    input_token_count=response_json["usage"]["input_tokens"],
+                    output_token_count=response_json["usage"]["output_tokens"],
+                    llm_provider_response=response_json,
                 )
 
             else:
@@ -167,6 +170,8 @@ async def generate_response_async(
                             generated_text=json_response["content"][0]["text"],
                             model=model_name,
                             process_time=time.time() - start_time,
+                            input_token_count=json_response["usage"]["input_tokens"],
+                            output_token_count=json_response["usage"]["output_tokens"],
                             llm_provider_response=json_response,
                         )
                     else:
