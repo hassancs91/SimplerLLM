@@ -1,7 +1,8 @@
-from typing import Type
+from typing import Type, Union, Tuple, Optional
 from pydantic import BaseModel
-from .base import LLM
+from .base import LLM, LLMProvider
 from SimplerLLM.utils.custom_verbose import verbose_print
+from SimplerLLM.language.llm_providers.llm_response_models import LLMFullResponse
 
 class ReliableLLM:
     def __init__(self, primary_llm: LLM, secondary_llm: LLM, verbose=False):
@@ -90,7 +91,7 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode=False,
-    ):
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
         
@@ -186,7 +187,7 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode: bool = False,
-    ):
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
         

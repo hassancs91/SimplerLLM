@@ -1,8 +1,9 @@
 import time
-from typing import Type
+from typing import Type, Union, Tuple
 from pydantic import BaseModel
 from SimplerLLM.language.llm import LLM, LLMProvider
 from SimplerLLM.language.llm.reliable import ReliableLLM
+from SimplerLLM.language.llm_providers.llm_response_models import LLMFullResponse
 import asyncio
 import tiktoken
 
@@ -59,7 +60,8 @@ def generate_pydantic_json_model(
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
-) -> BaseModel:
+    full_response: bool = False,
+) -> Union[BaseModel, Tuple[BaseModel, LLMFullResponse]]:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
 
@@ -78,13 +80,18 @@ def generate_pydantic_json_model(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response = llm_instance.generate_response(prompt=optimized_prompt,
-                                                         system_prompt = system_prompt,
-                                                        max_tokens = max_tokens,
-                                                        json_mode = True)
+            ai_response = llm_instance.generate_response(
+                prompt=optimized_prompt,
+                system_prompt=system_prompt,
+                max_tokens=max_tokens,
+                json_mode=True,
+                full_response=full_response
+            )
 
-            if ai_response:
-                json_object = extract_json_from_text(ai_response)
+            response_text = ai_response.generated_text if full_response else ai_response
+
+            if response_text:
+                json_object = extract_json_from_text(response_text)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -94,7 +101,7 @@ def generate_pydantic_json_model(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return model_object
+                    return (model_object, ai_response) if full_response else model_object
 
         except Exception as e:  # Replace SpecificException with the appropriate exception
             return f"Exception occurred: {e}"
@@ -116,7 +123,8 @@ def generate_pydantic_json_model_reliable(
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
-) -> tuple[BaseModel, LLMProvider]:
+    full_response: bool = False,
+) -> Union[Tuple[BaseModel, LLMProvider], Tuple[BaseModel, LLMFullResponse, LLMProvider]]:
     """
     Generates a model instance using ReliableLLM with fallback capability.
 
@@ -134,16 +142,23 @@ def generate_pydantic_json_model_reliable(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response, provider = reliable_llm.generate_response(
+            result = reliable_llm.generate_response(
                 return_provider=True,
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
-                json_mode=True
+                json_mode=True,
+                full_response=full_response
             )
+            
+            if full_response:
+                ai_response, provider = result
+                response_text = ai_response.generated_text
+            else:
+                response_text, provider = result
 
-            if ai_response:
-                json_object = extract_json_from_text(ai_response)
+            if response_text:
+                json_object = extract_json_from_text(response_text)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -153,7 +168,7 @@ def generate_pydantic_json_model_reliable(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return model_object, provider
+                    return (model_object, ai_response, provider) if full_response else (model_object, provider)
 
         except Exception as e:
             return f"Exception occurred: {e}"
@@ -174,7 +189,8 @@ async def generate_pydantic_json_model_reliable_async(
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
-) -> tuple[BaseModel, LLMProvider]:
+    full_response: bool = False,
+) -> Union[Tuple[BaseModel, LLMProvider], Tuple[BaseModel, LLMFullResponse, LLMProvider]]:
     """
     Asynchronously generates a model instance using ReliableLLM with fallback capability.
 
@@ -192,16 +208,23 @@ async def generate_pydantic_json_model_reliable_async(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response, provider = await reliable_llm.generate_response_async(
+            result = await reliable_llm.generate_response_async(
                 return_provider=True,
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
-                json_mode=True
+                json_mode=True,
+                full_response=full_response
             )
+            
+            if full_response:
+                ai_response, provider = result
+                response_text = ai_response.generated_text
+            else:
+                response_text, provider = result
 
-            if ai_response:
-                json_object = extract_json_from_text(ai_response)
+            if response_text:
+                json_object = extract_json_from_text(response_text)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -211,7 +234,7 @@ async def generate_pydantic_json_model_reliable_async(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return model_object, provider
+                    return (model_object, ai_response, provider) if full_response else (model_object, provider)
 
         except Exception as e:
             return f"Exception occurred: {e}"
@@ -232,7 +255,8 @@ async def generate_pydantic_json_model_async(
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
-) -> BaseModel:
+    full_response: bool = False,
+) -> Union[BaseModel, Tuple[BaseModel, LLMFullResponse]]:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
 
@@ -251,13 +275,18 @@ async def generate_pydantic_json_model_async(
 
     for attempt, delay in enumerate(backoff_delays):
         try:
-            ai_response = await llm_instance.generate_response_async(prompt=optimized_prompt,
-                                                                     system_prompt=system_prompt, 
-                                                                     max_tokens = max_tokens,
-                                                                     json_mode = True)
+            ai_response = await llm_instance.generate_response_async(
+                prompt=optimized_prompt,
+                system_prompt=system_prompt,
+                max_tokens=max_tokens,
+                json_mode=True,
+                full_response=full_response
+            )
 
-            if ai_response:
-                json_object = extract_json_from_text(ai_response)
+            response_text = ai_response.generated_text if full_response else ai_response
+
+            if response_text:
+                json_object = extract_json_from_text(response_text)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -267,7 +296,7 @@ async def generate_pydantic_json_model_async(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return model_object
+                    return (model_object, ai_response) if full_response else model_object
 
         except Exception as e:  # Replace SpecificException with the appropriate exception
             return f"Exception occurred: {e}"

@@ -59,6 +59,8 @@ def generate_response(
                     generated_text=generated_text,
                     model=model_name,
                     process_time=process_time,
+                    input_token_count=result["usage"]["prompt_tokens"],
+                    output_token_count=result["usage"]["completion_tokens"],
                     llm_provider_response=result,
                 )
             return generated_text
@@ -118,6 +120,8 @@ async def generate_response_async(
                             generated_text=generated_text,
                             model=model_name,
                             process_time=process_time,
+                            input_token_count=result["usage"]["prompt_tokens"],
+                            output_token_count=result["usage"]["completion_tokens"],
                             llm_provider_response=result,
                         )
                     return generated_text
