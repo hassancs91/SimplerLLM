@@ -35,3 +35,11 @@ vd_test.py
 test.py
 file.txt
 Testing/
+tweet_generator.py
+test_token_count.py
+test_reliable_json.py
+test_reliable_json.py
+test_llm_router.py
+test_deep.py
+test_complex_json.py
+setup.py

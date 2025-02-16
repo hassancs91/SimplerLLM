@@ -6,7 +6,7 @@ def main():
     llm_instance = LLM.create(
         provider=LLMProvider.OPENAI,
         model_name="gpt-4o",
-        verbose=True
+        verbose=False
     )
 
     # Initialize router
@@ -38,47 +38,76 @@ def main():
     [***Main Point #3*]**
     """
 
-    # Add choices to router
-    router.add_choice(template_1, metadata={"type": "tweet"})
-    router.add_choice(template_2, metadata={"type": "thread"})
-    router.add_choice(template_3, metadata={"type": "thread"})
-
-    # Test inputs
-    inputs = [
-        "I want to create a tweet about my top marketing tips",
-        "Need a thread format to explain complex coding concepts",
-        "Looking for a quick way to share productivity hacks"
+    # Test bulk choice management
+    print("Testing choice management:\n")
+    
+    # Add choices in bulk
+    choices = [
+        (template_1, {"type": "tweet", "style": "achievement"}),
+        (template_2, {"type": "thread", "style": "educational"}),
+        (template_3, {"type": "thread", "style": "quick-tips"})
     ]
+    indices = router.add_choices(choices)
+    print("Added choices with indices:", indices)
 
+    # Get all choices
+    print("\nAll choices:")
+    print("-" * 50)
+    all_choices = router.get_choices()
+    for i, (content, metadata) in enumerate(all_choices):
+        print(f"\nChoice {i+1}:")
+        print(f"Type: {metadata.get('type')}")
+        print(f"Style: {metadata.get('style')}")
+        print(f"Content preview: {content[:100]}...")
 
-    #result = router.route(inputs[0])
-    #print(result)
+    # Get specific choice
+    print("\nGetting specific choice:")
+    print("-" * 50)
+    choice = router.get_choice(1)  # Get second choice
+    if choice:
+        content, metadata = choice
+        print(f"Choice 2 type: {metadata.get('type')}")
+        print(f"Choice 2 style: {metadata.get('style')}")
+        print(f"Content preview: {content[:100]}...")
 
+    print("\nTesting metadata filtering:\n")
 
-    results = router.route_top_k(inputs[0], k=3)
-        
-        
+    # Test 1: Filter by type
+    print("\nTest 1: Finding tweet templates")
+    print("-" * 50)
+    result = router.route_with_metadata(
+        "I want to create a tweet about my success story",
+        metadata_filter={"type": "tweet"}
+    )
+    if result:
+        print(f"Found tweet template (index {result.selected_index + 1}):")
+        print(f"Confidence: {result.confidence_score}")
+        print(f"Reasoning: {result.reasoning}")
+
+    # Test 2: Filter threads by style
+    print("\nTest 2: Finding educational thread templates")
+    print("-" * 50)
+    result = router.route_with_metadata(
+        "Need to explain a complex topic step by step",
+        metadata_filter={"type": "thread", "style": "educational"}
+    )
+    if result:
+        print(f"Found educational thread template (index {result.selected_index + 1}):")
+        print(f"Confidence: {result.confidence_score}")
+        print(f"Reasoning: {result.reasoning}")
+
+    # Test 3: Get top 2 thread templates
+    print("\nTest 3: Top 2 thread templates")
+    print("-" * 50)
+    results = router.route_top_k_with_metadata(
+        "I want to share some quick tips about productivity",
+        metadata_filter={"type": "thread"},
+        k=2
+    )
     for i, result in enumerate(results):
-            print(f"\nMatch {i+1}:")
-            print(f"Template: {result.selected_index + 1}")
-            print(f"Confidence: {result.confidence_score}")
-            print(f"Reasoning: {result.reasoning}")
-
-    #print("Testing route_top_k with different inputs:\n")
-    # for input_text in inputs:
-    #     print(f"\nInput: {input_text}")
-    #     print("-" * 50)
-        
-    #     # Get top 3 matches
-    #     results = router.route_top_k(input_text, k=3)
-        
-    #     # Print results
-    #     for i, result in enumerate(results):
-    #         print(f"\nMatch {i+1}:")
-    #         print(f"Template: {result.selected_index + 1}")
-    #         print(f"Confidence: {result.confidence_score}")
-    #         print(f"Reasoning: {result.reasoning}")
-    #     print("-" * 50)
+        print(f"\nThread template {i+1} (index {result.selected_index + 1}):")
+        print(f"Confidence: {result.confidence_score}")
+        print(f"Reasoning: {result.reasoning}")
 
 if __name__ == "__main__":
     main()
