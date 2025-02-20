@@ -20,6 +20,7 @@ def generate_response(
     top_p=1.0,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     headers = {
@@ -36,6 +37,9 @@ def generate_response(
         "top_p": top_p,
         "stream": False
     }
+    
+    if json_mode:
+        data["response_format"] = {"type": "json_object"}
     
     for attempt in range(MAX_RETRIES):
         try:
@@ -55,6 +59,8 @@ def generate_response(
                     generated_text=generated_text,
                     model=model_name,
                     process_time=process_time,
+                    input_token_count=result["usage"]["prompt_tokens"],
+                    output_token_count=result["usage"]["completion_tokens"],
                     llm_provider_response=result,
                 )
             return generated_text
@@ -74,6 +80,7 @@ async def generate_response_async(
     top_p=1.0,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     start_time = time.time() if full_response else None
     headers = {
@@ -90,6 +97,9 @@ async def generate_response_async(
         "top_p": top_p,
         "stream": False
     }
+    
+    if json_mode:
+        data["response_format"] = {"type": "json_object"}
     
     for attempt in range(MAX_RETRIES):
         try:
@@ -110,6 +120,8 @@ async def generate_response_async(
                             generated_text=generated_text,
                             model=model_name,
                             process_time=process_time,
+                            input_token_count=result["usage"]["prompt_tokens"],
+                            output_token_count=result["usage"]["completion_tokens"],
                             llm_provider_response=result,
                         )
                     return generated_text

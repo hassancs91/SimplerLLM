@@ -4,10 +4,11 @@ import base64
 import requests
 import json
 from ..base import LLM
+from SimplerLLM.utils.custom_verbose import verbose_print
 
 class GeminiLLM(LLM):
-    def __init__(self, provider, model_name, temperature, top_p, api_key):
-        super().__init__(provider, model_name, temperature, top_p, api_key)
+    def __init__(self, provider, model_name, temperature, top_p, api_key, verbose=False):
+        super().__init__(provider, model_name, temperature, top_p, api_key, verbose=verbose)
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
 
     def convert_messages_template(self, messages):
@@ -66,6 +67,7 @@ class GeminiLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cache_id: str = None,
+        json_mode=False,
     ):
         """
         Generate a response using the Gemini model.
@@ -92,11 +94,19 @@ class GeminiLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "user", "parts": [{"text": system_prompt}]},
                 {"role": "model", "parts": [{"text": "ok, confirmed."}]},
@@ -104,6 +114,8 @@ class GeminiLLM(LLM):
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -115,10 +127,24 @@ class GeminiLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cache_id": cache_id,
+                "json_mode" : json_mode     
             }
         )
 
-        return gemini_llm.generate_response(**params)
+        if self.verbose:
+            verbose_print("Generating response with Gemini...", "info")
+            if prompt_caching:
+                verbose_print(f"Using cache ID: {cache_id}", "debug")
+            
+        try:
+            response = gemini_llm.generate_response(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise
 
     async def generate_response_async(
         self,
@@ -132,6 +158,7 @@ class GeminiLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cache_id: str = None,
+        json_mode=False,
     ):
         """
         Asynchronously generate a response from the Gemini model.
@@ -158,11 +185,19 @@ class GeminiLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "user", "parts": [{"text": system_prompt}]},
                 {"role": "model", "parts": [{"text": "ok, confirmed."}]},
@@ -170,6 +205,8 @@ class GeminiLLM(LLM):
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -181,7 +218,21 @@ class GeminiLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cache_id": cache_id,
+                "json_mode" : json_mode     
             }
         )
 
-        return await gemini_llm.generate_response_async(**params)
+        if self.verbose:
+            verbose_print("Generating response with Gemini (async)...", "info")
+            if prompt_caching:
+                verbose_print(f"Using cache ID: {cache_id}", "debug")
+            
+        try:
+            response = await gemini_llm.generate_response_async(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise

@@ -23,6 +23,7 @@ def generate_response(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes a POST request to the Anthropic API to generate content based on the provided text
@@ -55,11 +56,14 @@ def generate_response(
             response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
 
             if full_response:
+                response_json = response.json()
                 return LLMFullResponse(
-                    generated_text=response.json()["message"]["content"],
+                    generated_text=response_json["message"]["content"],
                     model=model_name,
                     process_time=time.time() - start_time,
-                    llm_provider_response=response.json(),
+                    input_token_count=response_json["prompt_eval_count"],
+                    output_token_count=response_json["eval_count"],
+                    llm_provider_response=response_json,
                 )
 
             else:
@@ -81,6 +85,7 @@ async def generate_response_async(
     max_tokens: int = 300,
     top_p: float = 1.0,
     full_response: bool = False,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes an asynchronous POST request to the Anthropic API to generate content based on the provided text
@@ -119,7 +124,9 @@ async def generate_response_async(
                             generated_text=data["message"]["content"],
                             model=model_name,
                             process_time=time.time() - start_time,
-                            llm_provider_response=response.json(),
+                            input_token_count=data["prompt_eval_count"],
+                            output_token_count=data["eval_count"],
+                            llm_provider_response=data,
                         )
 
                     else:

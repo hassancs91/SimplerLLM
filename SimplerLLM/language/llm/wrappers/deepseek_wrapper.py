@@ -1,10 +1,11 @@
 import SimplerLLM.language.llm_providers.deepseek_llm as deepseek_llm
 import os
 from ..base import LLM
+from SimplerLLM.utils.custom_verbose import verbose_print
 
 class DeepSeekLLM(LLM):
-    def __init__(self, provider, model_name, temperature, top_p, api_key):
-        super().__init__(provider, model_name, temperature, top_p, api_key)
+    def __init__(self, provider, model_name, temperature, top_p, api_key, verbose=False):
+        super().__init__(provider, model_name, temperature, top_p, api_key, verbose=verbose)
         self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY", "")
 
     def append_messages(self, system_prompt: str, messages: list):
@@ -23,6 +24,7 @@ class DeepSeekLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Generate a response using the DeepSeek language model.
@@ -47,18 +49,28 @@ class DeepSeekLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -67,9 +79,22 @@ class DeepSeekLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode": json_mode
             }
         )
-        return deepseek_llm.generate_response(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with DeepSeek...", "info")
+            
+        try:
+            response = deepseek_llm.generate_response(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise
 
     async def generate_response_async(
         self,
@@ -81,6 +106,7 @@ class DeepSeekLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Asynchronously generates a response using the DeepSeek API.
@@ -105,18 +131,28 @@ class DeepSeekLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -125,6 +161,19 @@ class DeepSeekLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode": json_mode
             }
         )
-        return await deepseek_llm.generate_response_async(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with DeepSeek (async)...", "info")
+            
+        try:
+            response = await deepseek_llm.generate_response_async(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise
