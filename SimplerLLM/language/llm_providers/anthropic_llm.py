@@ -27,6 +27,7 @@ def generate_response(
     cached_input: str = "",
     cache_control_type : str = "ephemeral",
     api_key= None,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes a POST request to the Anthropic API to generate content based on the provided text
@@ -78,11 +79,14 @@ def generate_response(
             response.raise_for_status()  # Raises HTTPError for bad requests (4XX or 5XX)
 
             if full_response:
+                response_json = response.json()
                 return LLMFullResponse(
-                    generated_text=response.json()["content"][0]["text"],
+                    generated_text=response_json["content"][0]["text"],
                     model=model_name,
                     process_time=time.time() - start_time,
-                    llm_provider_response=response.json(),
+                    input_token_count=response_json["usage"]["input_tokens"],
+                    output_token_count=response_json["usage"]["output_tokens"],
+                    llm_provider_response=response_json,
                 )
 
             else:
@@ -97,7 +101,6 @@ def generate_response(
                 error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
                 raise Exception(error_msg)
 
-
 async def generate_response_async(
     model_name: str,
     system_prompt: str = "You are a helpful AI Assistant",
@@ -110,6 +113,7 @@ async def generate_response_async(
     cached_input: str = "",
     cache_control_type: str = "ephemeral",
     api_key= None,
+    json_mode=False,
 ) -> Optional[Dict]:
     """
     Makes an asynchronous POST request to the Anthropic API to generate content based on the provided text
@@ -166,6 +170,8 @@ async def generate_response_async(
                             generated_text=json_response["content"][0]["text"],
                             model=model_name,
                             process_time=time.time() - start_time,
+                            input_token_count=json_response["usage"]["input_tokens"],
+                            output_token_count=json_response["usage"]["output_tokens"],
                             llm_provider_response=json_response,
                         )
                     else:

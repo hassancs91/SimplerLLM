@@ -1,9 +1,10 @@
 import SimplerLLM.language.llm_providers.ollama_llm as ollama_llm
 from ..base import LLM
+from SimplerLLM.utils.custom_verbose import verbose_print
 
 class OllamaLLM(LLM):
-    def __init__(self, provider, model_name, temperature, top_p):
-        super().__init__(provider, model_name, temperature, top_p)
+    def __init__(self, provider, model_name, temperature, top_p, verbose=False):
+        super().__init__(provider, model_name, temperature, top_p, None, verbose=verbose)
 
     def append_messages(self, system_prompt: str, messages: list):
         model_messages = [{"role": "system", "content": system_prompt}]
@@ -21,6 +22,7 @@ class OllamaLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Generate a response using the Ollama LLM.
@@ -45,18 +47,28 @@ class OllamaLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -64,9 +76,22 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode" : json_mode     
             }
         )
-        return ollama_llm.generate_response(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with Ollama...", "info")
+            
+        try:
+            response = ollama_llm.generate_response(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise
 
     async def generate_response_async(
         self,
@@ -78,6 +103,7 @@ class OllamaLLM(LLM):
         max_tokens: int = 300,
         top_p: float = 1.0,
         full_response: bool = False,
+        json_mode=False,
     ):
         """
         Asynchronously generate a response using the Ollama LLM.
@@ -102,18 +128,28 @@ class OllamaLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"System prompt: {system_prompt}", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -121,6 +157,19 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
+                "json_mode" : json_mode     
             }
         )
-        return await ollama_llm.generate_response_async(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with Ollama (async)...", "info")
+            
+        try:
+            response = await ollama_llm.generate_response_async(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise

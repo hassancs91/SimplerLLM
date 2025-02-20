@@ -27,6 +27,7 @@ def generate_response(
     prompt_caching: bool = False,
     cache_id: str = None,
     api_key = None,
+    json_mode=False,
 ) -> Optional[Dict]:
 
     start_time = time.time()  
@@ -64,11 +65,14 @@ def generate_response(
             response = requests.post(url, headers=headers, data=json.dumps(payload))
             response.raise_for_status()
             if full_response:
+                response_json = response.json()
                 return LLMFullResponse(
-                    generated_text=response.json()["candidates"][0]["content"]["parts"][0]["text"],
+                    generated_text=response_json["candidates"][0]["content"]["parts"][0]["text"],
                     model=model_name,
                     process_time=time.time() - start_time,
-                    llm_provider_response=response.json(),
+                    input_token_count=response_json["usageMetadata"]["promptTokenCount"],
+                    output_token_count=response_json["usageMetadata"]["candidatesTokenCount"],
+                    llm_provider_response=response_json,
                 )
             else:
                 return response.json()["candidates"][0]["content"]["parts"][0]["text"]
@@ -93,6 +97,7 @@ async def generate_response_async(
     prompt_caching: bool = False,
     cache_id: str = None,
     api_key=None,
+    json_mode=False,
 ) -> Optional[Dict]:
     
     start_time = time.time()
@@ -137,6 +142,8 @@ async def generate_response_async(
                             generated_text=json_response["candidates"][0]["content"]["parts"][0]["text"],
                             model=model_name,
                             process_time=time.time() - start_time,
+                            input_token_count=json_response["usageMetadata"]["promptTokenCount"],
+                            output_token_count=json_response["usageMetadata"]["candidatesTokenCount"],
                             llm_provider_response=json_response,
                         )
                     else:

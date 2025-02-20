@@ -1,10 +1,11 @@
 import SimplerLLM.language.llm_providers.anthropic_llm as anthropic_llm
 import os
 from ..base import LLM
+from SimplerLLM.utils.custom_verbose import verbose_print
 
 class AnthropicLLM(LLM):
-    def __init__(self, provider, model_name, temperature, top_p, api_key):
-        super().__init__(provider, model_name, temperature, top_p, api_key)
+    def __init__(self, provider, model_name, temperature, top_p, api_key, verbose=False):
+        super().__init__(provider, model_name, temperature, top_p, api_key, verbose=verbose)
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY", "")
     
     def append_messages(self, messages: list):
@@ -25,6 +26,7 @@ class AnthropicLLM(LLM):
         full_response: bool = False,
         prompt_caching: bool = False,
         cached_input: str = "",
+        json_mode=False,
     ):
         """
         Generate a response using the Anthropic LLM.
@@ -51,17 +53,26 @@ class AnthropicLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(messages)
 
         params.update(
@@ -73,9 +84,22 @@ class AnthropicLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cached_input": cached_input,
+                "json_mode" : json_mode     
             }
         )
-        return anthropic_llm.generate_response(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with Anthropic...", "info")
+            
+        try:
+            response = anthropic_llm.generate_response(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise
 
     async def generate_response_async(
         self,
@@ -89,6 +113,7 @@ class AnthropicLLM(LLM):
         full_response=False,
         prompt_caching: bool = False,
         cached_input: str = "",
+        json_mode=False,
     ):
         """
         Asynchronously generate a response from the Anthropic LLM.
@@ -115,17 +140,26 @@ class AnthropicLLM(LLM):
 
         # Validate inputs
         if prompt and messages:
+            if self.verbose:
+                verbose_print("Error: Both prompt and messages provided", "error")
             raise ValueError("Only one of 'prompt' or 'messages' should be provided.")
         if not prompt and not messages:
+            if self.verbose:
+                verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
         # Prepare messages based on input type
         if prompt:
+            if self.verbose:
+                verbose_print("Preparing single prompt message", "debug")
+                verbose_print(f"User prompt: {prompt}", "debug")
             model_messages = [
                 {"role": "user", "content": prompt},
             ]
 
         if messages:
+            if self.verbose:
+                verbose_print("Preparing chat messages", "debug")
             model_messages = self.append_messages(messages)
 
         params.update(
@@ -136,7 +170,20 @@ class AnthropicLLM(LLM):
                 "max_tokens": max_tokens,
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
-                "cached_input": cached_input,                
+                "cached_input": cached_input,  
+                "json_mode" : json_mode           
             }
         )
-        return await anthropic_llm.generate_response_async(**params)
+        
+        if self.verbose:
+            verbose_print("Generating response with Anthropic (async)...", "info")
+            
+        try:
+            response = await anthropic_llm.generate_response_async(**params)
+            if self.verbose:
+                verbose_print("Response received successfully", "info")
+            return response
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error generating response: {str(e)}", "error")
+            raise

@@ -1,7 +1,11 @@
-from .base import LLM
+from typing import Type, Union, Tuple, Optional
+from pydantic import BaseModel
+from .base import LLM, LLMProvider
+from SimplerLLM.utils.custom_verbose import verbose_print
+from SimplerLLM.language.llm_providers.llm_response_models import LLMFullResponse
 
 class ReliableLLM:
-    def __init__(self, primary_llm: LLM, secondary_llm: LLM):
+    def __init__(self, primary_llm: LLM, secondary_llm: LLM, verbose=False):
         """
         Initialize ReliableLLM with primary and secondary LLM providers.
         
@@ -11,6 +15,13 @@ class ReliableLLM:
         """
         self.primary_llm = primary_llm
         self.secondary_llm = secondary_llm
+        self.verbose = verbose
+        
+        if self.verbose:
+            verbose_print("Initializing ReliableLLM with fallback support", "info")
+            verbose_print(f"Primary provider: {primary_llm.provider.name}", "debug")
+            verbose_print(f"Secondary provider: {secondary_llm.provider.name}", "debug")
+        
         self._validate_providers()
 
     def _validate_providers(self):
@@ -23,32 +34,50 @@ class ReliableLLM:
 
         # Test primary provider
         try:
+            if self.verbose:
+                verbose_print("Validating primary provider...", "info")
             response = self.primary_llm.generate_response(
                 prompt="test",
                 max_tokens=1
             )
             if response is None:
                 self.primary_valid = False
-                print("Primary provider returned None response")
+                if self.verbose:
+                    verbose_print("Primary provider returned None response", "warning")
         except Exception as e:
             self.primary_valid = False
-            print(f"Primary provider validation failed: {str(e)}")
+            if self.verbose:
+                verbose_print(f"Primary provider validation failed: {str(e)}", "error")
 
         # Test secondary provider
         try:
+            if self.verbose:
+                verbose_print("Validating secondary provider...", "info")
             response = self.secondary_llm.generate_response(
                 prompt="test",
                 max_tokens=1
             )
             if response is None:
                 self.secondary_valid = False
-                print("Secondary provider returned None response")
+                if self.verbose:
+                    verbose_print("Secondary provider returned None response", "warning")
         except Exception as e:
             self.secondary_valid = False
-            print(f"Secondary provider validation failed: {str(e)}")
+            if self.verbose:
+                verbose_print(f"Secondary provider validation failed: {str(e)}", "error")
 
         if not self.primary_valid and not self.secondary_valid:
+            if self.verbose:
+                verbose_print("Critical: Both providers have invalid configurations", "critical")
             raise ValueError("Both providers have invalid configurations")
+        
+        if self.verbose:
+            if self.primary_valid and self.secondary_valid:
+                verbose_print("Both providers validated successfully", "info")
+            elif self.primary_valid:
+                verbose_print("Only primary provider validated successfully", "warning")
+            else:
+                verbose_print("Only secondary provider validated successfully", "warning")
 
     def generate_response(
         self,
@@ -61,7 +90,8 @@ class ReliableLLM:
         top_p: float = 1.0,
         full_response: bool = False,
         return_provider: bool = False,
-    ):
+        json_mode=False,
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
         
@@ -85,6 +115,8 @@ class ReliableLLM:
             Exception: If both primary and secondary LLMs fail
         """
         if self.primary_valid:
+            if self.verbose:
+                verbose_print("Attempting to generate response with primary provider...", "info")
             try:
                 response = self.primary_llm.generate_response(
                     model_name=model_name,
@@ -95,9 +127,15 @@ class ReliableLLM:
                     max_tokens=max_tokens,
                     top_p=top_p,
                     full_response=full_response,
+                    json_mode=json_mode,
                 )
+                if self.verbose:
+                    verbose_print("Primary provider generated response successfully", "info")
                 return (response, self.primary_llm.provider) if return_provider else response
             except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Primary provider failed: {str(e)}", "warning")
+                    verbose_print("Falling back to secondary provider...", "info")
                 if self.secondary_valid:
                     response = self.secondary_llm.generate_response(
                         model_name=model_name,
@@ -108,10 +146,17 @@ class ReliableLLM:
                         max_tokens=max_tokens,
                         top_p=top_p,
                         full_response=full_response,
+                        json_mode=json_mode,
                     )
+                    if self.verbose:
+                        verbose_print("Secondary provider generated response successfully", "info")
                     return (response, self.secondary_llm.provider) if return_provider else response
+                if self.verbose:
+                    verbose_print("Critical: Both providers failed to generate response", "critical")
                 raise ValueError("Both providers failed")
         elif self.secondary_valid:
+            if self.verbose:
+                verbose_print("Primary provider invalid, using secondary provider...", "warning")
             response = self.secondary_llm.generate_response(
                 model_name=model_name,
                 prompt=prompt,
@@ -121,8 +166,13 @@ class ReliableLLM:
                 max_tokens=max_tokens,
                 top_p=top_p,
                 full_response=full_response,
+                json_mode=json_mode,
             )
+            if self.verbose:
+                verbose_print("Secondary provider generated response successfully", "info")
             return (response, self.secondary_llm.provider) if return_provider else response
+        if self.verbose:
+            verbose_print("Critical: No valid providers available", "critical")
         raise ValueError("No valid providers available")
 
     async def generate_response_async(
@@ -136,7 +186,8 @@ class ReliableLLM:
         top_p: float = 1.0,
         full_response: bool = False,
         return_provider: bool = False,
-    ):
+        json_mode: bool = False,
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
         
@@ -160,6 +211,8 @@ class ReliableLLM:
             Exception: If both primary and secondary LLMs fail
         """
         if self.primary_valid:
+            if self.verbose:
+                verbose_print("Attempting to generate response with primary provider (async)...", "info")
             try:
                 response = await self.primary_llm.generate_response_async(
                     model_name=model_name,
@@ -170,9 +223,15 @@ class ReliableLLM:
                     max_tokens=max_tokens,
                     top_p=top_p,
                     full_response=full_response,
+                    json_mode=json_mode,
                 )
+                if self.verbose:
+                    verbose_print("Primary provider generated response successfully", "info")
                 return (response, self.primary_llm.provider) if return_provider else response
             except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Primary provider failed: {str(e)}", "warning")
+                    verbose_print("Falling back to secondary provider...", "info")
                 if self.secondary_valid:
                     response = await self.secondary_llm.generate_response_async(
                         model_name=model_name,
@@ -183,10 +242,17 @@ class ReliableLLM:
                         max_tokens=max_tokens,
                         top_p=top_p,
                         full_response=full_response,
+                        json_mode=json_mode,
                     )
+                    if self.verbose:
+                        verbose_print("Secondary provider generated response successfully", "info")
                     return (response, self.secondary_llm.provider) if return_provider else response
+                if self.verbose:
+                    verbose_print("Critical: Both providers failed to generate response", "critical")
                 raise ValueError("Both providers failed")
         elif self.secondary_valid:
+            if self.verbose:
+                verbose_print("Primary provider invalid, using secondary provider (async)...", "warning")
             response = await self.secondary_llm.generate_response_async(
                 model_name=model_name,
                 prompt=prompt,
@@ -196,6 +262,11 @@ class ReliableLLM:
                 max_tokens=max_tokens,
                 top_p=top_p,
                 full_response=full_response,
+                json_mode=json_mode,
             )
+            if self.verbose:
+                verbose_print("Secondary provider generated response successfully", "info")
             return (response, self.secondary_llm.provider) if return_provider else response
+        if self.verbose:
+            verbose_print("Critical: No valid providers available", "critical")
         raise ValueError("No valid providers available")
