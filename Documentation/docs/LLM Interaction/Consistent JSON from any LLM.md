@@ -40,6 +40,7 @@ output = generate_pydantic_json_model(
     model_class=LLMResponse
 )
 json_output = output.model_dump()
+print(json_output)
 ```
 
 The `output` is an object of type `LLMResponse`, and the `model_dump()` method converts it into a dictionary or JSON-like format.
@@ -64,13 +65,13 @@ prompt = "Generate a sentence about the importance of AI"
 
 # Asynchronous usage
 async def main():
-    output = generate_pydantic_json_model_async(
+    output = await generate_pydantic_json_model_async(
         llm_instance=llm_instance,
         prompt=prompt,
         model_class=LLMResponse
     )
     json_output = output.model_dump()
-    return json_output
+    print(json_output)
 
 asyncio.run(main())
 ```
