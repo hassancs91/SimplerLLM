@@ -1,4 +1,4 @@
-from typing import Type, Union, Tuple, Optional
+from typing import Type, Union, Tuple, Optional, Any
 from pydantic import BaseModel
 from .base import LLM, LLMProvider
 from SimplerLLM.utils.custom_verbose import verbose_print
@@ -91,7 +91,7 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode=False,
-    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
         
@@ -107,9 +107,9 @@ class ReliableLLM:
             return_provider (bool, optional): If True, returns a tuple of (response, provider) where provider is the LLMProvider that generated the response.
             
         Returns:
-            Union[str, dict, Tuple[Union[str, dict], LLMProvider]]: 
+            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]: 
                 - If return_provider is False: The generated response from either primary or secondary LLM
-                - If return_provider is True: A tuple of (response, provider) where provider is the LLMProvider that was used
+                - If return_provider is True: A tuple of (response, provider, model_name) where provider is the LLMProvider that was used and model_name is the name of the model
             
         Raises:
             Exception: If both primary and secondary LLMs fail
@@ -131,7 +131,7 @@ class ReliableLLM:
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
-                return (response, self.primary_llm.provider) if return_provider else response
+                return (response, self.primary_llm.provider, self.primary_llm.model_name) if return_provider else response
             except Exception as e:
                 if self.verbose:
                     verbose_print(f"Primary provider failed: {str(e)}", "warning")
@@ -150,7 +150,7 @@ class ReliableLLM:
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
-                    return (response, self.secondary_llm.provider) if return_provider else response
+                    return (response, self.secondary_llm.provider, self.secondary_llm.model_name) if return_provider else response
                 if self.verbose:
                     verbose_print("Critical: Both providers failed to generate response", "critical")
                 raise ValueError("Both providers failed")
@@ -170,7 +170,7 @@ class ReliableLLM:
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")
-            return (response, self.secondary_llm.provider) if return_provider else response
+            return (response, self.secondary_llm.provider, self.secondary_llm.model_name) if return_provider else response
         if self.verbose:
             verbose_print("Critical: No valid providers available", "critical")
         raise ValueError("No valid providers available")
@@ -187,7 +187,7 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode: bool = False,
-    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider]]:
+    ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
         
@@ -203,9 +203,9 @@ class ReliableLLM:
             return_provider (bool, optional): If True, returns a tuple of (response, provider) where provider is the LLMProvider that generated the response.
             
         Returns:
-            Union[str, dict, Tuple[Union[str, dict], LLMProvider]]: 
+            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]: 
                 - If return_provider is False: The generated response from either primary or secondary LLM
-                - If return_provider is True: A tuple of (response, provider) where provider is the LLMProvider that was used
+                - If return_provider is True: A tuple of (response, provider, model_name) where provider is the LLMProvider that was used and model_name is the name of the model
             
         Raises:
             Exception: If both primary and secondary LLMs fail
@@ -227,7 +227,7 @@ class ReliableLLM:
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
-                return (response, self.primary_llm.provider) if return_provider else response
+                return (response, self.primary_llm.provider, self.primary_llm.model_name) if return_provider else response
             except Exception as e:
                 if self.verbose:
                     verbose_print(f"Primary provider failed: {str(e)}", "warning")
@@ -246,7 +246,7 @@ class ReliableLLM:
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
-                    return (response, self.secondary_llm.provider) if return_provider else response
+                    return (response, self.secondary_llm.provider, self.secondary_llm.model_name) if return_provider else response
                 if self.verbose:
                     verbose_print("Critical: Both providers failed to generate response", "critical")
                 raise ValueError("Both providers failed")
@@ -266,7 +266,7 @@ class ReliableLLM:
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")
-            return (response, self.secondary_llm.provider) if return_provider else response
+            return (response, self.secondary_llm.provider, self.secondary_llm.model_name) if return_provider else response
         if self.verbose:
             verbose_print("Critical: No valid providers available", "critical")
         raise ValueError("No valid providers available")
