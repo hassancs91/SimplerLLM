@@ -124,7 +124,7 @@ def generate_pydantic_json_model_reliable(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[Tuple[BaseModel, LLMProvider], Tuple[BaseModel, LLMFullResponse, LLMProvider]]:
+) -> Union[Tuple[BaseModel, LLMProvider, str], Tuple[BaseModel, LLMFullResponse, LLMProvider, str]]:
     """
     Generates a model instance using ReliableLLM with fallback capability.
 
@@ -132,10 +132,16 @@ def generate_pydantic_json_model_reliable(
     :param prompt: The fully formatted prompt including the topic.
     :param reliable_llm: Instance of ReliableLLM with primary and secondary providers.
     :param max_retries: Maximum number of retries on validation errors.
+    :param max_tokens: Maximum number of tokens to generate.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
+    :param system_prompt: System prompt to set the context for the LLM.
+    :param full_response: If True, returns the full API response.
 
-    :return: BaseModel object if successful, otherwise error message.
+    :return: 
+        - If full_response=False: Tuple of (model_object, provider, model_name)
+        - If full_response=True: Tuple of (model_object, full_response, provider, model_name)
+        - Error message string if unsuccessful
     """
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
     backoff_delays = [initial_delay * (2**attempt) for attempt in range(max_retries + 1)]
@@ -152,10 +158,10 @@ def generate_pydantic_json_model_reliable(
             )
             
             if full_response:
-                ai_response, provider = result
+                ai_response, provider, model_name = result
                 response_text = ai_response.generated_text
             else:
-                response_text, provider = result
+                response_text, provider, model_name = result
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
@@ -168,7 +174,7 @@ def generate_pydantic_json_model_reliable(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response, provider) if full_response else (model_object, provider)
+                    return (model_object, ai_response, provider, model_name) if full_response else (model_object, provider, model_name)
 
         except Exception as e:
             return f"Exception occurred: {e}"
@@ -190,7 +196,7 @@ async def generate_pydantic_json_model_reliable_async(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[Tuple[BaseModel, LLMProvider], Tuple[BaseModel, LLMFullResponse, LLMProvider]]:
+) -> Union[Tuple[BaseModel, LLMProvider, str], Tuple[BaseModel, LLMFullResponse, LLMProvider, str]]:
     """
     Asynchronously generates a model instance using ReliableLLM with fallback capability.
 
@@ -198,10 +204,16 @@ async def generate_pydantic_json_model_reliable_async(
     :param prompt: The fully formatted prompt including the topic.
     :param reliable_llm: Instance of ReliableLLM with primary and secondary providers.
     :param max_retries: Maximum number of retries on validation errors.
+    :param max_tokens: Maximum number of tokens to generate.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
+    :param system_prompt: System prompt to set the context for the LLM.
+    :param full_response: If True, returns the full API response.
 
-    :return: BaseModel object if successful, otherwise error message.
+    :return: 
+        - If full_response=False: Tuple of (model_object, provider, model_name)
+        - If full_response=True: Tuple of (model_object, full_response, provider, model_name)
+        - Error message string if unsuccessful
     """
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
     backoff_delays = [initial_delay * (2**attempt) for attempt in range(max_retries + 1)]
@@ -218,10 +230,10 @@ async def generate_pydantic_json_model_reliable_async(
             )
             
             if full_response:
-                ai_response, provider = result
+                ai_response, provider, model_name = result
                 response_text = ai_response.generated_text
             else:
-                response_text, provider = result
+                response_text, provider, model_name = result
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
@@ -234,7 +246,7 @@ async def generate_pydantic_json_model_reliable_async(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response, provider) if full_response else (model_object, provider)
+                    return (model_object, ai_response, provider, model_name) if full_response else (model_object, provider, model_name)
 
         except Exception as e:
             return f"Exception occurred: {e}"
