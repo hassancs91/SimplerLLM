@@ -1,8 +1,20 @@
-from youtube_transcript_api import YouTubeTranscriptApi
+import os
 import re
-from urllib.parse import urlparse
+import requests
+from typing import List
 from pydantic import BaseModel
-from typing import Optional
+from dotenv import load_dotenv
+from youtube_transcript_api import YouTubeTranscriptApi
+
+load_dotenv(override=True) 
+
+class TranscriptSegment(BaseModel):
+    text: str
+    start: float
+    duration: float
+
+class Transcript(BaseModel):
+    segments: List[TranscriptSegment]
 
 def get_youtube_transcript_with_timing(video_url):
     """
@@ -33,11 +45,24 @@ def get_youtube_transcript_with_timing(video_url):
         raise ValueError("Invalid YouTube URL")
 
     try:
+        api_key = os.getenv("SEARCHAPI_API_KEY")
+        url = "https://www.searchapi.io/api/v1/search"
+        params = {
+        "engine": "youtube_transcripts",
+        "video_id": video_id,
+        "api_key": api_key
+        }
+
+        response = requests.get(url, params=params)
+        response.raise_for_status()  
+        api_response = response.json()
         
-        # Get the transcript of the video
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript = api_response["transcripts"]  
+        transcript_list = Transcript(segments=transcript)  
+        #transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+
         return transcript_list
-    
+
     except Exception as e:
         raise Exception(f"An error occurred while fetching the video details: {e}")
     
@@ -61,13 +86,29 @@ def get_youtube_transcript(video_url):
         video_id = match.group(1)
     else:
         raise ValueError("Invalid YouTube URL")
+    
     try:
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        # Join sentences with a space, adding a period at the end of each sentence if needed
+        api_key = os.getenv("SEARCHAPI_API_KEY")
+        url = "https://www.searchapi.io/api/v1/search"
+        params = {
+        "engine": "youtube_transcripts",
+        "video_id": video_id,
+        "api_key": api_key
+        }
+
+        response = requests.get(url, params=params)
+        response.raise_for_status()  
+        api_response = response.json()
+        
+        transcript = api_response["transcripts"]  
+        transcript_list = Transcript(segments=transcript)  
+        #transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+
         transcript_text = " ".join(
-            [line["text"].strip() + "." if not line["text"].endswith('.') else line["text"].strip()
-             for line in transcript_list]
+            [segment.text.strip() + "." if not segment.text.endswith('.') else segment.text.strip()
+             for segment in transcript_list.segments]
         )
+
         return transcript_text
     except Exception as e:
         raise Exception(f"An error occurred while fetching the video details: {e}")
