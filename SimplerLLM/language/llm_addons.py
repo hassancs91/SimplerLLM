@@ -57,11 +57,13 @@ def generate_pydantic_json_model(
     llm_instance: LLM,
     max_retries: int = 3,
     max_tokens: int = 4096,
+    temperature: float = 0.7,
+    top_p: float = 1.0,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[BaseModel, Tuple[BaseModel, LLMFullResponse]]:
+) -> Union[BaseModel, LLMFullResponse, str]:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
 
@@ -69,10 +71,18 @@ def generate_pydantic_json_model(
     :param prompt: The fully formatted prompt including the topic.
     :param llm_instance: Instance of a large language model.
     :param max_retries: Maximum number of retries on validation errors.
+    :param max_tokens: Maximum number of tokens to generate.
+    :param temperature: Controls randomness in output. Lower values make output more deterministic.
+    :param top_p: Controls diversity of output. Lower values make output more focused.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
+    :param system_prompt: System prompt to set the context for the LLM.
+    :param full_response: If True, returns the full API response including token counts.
 
-    :return: BaseModel object if successful, otherwise error message.
+    :return: 
+        - If full_response=False: BaseModel object
+        - If full_response=True: LLMFullResponse object with model_object attribute and input_token_count and output_token_count
+        - Error message string if unsuccessful
     """
     # Create optimized prompt and calculate exponential backoff before the loop
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
@@ -84,6 +94,8 @@ def generate_pydantic_json_model(
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
                 json_mode=True,
                 full_response=full_response
             )
@@ -101,13 +113,17 @@ def generate_pydantic_json_model(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response) if full_response else model_object
+                    if full_response:
+                        ai_response.model_object = model_object
+                        return ai_response
+                    else:
+                        return model_object
 
         except Exception as e:  # Replace SpecificException with the appropriate exception
             return f"Exception occurred: {e}"
 
         # Retry logic for empty AI response or validation errors
-        if not ai_response or (errors and attempt < max_retries):
+        if (not response_text or errors) and attempt < max_retries:
             time.sleep(delay)
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
@@ -120,11 +136,13 @@ def generate_pydantic_json_model_reliable(
     reliable_llm: ReliableLLM,
     max_retries: int = 3,
     max_tokens: int = 4096,
+    temperature: float = 0.7,
+    top_p: float = 1.0,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[Tuple[BaseModel, LLMProvider, str], Tuple[BaseModel, LLMFullResponse, LLMProvider, str]]:
+) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Generates a model instance using ReliableLLM with fallback capability.
 
@@ -133,14 +151,16 @@ def generate_pydantic_json_model_reliable(
     :param reliable_llm: Instance of ReliableLLM with primary and secondary providers.
     :param max_retries: Maximum number of retries on validation errors.
     :param max_tokens: Maximum number of tokens to generate.
+    :param temperature: Controls randomness in output. Lower values make output more deterministic.
+    :param top_p: Controls diversity of output. Lower values make output more focused.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
-    :param full_response: If True, returns the full API response.
+    :param full_response: If True, returns the full API response including token counts.
 
     :return: 
         - If full_response=False: Tuple of (model_object, provider, model_name)
-        - If full_response=True: Tuple of (model_object, full_response, provider, model_name)
+        - If full_response=True: LLMFullResponse object with model_object, provider, and model_name attributes, and input_token_count and output_token_count
         - Error message string if unsuccessful
     """
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
@@ -153,6 +173,8 @@ def generate_pydantic_json_model_reliable(
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
                 json_mode=True,
                 full_response=full_response
             )
@@ -174,12 +196,18 @@ def generate_pydantic_json_model_reliable(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response, provider, model_name) if full_response else (model_object, provider, model_name)
+                    if full_response:
+                        ai_response.model_object = model_object
+                        ai_response.provider = provider
+                        ai_response.model_name = model_name
+                        return ai_response
+                    else:
+                        return (model_object, provider, model_name)
 
         except Exception as e:
             return f"Exception occurred: {e}"
 
-        if not ai_response or (errors and attempt < max_retries):
+        if (not response_text or errors) and attempt < max_retries:
             time.sleep(delay)
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
@@ -192,11 +220,13 @@ async def generate_pydantic_json_model_reliable_async(
     reliable_llm: ReliableLLM,
     max_retries: int = 3,
     max_tokens: int = 4096,
+    temperature: float = 0.7,
+    top_p: float = 1.0,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[Tuple[BaseModel, LLMProvider, str], Tuple[BaseModel, LLMFullResponse, LLMProvider, str]]:
+) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Asynchronously generates a model instance using ReliableLLM with fallback capability.
 
@@ -205,14 +235,16 @@ async def generate_pydantic_json_model_reliable_async(
     :param reliable_llm: Instance of ReliableLLM with primary and secondary providers.
     :param max_retries: Maximum number of retries on validation errors.
     :param max_tokens: Maximum number of tokens to generate.
+    :param temperature: Controls randomness in output. Lower values make output more deterministic.
+    :param top_p: Controls diversity of output. Lower values make output more focused.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
-    :param full_response: If True, returns the full API response.
+    :param full_response: If True, returns the full API response including token counts.
 
     :return: 
         - If full_response=False: Tuple of (model_object, provider, model_name)
-        - If full_response=True: Tuple of (model_object, full_response, provider, model_name)
+        - If full_response=True: LLMFullResponse object with model_object, provider, and model_name attributes, and input_token_count and output_token_count
         - Error message string if unsuccessful
     """
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
@@ -225,6 +257,8 @@ async def generate_pydantic_json_model_reliable_async(
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
                 json_mode=True,
                 full_response=full_response
             )
@@ -246,12 +280,18 @@ async def generate_pydantic_json_model_reliable_async(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response, provider, model_name) if full_response else (model_object, provider, model_name)
+                    if full_response:
+                        ai_response.model_object = model_object
+                        ai_response.provider = provider
+                        ai_response.model_name = model_name
+                        return ai_response
+                    else:
+                        return (model_object, provider, model_name)
 
         except Exception as e:
             return f"Exception occurred: {e}"
 
-        if not ai_response or (errors and attempt < max_retries):
+        if (not response_text or errors) and attempt < max_retries:
             await asyncio.sleep(delay)
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
@@ -264,22 +304,32 @@ async def generate_pydantic_json_model_async(
     llm_instance: LLM,
     max_retries: int = 3,
     max_tokens: int = 4096,
+    temperature: float = 0.7,
+    top_p: float = 1.0,
     initial_delay: float = 1.0,
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
-) -> Union[BaseModel, Tuple[BaseModel, LLMFullResponse]]:
+) -> Union[BaseModel, LLMFullResponse, str]:
     """
-    Generates a model instance based on a given prompt, retrying on validation errors.
+    Asynchronously generates a model instance based on a given prompt, retrying on validation errors.
 
     :param model_class: The Pydantic model class to be used for validation and conversion.
     :param prompt: The fully formatted prompt including the topic.
     :param llm_instance: Instance of a large language model.
     :param max_retries: Maximum number of retries on validation errors.
+    :param max_tokens: Maximum number of tokens to generate.
+    :param temperature: Controls randomness in output. Lower values make output more deterministic.
+    :param top_p: Controls diversity of output. Lower values make output more focused.
     :param initial_delay: Initial delay in seconds before the first retry.
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
+    :param system_prompt: System prompt to set the context for the LLM.
+    :param full_response: If True, returns the full API response including token counts.
 
-    :return: BaseModel object if successful, otherwise error message.
+    :return: 
+        - If full_response=False: BaseModel object
+        - If full_response=True: LLMFullResponse object with model_object attribute and input_token_count and output_token_count
+        - Error message string if unsuccessful
     """
     # Create optimized prompt and calculate exponential backoff before the loop
     optimized_prompt = create_optimized_prompt(prompt, model_class, custom_prompt_suffix)
@@ -291,6 +341,8 @@ async def generate_pydantic_json_model_async(
                 prompt=optimized_prompt,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
                 json_mode=True,
                 full_response=full_response
             )
@@ -308,13 +360,17 @@ async def generate_pydantic_json_model_async(
                     model_object = convert_json_to_pydantic_model(
                         model_class, json_object[0]
                     )
-                    return (model_object, ai_response) if full_response else model_object
+                    if full_response:
+                        ai_response.model_object = model_object
+                        return ai_response
+                    else:
+                        return model_object
 
         except Exception as e:  # Replace SpecificException with the appropriate exception
             return f"Exception occurred: {e}"
 
         # Retry logic for empty AI response or validation errors
-        if not ai_response or (errors and attempt < max_retries):
+        if (not response_text or errors) and attempt < max_retries:
             await asyncio.sleep(delay)
         elif errors:
             return f"Validation failed after {max_retries} retries: {errors}"
