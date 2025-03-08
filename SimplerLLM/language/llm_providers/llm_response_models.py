@@ -9,6 +9,9 @@ class LLMFullResponse(BaseModel):
     input_token_count: Optional[int] = None
     output_token_count: Optional[int] = None
     llm_provider_response: Any
+    model_object: Optional[Any] = None
+    provider: Optional[Any] = None
+    model_name: Optional[str] = None
 
 
 class LLMEmbeddingsResponse(BaseModel):
