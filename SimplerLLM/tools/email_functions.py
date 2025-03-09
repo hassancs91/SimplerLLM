@@ -1,8 +1,6 @@
-import os
 import ssl
 import smtplib
 import aiosmtplib
-from pydantic import BaseModel
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
