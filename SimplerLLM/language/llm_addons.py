@@ -104,6 +104,13 @@ def generate_pydantic_json_model(
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
+                
+                # Check if json_object is None (no valid JSON found)
+                if json_object is None:
+                    if attempt < max_retries:
+                        continue  # Try again
+                    else:
+                        return f"No valid JSON found in response after {max_retries} attempts"
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -187,6 +194,13 @@ def generate_pydantic_json_model_reliable(
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
+                
+                # Check if json_object is None (no valid JSON found)
+                if json_object is None:
+                    if attempt < max_retries:
+                        continue  # Try again
+                    else:
+                        return f"No valid JSON found in response after {max_retries} attempts"
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -271,6 +285,13 @@ async def generate_pydantic_json_model_reliable_async(
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
+                
+                # Check if json_object is None (no valid JSON found)
+                if json_object is None:
+                    if attempt < max_retries:
+                        continue  # Try again
+                    else:
+                        return f"No valid JSON found in response after {max_retries} attempts"
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -351,6 +372,13 @@ async def generate_pydantic_json_model_async(
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
+                
+                # Check if json_object is None (no valid JSON found)
+                if json_object is None:
+                    if attempt < max_retries:
+                        continue  # Try again
+                    else:
+                        return f"No valid JSON found in response after {max_retries} attempts"
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object

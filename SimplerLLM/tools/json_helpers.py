@@ -3,7 +3,7 @@ import json
 from pydantic import BaseModel, ValidationError
 from typing import get_type_hints
 from pydantic import BaseModel
-from typing import Type, get_type_hints, List, get_origin, get_args
+from typing import Type, get_type_hints, List, get_origin, get_args, Union, Dict, Any
 
 
 
@@ -112,6 +112,10 @@ def convert_json_to_pydantic_model(model_class, json_data):
 
 # Define a function to provide example values based on type
 def example_value_for_type(field_type: Type):
+    # Handle Any type specifically
+    if field_type is Any:
+        return "example_value"  # Return a simple string for Any type
+        
     origin = get_origin(field_type)
     if origin is None:  # Not a generic type
         if issubclass(field_type, BaseModel):  # Check if it's a custom Pydantic model
@@ -128,7 +132,7 @@ def example_value_for_type(field_type: Type):
         elif field_type == bool:
             return True
         else:
-            return "Unsupported type"
+            return "example_value"  # More generic fallback value
     elif origin == list:  # It's a List
         args = get_args(field_type)
         if not args:
@@ -136,6 +140,26 @@ def example_value_for_type(field_type: Type):
         element_type = args[0]
         # Create a list with 3 elements of the specified type
         return [example_value_for_type(element_type) for _ in range(3)]
+    elif origin == dict:  # It's a Dict
+        args = get_args(field_type)
+        if not args or len(args) < 2:
+            return {}  # No type specified for keys/values, return empty dict
+        key_type, value_type = args[0], args[1]
+        # Create a dict with example key-value pairs
+        example_dict = {}
+        for i in range(1, 3):  # Create 2 example key-value pairs
+            example_dict[f"example_key_{i}"] = example_value_for_type(value_type)
+        return example_dict
+    elif origin == Union:  # Handle Optional (Union[Type, None])
+        args = get_args(field_type)
+        # If one of the args is NoneType, it's an Optional
+        if type(None) in args:
+            # Find the non-None type
+            for arg in args:
+                if arg is not type(None):
+                    return example_value_for_type(arg)
+        # For other Union types, use the first type
+        return example_value_for_type(args[0]) if args else None
 
 def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
     example_data = {}
@@ -143,4 +167,6 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
         example_data[field_name] = example_value_for_type(field_type)
 
     model_instance = model_class(**example_data)
-    return model_instance.model_dump_json()
+    # Use standard json module instead of model_dump_json to ensure proper formatting
+    import json
+    return json.dumps(model_instance.model_dump())
