@@ -1,4 +1,4 @@
-from duckduckgo_search import DDGS, AsyncDDGS
+from duckduckgo_search import DDGS
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from pydantic import BaseModel, HttpUrl
@@ -146,29 +146,30 @@ async def search_with_duck_duck_go_async(query, max_results=50) -> List[SearchRe
     Returns:
     str: A JSON string containing the search results, each result being a dictionary with URL, Title, and Description.
     """
-    async with AsyncDDGS() as ddgs:
-        results = []
-        async for r in ddgs.text(query, max_results=max_results):
-            results.append(r)
-        result_data = []
-        for result in results:
-            # Ensure all keys exist to avoid key errors
-            url = result.get("href", None)
-            title = result.get("title", None)
-            description = result.get("body", None)
-            if url:
-                domain = get_domain_from_url(url)
-                result_data.append(
-                    SearchResult(
-                        URL=url, Domain=domain, Title=title, Description=description
-                    )
-                )
-            else:
-                result_data.append(
-                    SearchResult(URL=url, Title=title, Description=description)
-                )
+    return
+    # async with AsyncDDGS() as ddgs:
+    #     results = []
+    #     async for r in ddgs.text(query, max_results=max_results):
+    #         results.append(r)
+    #     result_data = []
+    #     for result in results:
+    #         # Ensure all keys exist to avoid key errors
+    #         url = result.get("href", None)
+    #         title = result.get("title", None)
+    #         description = result.get("body", None)
+    #         if url:
+    #             domain = get_domain_from_url(url)
+    #             result_data.append(
+    #                 SearchResult(
+    #                     URL=url, Domain=domain, Title=title, Description=description
+    #                 )
+    #             )
+    #         else:
+    #             result_data.append(
+    #                 SearchResult(URL=url, Title=title, Description=description)
+    #             )
 
-        return result_data
+    #     return result_data
 
 
 def search_with_duck_duck_go(query: str, max_results: int = 10) -> List[SearchResult]:
