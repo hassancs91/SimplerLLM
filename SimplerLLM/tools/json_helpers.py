@@ -23,19 +23,41 @@ def convert_pydantic_to_json(model_instance):
     
 
 def extract_json_from_text(text_response):
-    pattern = r'\{.*?\}'
-    matches = re.finditer(pattern, text_response, re.DOTALL)
-    json_objects = []
+    """
+    Extracts JSON objects from text. First tries to parse the entire text as JSON,
+    then falls back to regex-based extraction if that fails.
+    
+    Args:
+        text_response (str): Text that may contain JSON objects
+        
+    Returns:
+        list or None: List of extracted JSON objects, or None if no valid JSON found
+    """
+    # First try to parse the entire text as JSON directly
+    try:
+        json_obj = json.loads(text_response)
+        return [json_obj]  # Return as a list to maintain compatibility
+    except json.JSONDecodeError:
+        # If direct parsing fails, fall back to extraction
+        pattern = r'\{.*?\}'
+        matches = re.finditer(pattern, text_response, re.DOTALL)
+        json_objects = []
 
-    for match in matches:
-        json_str = __json_extend_search(text_response, match.span())
-        try:
-            json_obj = json.loads(json_str)
-            json_objects.append(json_obj)
-        except json.JSONDecodeError:
-            continue
+        for match in matches:
+            json_str = __json_extend_search(text_response, match.span())
+            try:
+                json_obj = json.loads(json_str)
+                json_objects.append(json_obj)
+            except json.JSONDecodeError:
+                # Try with the deprecated method as a last resort
+                try:
+                    json_str = __extend_search_deprecated(text_response, match.span())
+                    json_obj = json.loads(json_str)
+                    json_objects.append(json_obj)
+                except json.JSONDecodeError:
+                    continue
 
-    return json_objects if json_objects else None
+        return json_objects if json_objects else None
 
 
 def __json_extend_search(text, span):

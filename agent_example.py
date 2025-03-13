@@ -28,13 +28,13 @@ def main():
         description="Search the web for information",
         parameters={
             "query": "The search query string",
-            "max_results": "Maximum number of results to return (default: 5)"
+            "num_results": "Maximum number of results to return (default: 5)"
         }
     )
     
     # Run the agent with a user query
-    user_query = "What were the major tech announcements this week?"
-    print(f"\nUser Query: {user_query}\n")
+    user_query = "what is the latest tech news today?"
+    #print(f"\nUser Query: {user_query}\n")
     
     response = agent.run(user_query)
     
