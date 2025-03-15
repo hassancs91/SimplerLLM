@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
+from .memory_interface import BaseMemory
 
-class AgentMemory:
+class AgentMemory(BaseMemory):
     """
     Memory system for agents to store conversation history and other state.
     
