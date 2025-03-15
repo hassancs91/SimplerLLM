@@ -43,7 +43,6 @@ response = generate_pydantic_json_model_reliable(
     top_p=0.9,
     system_prompt="You are a helpful product recommendation assistant",
     full_response=True,
-    
 )
 
 # Access token counts and model object directly
