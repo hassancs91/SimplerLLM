@@ -121,7 +121,7 @@ from SimplerLLM.language.llm import LLM, LLMProvider
 llm_instance = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-3.5-turbo")
 
 async def main():
-    response = llm_instance.generate_response_async(prompt="generate a 5 words sentence")
+    response = await llm_instance.generate_response_async(prompt="generate a 5 words sentence")
     print(response)
 
 asyncio.run(main())
@@ -267,7 +267,7 @@ input_to_cache = file_data.content
 #Caching Process
 async def main():
     llm_instance = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20240620")
-    response = llm_instance.generate_response_async(
+    response = await llm_instance.generate_response_async(
         prompt="Explain the theory of relativity",
         system_prompt="You are a helpful AI Assistant",
         temperature=0.6,
@@ -331,7 +331,7 @@ input_to_cache = file_data.content
 async def main():
     llm_instance = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-flash-001") #Stable model
     cache_id = llm_instance.create_cache(cached_input = input_to_cache)
-    response = llm_instance.generate_response(
+    response = await llm_instance.generate_response_async(
         prompt="Explain the theory of relativity",
         system_prompt="You are a helpful AI Assistant",
         temperature=0.6,
