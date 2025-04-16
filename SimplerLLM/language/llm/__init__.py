@@ -10,6 +10,7 @@ __all__ = [
     'LLM',
     'LLMProvider',
     'ReliableLLM',
+    'Message',
     'OpenAILLM',
     'GeminiLLM',
     'AnthropicLLM',
