@@ -2,11 +2,10 @@
 LLM Router - A system for intelligent content routing using LLMs.
 
 This module provides a flexible routing system that uses Large Language Models to select
-the most appropriate choice from a collection based on input text.
+the most appropriate choice from a collection based on input prompt.
 """
 
 from typing import List, Optional, Dict, Any, Tuple
-from SimplerLLM.language.llm import LLM, LLMProvider
 from SimplerLLM.language.llm.reliable import ReliableLLM
 from SimplerLLM.language.llm_addons import (
     generate_pydantic_json_model,
@@ -239,13 +238,19 @@ class LLMRouter:
         if k < 1:
             raise ValueError("k must be >= 1")
         
-        if k > 3:
-            k = 3  # Limit to maximum of 3 choices
-            
-        response = self._route_top_k_sync(input_text, k, self._choices)
-        if not response:
+        # Cap k by the number of available choices
+        effective_k = min(k, len(self._choices))
+        if effective_k == 0:
             return []
             
+        multi_response = self._route_top_k_sync(input_text, effective_k, self._choices)
+        if not multi_response:
+            return []
+            
+        confident_choices = [
+            choice_item for choice_item in multi_response.choices
+            if choice_item.confidence_score > self.confidence_threshold
+        ]
         # Convert RouterMultiResponse choices to list of RouterResponse
         return [
             RouterResponse(
@@ -253,7 +258,7 @@ class LLMRouter:
                 confidence_score=choice.confidence_score,
                 reasoning=choice.reasoning
             )
-            for choice in response.choices
+            for choice in confident_choices
         ]
 
     async def _route_top_k_async(
@@ -327,20 +332,26 @@ class LLMRouter:
         if k < 1:
             raise ValueError("k must be >= 1")
         
-        if k > 3:
-            k = 3  # Limit to maximum of 3 choices
-            
-        response = self._route_top_k_sync(input_text, k, filtered_choices)
-        if not response:
+        # Cap k by the number of filtered choices
+        effective_k = min(k, len(filtered_choices))
+        if effective_k == 0:
             return []
             
+        multi_response = self._route_top_k_sync(input_text, effective_k, filtered_choices)
+        if not multi_response:
+            return []
+            
+        confident_choices = [
+            choice_item for choice_item in multi_response.choices
+            if choice_item.confidence_score > self.confidence_threshold
+        ]
         return [
             RouterResponse(
                 selected_index=choice.selected_index,
                 confidence_score=choice.confidence_score,
                 reasoning=choice.reasoning
             )
-            for choice in response.choices
+            for choice in confident_choices
         ]
 
     async def route_with_metadata_async(
@@ -384,20 +395,26 @@ class LLMRouter:
         if k < 1:
             raise ValueError("k must be >= 1")
             
-        if k > 3:
-            k = 3  # Limit to maximum of 3 choices
-            
-        response = await self._route_top_k_async(input_text, k, filtered_choices)
-        if not response:
+        # Cap k by the number of filtered choices
+        effective_k = min(k, len(filtered_choices))
+        if effective_k == 0:
             return []
             
+        multi_response = await self._route_top_k_async(input_text, effective_k, filtered_choices)
+        if not multi_response:
+            return []
+            
+        confident_choices = [
+            choice_item for choice_item in multi_response.choices
+            if choice_item.confidence_score > self.confidence_threshold
+        ]
         return [
             RouterResponse(
                 selected_index=choice.selected_index,
                 confidence_score=choice.confidence_score,
                 reasoning=choice.reasoning
             )
-            for choice in response.choices
+            for choice in confident_choices
         ]
 
     async def route_top_k_async(
@@ -412,13 +429,19 @@ class LLMRouter:
         if k < 1:
             raise ValueError("k must be >= 1")
             
-        if k > 3:
-            k = 3  # Limit to maximum of 3 choices
-            
-        response = await self._route_top_k_async(input_text, k, self._choices)
-        if not response:
+        # Cap k by the number of available choices
+        effective_k = min(k, len(self._choices))
+        if effective_k == 0:
             return []
             
+        multi_response = await self._route_top_k_async(input_text, effective_k, self._choices)
+        if not multi_response:
+            return []
+            
+        confident_choices = [
+            choice_item for choice_item in multi_response.choices
+            if choice_item.confidence_score > self.confidence_threshold
+        ]
         # Convert RouterMultiResponse choices to list of RouterResponse
         return [
             RouterResponse(
@@ -426,5 +449,5 @@ class LLMRouter:
                 confidence_score=choice.confidence_score,
                 reasoning=choice.reasoning
             )
-            for choice in response.choices
+            for choice in confident_choices
         ]
