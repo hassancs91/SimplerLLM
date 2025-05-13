@@ -4,7 +4,6 @@ from .memory_interface import BaseMemory
 from .tool_registry import ToolRegistry
 from .brain import AgentBrain
 from .memory_manager import MemoryManager
-from .enhanced_agent import EnhancedAgent
 from .models import (
     AgentAction, 
     AgentThought, 
@@ -22,7 +21,7 @@ __all__ = [
     'ToolRegistry',
     'AgentBrain',
     'MemoryManager',
-    'EnhancedAgent',
+    'Agent',
     'ConversationMemory',
     'EntityMemory',
     'AgentAction',

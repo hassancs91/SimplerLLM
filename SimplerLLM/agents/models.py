@@ -54,3 +54,33 @@ class AgentResponse(BaseModel):
     - An optional observation from a tool execution
     """
     thought: str = Field(..., description="The agent's reasoning process")
+
+class NextStepDecision(BaseModel):
+    """
+    Represents the agent's decision on how to proceed after an analysis step.
+    It can decide to answer directly, use a tool, or ask for clarification.
+    """
+    thought: str = Field(..., description="The agent's reasoning about the current state and what to do next.")
+    can_answer_directly: bool = Field(..., description="True if the agent believes it can answer the original query with the current information.")
+    next_action: Optional[ToolCall] = Field(None, description="Tool to call if further action is needed. Null if answering directly or asking for clarification.")
+    clarification_request: Optional[str] = Field(None, description="A question to the user if more information is needed from them and no tool can help.")
+    final_response: Optional[str] = Field(None, description="The final answer to the user if can_answer_directly is true.")
+
+    # Potential validator example (can be added if strict logic is needed at Pydantic level):
+    # from pydantic import root_validator
+    # @root_validator
+    # def check_logical_consistency(cls, values):
+    #     can_answer = values.get('can_answer_directly')
+    #     action = values.get('next_action')
+    #     clarification = values.get('clarification_request')
+    #     response = values.get('final_response')
+
+    #     if can_answer and not response:
+    #         raise ValueError("If can_answer_directly is true, final_response must be provided.")
+    #     if can_answer and (action or clarification):
+    #         raise ValueError("If can_answer_directly is true, next_action and clarification_request must be null.")
+    #     if not can_answer and not action and not clarification:
+    #         raise ValueError("If not answering directly, either next_action or clarification_request must be provided.")
+    #     if action and clarification:
+    #         raise ValueError("Cannot have both next_action and clarification_request.")
+    #     return values
