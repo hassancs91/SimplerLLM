@@ -30,7 +30,7 @@ VALUE_SERP_API_KEY = os.getenv("VALUE_SERP_API_KEY")
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 
 
-def search_with_serper_api(query, num_results=50):
+def search_with_serper_api(query, num_results=10):
     url = "https://google.serper.dev/search"
     payload = json.dumps({"q": query, "num": num_results})
     headers = {"X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json"}
