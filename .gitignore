@@ -45,6 +45,4 @@ test_deep.py
 test_complex_json.py
 setup.py
 
-batch_generate_youtube_titles.py
-check_youtube_title_duplicates.py
-generate_youtube_titles.py
+
