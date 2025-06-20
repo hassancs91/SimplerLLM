@@ -13,3 +13,4 @@ youtube_transcript_api>=0.6
 colorama>=0.4
 scipy>=1.15
 tiktoken>=0.9
+qdrant-client==1.14.3
