@@ -133,7 +133,15 @@ def generate_embeddings(
                 model= model_name,
                 input=user_input
             )
-            generate_embeddings = response.data
+            
+            # Extract actual embedding vectors from the response
+            embeddings = [item.embedding for item in response.data]
+            
+            # For single input, return single embedding; for multiple inputs, return list
+            if isinstance(user_input, str):
+                generate_embeddings = embeddings[0] if embeddings else []
+            else:
+                generate_embeddings = embeddings
 
             if full_response:
                 end_time = time.time()
@@ -170,7 +178,15 @@ async def generate_embeddings_async(
                 model=model_name,
                 input=user_input,
             )
-            generate_embeddings = result.data
+            
+            # Extract actual embedding vectors from the response
+            embeddings = [item.embedding for item in result.data]
+            
+            # For single input, return single embedding; for multiple inputs, return list
+            if isinstance(user_input, str):
+                generate_embeddings = embeddings[0] if embeddings else []
+            else:
+                generate_embeddings = embeddings
 
             if full_response:
                 end_time = time.time()
