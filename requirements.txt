@@ -1,4 +1,5 @@
 aiohttp>=3.9
+cohere>=5.0
 duckduckgo_search>=5.3
 lxml_html_clean>=0.1
 newspaper3k>=0.2
