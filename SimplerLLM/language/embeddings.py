@@ -1,11 +1,13 @@
 import SimplerLLM.language.llm_providers.openai_llm as openai_llm
 import SimplerLLM.language.llm_providers.voyage_llm as voyage_llm
+import SimplerLLM.language.llm_providers.cohere_llm as cohere_llm
 from enum import Enum
 import os
 
 class EmbeddingsProvider(Enum):
     OPENAI = 1
     VOYAGE = 2
+    COHERE = 3
 
 
 class EmbeddingsLLM:
@@ -33,6 +35,8 @@ class EmbeddingsLLM:
             return OpenAIEmbeddings(provider, model_name, api_key, user_id)
         if provider == EmbeddingsProvider.VOYAGE:
             return VoyageEmbeddings(provider, model_name, api_key, user_id)
+        if provider == EmbeddingsProvider.COHERE:
+            return CohereEmbeddings(provider, model_name, api_key, user_id)
         else:
             return None
 
@@ -152,4 +156,75 @@ class VoyageEmbeddings(EmbeddingsLLM):
             output_dtype=output_dtype
         )
 
+
+class CohereEmbeddings(EmbeddingsLLM):
+    def __init__(self, provider, model_name, api_key, user_id=None):
+        super().__init__(provider, model_name, api_key, user_id)
+        self.api_key = api_key or os.getenv("COHERE_API_KEY", "")
+
+    def generate_embeddings(
+        self,
+        user_input,
+        model_name=None,
+        full_response=False,
+        input_type="search_document",
+        embedding_types=None,
+        truncate="END"
+    ):
+        """
+        Generate embeddings using Cohere.
+        
+        Args:
+            user_input (str or list): Text(s) to embed
+            model_name (str, optional): Model name override
+            full_response (bool): Whether to return full response object
+            input_type (str, optional): "search_document", "search_query", "classification", "clustering"
+            embedding_types (list, optional): List of embedding types to return
+            truncate (str, optional): "START", "END", or "NONE"
+        """
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+        
+        return cohere_llm.generate_embeddings(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key,
+            input_type=input_type,
+            embedding_types=embedding_types,
+            truncate=truncate
+        )
+    
+    async def generate_embeddings_async(
+        self,
+        user_input,
+        model_name=None,
+        full_response=False,
+        input_type="search_document",
+        embedding_types=None,
+        truncate="END"
+    ):
+        """
+        Asynchronously generate embeddings using Cohere.
+        
+        Args:
+            user_input (str or list): Text(s) to embed
+            model_name (str, optional): Model name override
+            full_response (bool): Whether to return full response object
+            input_type (str, optional): "search_document", "search_query", "classification", "clustering"
+            embedding_types (list, optional): List of embedding types to return
+            truncate (str, optional): "START", "END", or "NONE"
+        """
+        # Use instance values as defaults if not provided
+        model_name = model_name if model_name is not None else self.model_name
+
+        return await cohere_llm.generate_embeddings_async(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key,
+            input_type=input_type,
+            embedding_types=embedding_types,
+            truncate=truncate
+        )
 

@@ -74,6 +74,7 @@ ANTHROPIC_API_KEY       # Anthropic Claude API access
 OPENROUTER_API_KEY      # OpenRouter API access
 OPENROUTER_SITE_URL     # Optional: Your site URL for OpenRouter tracking
 OPENROUTER_SITE_NAME    # Optional: Your site name for OpenRouter tracking
+COHERE_API_KEY          # Cohere API access
 VOYAGE_API_KEY          # Voyage AI embeddings API access
 RAPIDAPI_API_KEY        # RapidAPI services
 VALUE_SERP_API_KEY      # Value Serp search API
@@ -86,6 +87,7 @@ STABILITY_API_KEY       # Stability AI for image generation
 - LLM instances are created using `LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-4o")`
 - OpenRouter provides unified access to 100+ models: `LLM.create(provider=LLMProvider.OPENROUTER, model_name="openai/gpt-4o")`
 - Embedding models support multiple providers: `EmbeddingsLLM.create(provider=EmbeddingsProvider.VOYAGE, model_name="voyage-3-large")`
+- Cohere provides both chat and embeddings: `LLM.create(provider=LLMProvider.COHERE, model_name="command-r-plus")` and `EmbeddingsLLM.create(provider=EmbeddingsProvider.COHERE, model_name="embed-english-v3.0")`
 - Vector databases are created using `VectorDB.create(provider=VectorProvider.LOCAL)`
 - JSON responses are generated using `generate_pydantic_json_model()` for consistent structured output
 - Content loading supports multiple formats through `load_content()` function
