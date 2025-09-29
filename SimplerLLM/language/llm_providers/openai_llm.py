@@ -26,17 +26,27 @@ def generate_response(
 ):
     start_time = time.time() if full_response else None
     openai_client = OpenAI(api_key=api_key)
-    
+
     for attempt in range(MAX_RETRIES):
         try:
             params = {
                 "model": model_name,
                 "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
                 "top_p": top_p,
             }
-            
+
+            # Check if it's a GPT-5 model and apply specific settings
+            if "gpt-5" in model_name.lower():
+                params["max_completion_tokens"] = max_tokens
+                # GPT-5 models only support temperature=1 (default)
+                if temperature != 1:
+                    params["temperature"] = 1
+                else:
+                    params["temperature"] = temperature
+            else:
+                params["max_tokens"] = max_tokens
+                params["temperature"] = temperature
+
             if json_mode:
                 params["response_format"] = {"type": "json_object"}
                 
@@ -75,17 +85,27 @@ async def generate_response_async(
 ):
     start_time = time.time() if full_response else None
     async_openai_client = AsyncOpenAI(api_key=api_key)
-   
+
     for attempt in range(MAX_RETRIES):
         try:
             params = {
                 "model": model_name,
                 "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
                 "top_p": top_p,
             }
-            
+
+            # Check if it's a GPT-5 model and apply specific settings
+            if "gpt-5" in model_name.lower():
+                params["max_completion_tokens"] = max_tokens
+                # GPT-5 models only support temperature=1 (default)
+                if temperature != 1:
+                    params["temperature"] = 1
+                else:
+                    params["temperature"] = temperature
+            else:
+                params["max_tokens"] = max_tokens
+                params["temperature"] = temperature
+
             if json_mode:
                 params["response_format"] = {"type": "json_object"}
                 

@@ -197,7 +197,8 @@ def __convert_to_vector(combined_sentences_list, llm_embeddings_instance: llm_em
     try:
         response = llm_embeddings_instance.generate_embeddings(combined_sentences_list)
         #response = openai.embeddings.create(input=combined_sentences_list, model="text-embedding-3-small")
-        embeddings = np.array([item.embedding for item in response])
+        # The response is already a list of embeddings when input is a list
+        embeddings = np.array(response) if isinstance(response, list) else np.array([response])
         return embeddings
     except Exception as e:
         print("An error occurred:", e)
