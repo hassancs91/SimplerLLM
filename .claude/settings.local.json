@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:cookbook.openai.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
