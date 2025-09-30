@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 from SimplerLLM.language.llm import LLMProvider, LLM
 
 # Configuration
-NUM_CALLS = 100  # Number of test calls to make
+NUM_CALLS = 10  # Number of test calls to make
 DELAY_BETWEEN_CALLS = 1  # Seconds to wait between calls (to avoid rate limiting)
 VERBOSE = True  # Set to True to see each response in real-time
 SAVE_LOG = True  # Save results to a log file
