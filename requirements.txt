@@ -16,7 +16,3 @@ scipy>=1.15
 tiktoken>=0.9
 qdrant-client==1.14.3
 voyageai==0.3.3
-
-# Optional dependencies for quickstart features
-# Uncomment to enable UI mode for ChatWithPDF:
-# gradio>=4.0.0
