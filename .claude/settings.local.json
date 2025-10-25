@@ -13,7 +13,9 @@
       "Bash(findstr:*)",
       "Bash(pip uninstall:*)",
       "Bash(python manage.py:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
