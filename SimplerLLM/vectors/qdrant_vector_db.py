@@ -27,9 +27,15 @@ class QdrantVectorDB(VectorDB):
         
         # Initialize Qdrant client
         if self.api_key:
-            self.client = QdrantClient(url=self.url, api_key=self.api_key)
+            # When using API key with URL, include port and timeout
+            self.client = QdrantClient(
+                url=self.url,
+                port=self.port,
+                api_key=self.api_key,
+                timeout=10
+            )
         else:
-            self.client = QdrantClient(host=self.url, port=self.port)
+            self.client = QdrantClient(host=self.url, port=self.port, timeout=10)
         
         # Create collection if it doesn't exist
         self._ensure_collection_exists()
