@@ -2,6 +2,7 @@ import SimplerLLM.language.llm_providers.openai_llm as openai_llm
 import os
 from ..base import LLM
 from SimplerLLM.utils.custom_verbose import verbose_print
+from SimplerLLM.tools.image_helpers import prepare_vision_content
 
 class OpenAILLM(LLM):
     def __init__(self, provider, model_name, temperature, top_p, api_key, verbose=False):
@@ -25,6 +26,8 @@ class OpenAILLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
     ):
         """
         Generate a response using the OpenAI language model.
@@ -38,6 +41,9 @@ class OpenAILLM(LLM):
             max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
             top_p (float, optional): Controls diversity of output. Defaults to 1.0.
             full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+            json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
+            images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
+            detail (str, optional): Level of detail for image processing ("low", "high", "auto"). Defaults to "auto".
 
         Returns:
             str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
@@ -63,14 +69,25 @@ class OpenAILLM(LLM):
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"System prompt: {system_prompt}", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
+                if images:
+                    verbose_print(f"Images provided: {len(images)} image(s)", "debug")
+
+            # Handle vision content if images are provided
+            if images:
+                user_content = prepare_vision_content(prompt, images, detail)
+            else:
+                user_content = prompt
+
             model_messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_content},
             ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+                if images:
+                    verbose_print("Warning: Images parameter is ignored when using messages format", "warning")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -82,7 +99,7 @@ class OpenAILLM(LLM):
                 "json_mode": json_mode
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with OpenAI...", "info")
             
@@ -107,6 +124,8 @@ class OpenAILLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
     ):
         """
         Asynchronously generates a response using the OpenAI API.
@@ -120,6 +139,9 @@ class OpenAILLM(LLM):
             max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 300.
             top_p (float, optional): Controls diversity of output. Defaults to 1.0.
             full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
+            json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
+            images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
+            detail (str, optional): Level of detail for image processing ("low", "high", "auto"). Defaults to "auto".
 
         Returns:
             str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
@@ -145,14 +167,25 @@ class OpenAILLM(LLM):
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"System prompt: {system_prompt}", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
+                if images:
+                    verbose_print(f"Images provided: {len(images)} image(s)", "debug")
+
+            # Handle vision content if images are provided
+            if images:
+                user_content = prepare_vision_content(prompt, images, detail)
+            else:
+                user_content = prompt
+
             model_messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_content},
             ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+                if images:
+                    verbose_print("Warning: Images parameter is ignored when using messages format", "warning")
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -164,7 +197,7 @@ class OpenAILLM(LLM):
                 "json_mode": json_mode
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with OpenAI (async)...", "info")
             

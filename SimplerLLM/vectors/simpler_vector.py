@@ -4,23 +4,31 @@ import pickle
 import enum
 import uuid
 from collections import defaultdict
+from .vector_db import VectorDB, VectorDBOptional, VectorDBError, DimensionMismatchError, VectorDBOperationError, VectorNotFoundError
+from .vector_providers import VectorProvider
 
 
 class SerializationFormat(enum.Enum):
     BINARY = 'pickle'
 
 
-class SimplerVectors:
+class SimplerVectors(VectorDB, VectorDBOptional):
     def __init__(self, db_folder, dimension=None):
+        # Initialize base class
+        super().__init__(provider=VectorProvider.LOCAL, db_folder=db_folder, dimension=dimension)
+
         self.db_folder = db_folder
         self.vectors = []  # Initialize the vectors list
         self.metadata = []  # Initialize the metadata list
         self.ids = []  # Store unique IDs for each vector
         self.dimension = dimension  # Store expected dimension for validation
         self._index = defaultdict(list)  # Simple index for metadata lookup
-        
-        if not os.path.exists(self.db_folder):
-            os.makedirs(self.db_folder)
+
+        try:
+            if not os.path.exists(self.db_folder):
+                os.makedirs(self.db_folder)
+        except Exception as e:
+            raise VectorDBOperationError(f"Failed to create database folder: {e}")
 
     def load_from_disk(self, collection_name, serialization_format=SerializationFormat.BINARY):
         file_path = os.path.join(self.db_folder, collection_name + '.svdb')
@@ -85,51 +93,56 @@ class SimplerVectors:
             # First vector sets the dimension
             self.dimension = len(vector)
             return True
-        
+
         if len(vector) != self.dimension:
-            raise ValueError(f"Vector dimension mismatch. Expected {self.dimension}, got {len(vector)}")
-        
+            raise DimensionMismatchError(f"Vector dimension mismatch. Expected {self.dimension}, got {len(vector)}")
+
         return True
     
     def add_vector(self, vector, meta, normalize=True, id=None):
         """
         Add a single vector with metadata to the database.
-        
+
         Parameters:
             vector (array-like): The vector to add
             meta (any): Metadata to associate with the vector
             normalize (bool): Whether to normalize the vector
             id (str): Optional custom ID, will generate UUID if not provided
-            
+
         Returns:
             str: The ID of the added vector
         """
-        # Ensure vector is a numpy array
-        vector = np.array(vector, dtype=np.float32)
-        
-        # Validate dimension
-        self._validate_dimension(vector)
-        
-        if normalize:
-            vector = self.normalize_vector(vector)
-        
-        # Generate or use provided ID
-        vector_id = id if id is not None else str(uuid.uuid4())
-        
-        self.vectors.append(vector)
-        self.metadata.append(meta)
-        self.ids.append(vector_id)
-        
-        # Update index
-        idx = len(self.vectors) - 1
-        if isinstance(meta, dict):
-            for key, value in meta.items():
-                if isinstance(value, (str, int, float, bool)):
-                    self._index[f"{key}:{value}"].append(idx)
-        else:
-            self._index[str(meta)].append(idx)
-            
-        return vector_id
+        try:
+            # Ensure vector is a numpy array
+            vector = np.array(vector, dtype=np.float32)
+
+            # Validate dimension
+            self._validate_dimension(vector)
+
+            if normalize:
+                vector = self.normalize_vector(vector)
+
+            # Generate or use provided ID
+            vector_id = id if id is not None else str(uuid.uuid4())
+
+            self.vectors.append(vector)
+            self.metadata.append(meta)
+            self.ids.append(vector_id)
+
+            # Update index
+            idx = len(self.vectors) - 1
+            if isinstance(meta, dict):
+                for key, value in meta.items():
+                    if isinstance(value, (str, int, float, bool)):
+                        self._index[f"{key}:{value}"].append(idx)
+            else:
+                self._index[str(meta)].append(idx)
+
+            return vector_id
+        except DimensionMismatchError:
+            raise  # Re-raise dimension errors as-is
+        except Exception as e:
+            raise VectorDBOperationError(f"Failed to add vector: {e}")
 
     def add_vectors_batch(self, vectors_with_meta, normalize=False):
         """
@@ -234,73 +247,79 @@ class SimplerVectors:
             # Ensure vector is a numpy array and normalized
             target_vector = np.array(target_vector, dtype=np.float32)
             target_vector = self.normalize_vector(target_vector)
-            
+
             # Validate dimension
             if self.dimension and len(target_vector) != self.dimension:
-                raise ValueError(f"Query vector dimension mismatch. Expected {self.dimension}, got {len(target_vector)}")
-            
+                raise DimensionMismatchError(f"Query vector dimension mismatch. Expected {self.dimension}, got {len(target_vector)}")
+
+            # Return empty list if no vectors in database
+            if not self.vectors:
+                return []
+
             # Create mask for filtered vectors if filter provided
             mask = None
             if filter_func and self.vectors:
                 mask = np.array([
-                    filter_func(self.ids[i], self.metadata[i]) 
+                    filter_func(self.ids[i], self.metadata[i])
                     for i in range(len(self.vectors))
                 ])
-                
+
                 # Return empty if no vectors match filter
                 if not np.any(mask):
                     return []
-            
+
             # Calculate cosine similarities
             vectors_array = np.array(self.vectors)
             similarities = np.dot(vectors_array, target_vector)
-            
+
             # Apply filter if provided
             if mask is not None:
                 # Set similarities to -1 for filtered-out vectors
                 similarities = np.where(mask, similarities, -1)
-            
+
             # Get the indices of the top N similar vectors
             top_indices = np.argsort(-similarities)[:top_n]
-            
+
             # Return ID, metadata and similarity for the top N entries
             return [(self.ids[i], self.metadata[i], similarities[i]) for i in top_indices if similarities[i] > -1]
+        except DimensionMismatchError:
+            raise  # Re-raise dimension errors as-is
         except Exception as e:
-            print(f"An error occurred: {e}")
-            return []
+            raise VectorDBOperationError(f"Failed to search vectors: {e}")
 
     def search_by_text(self, query_text, embeddings_llm_instance, top_n=3, filter_func=None):
         """
         Search using text query - converts to embedding internally
-        
+
         Parameters:
             query_text (str): The text query to search for
             embeddings_llm_instance: Instance of EmbeddingsLLM to generate embeddings
             top_n (int): Number of top results to return
             filter_func (callable): Optional filter function that takes (id, metadata) and returns bool
-            
+
         Returns:
             list: Tuples of (id, metadata, similarity) for the top N most similar vectors
         """
         try:
             if not query_text or not query_text.strip():
-                raise ValueError("Query text cannot be empty")
-                
+                raise VectorDBOperationError("Query text cannot be empty")
+
             # Generate embedding for the query text
             query_embedding = embeddings_llm_instance.generate_embeddings(query_text)
-            
+
             # The embeddings API now returns numpy arrays directly
             # Convert to numpy array to ensure consistent format
             query_embedding = np.array(query_embedding, dtype=np.float32)
-            
+
             # Validate that we have a valid embedding
             if query_embedding.size == 0:
-                raise ValueError("Empty embedding returned from embeddings_llm_instance")
-                
+                raise VectorDBOperationError("Empty embedding returned from embeddings_llm_instance")
+
             return self.top_cosine_similarity(query_embedding, top_n, filter_func)
+        except (DimensionMismatchError, VectorDBOperationError):
+            raise  # Re-raise VectorDB errors as-is
         except Exception as e:
-            print(f"Error in text search: {e}")
-            return []
+            raise VectorDBOperationError(f"Failed to search by text: {e}")
             
     def query_by_metadata(self, **kwargs):
         """
@@ -330,16 +349,22 @@ class SimplerVectors:
     def get_stats(self):
         """
         Get statistics about the vector database.
-        
+
         Returns:
             dict: Dictionary with statistics
         """
-        return {
-            "total_vectors": len(self.vectors),
-            "dimension": self.dimension,
-            "size_in_memory_mb": sum(v.nbytes for v in self.vectors) / (1024 * 1024) if self.vectors else 0,
-            "metadata_keys": self._get_metadata_keys(),
-        }
+        try:
+            return {
+                # Required fields
+                "total_vectors": len(self.vectors),
+                "dimension": self.dimension,
+                "provider": "local",
+                # Local-specific fields
+                "size_in_memory_mb": sum(v.nbytes for v in self.vectors) / (1024 * 1024) if self.vectors else 0,
+                "metadata_keys": self._get_metadata_keys(),
+            }
+        except Exception as e:
+            raise VectorDBOperationError(f"Failed to get stats: {e}")
     
     def _get_metadata_keys(self):
         """Get unique metadata keys across all entries"""

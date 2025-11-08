@@ -1,8 +1,8 @@
-from .vector_db import VectorDB
+from .vector_db import VectorDB, VectorDBOptional
 from .simpler_vector import SimplerVectors
 
 
-class LocalVectorDB(VectorDB):
+class LocalVectorDB(VectorDB, VectorDBOptional):
     def __init__(self, provider, **config):
         super().__init__(provider, **config)
         # Initialize the underlying SimplerVectors instance
