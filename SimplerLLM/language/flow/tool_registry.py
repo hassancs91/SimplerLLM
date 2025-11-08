@@ -24,6 +24,10 @@ from SimplerLLM.tools.text_chunker import (
     chunk_by_sentences,
     chunk_by_paragraphs,
 )
+from SimplerLLM.tools.brainstorm import (
+    recursive_brainstorm_tool,
+    simple_brainstorm,
+)
 
 
 class ToolRegistry:
@@ -56,6 +60,10 @@ class ToolRegistry:
         "chunk_by_max_size": chunk_by_max_chunk_size,
         "chunk_by_sentences": chunk_by_sentences,
         "chunk_by_paragraphs": chunk_by_paragraphs,
+
+        # Brainstorming tools
+        "recursive_brainstorm": recursive_brainstorm_tool,
+        "simple_brainstorm": simple_brainstorm,
     }
 
     @classmethod

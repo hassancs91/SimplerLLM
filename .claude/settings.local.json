@@ -15,7 +15,8 @@
       "Bash(python manage.py:*)",
       "Bash(dir:*)",
       "Bash(cat:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(venv/Scripts/python.exe -m pytest:*)"
     ],
     "deny": [],
     "ask": []

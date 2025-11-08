@@ -5,6 +5,7 @@ lxml_html_clean>=0.1
 newspaper3k>=0.2
 numpy>=1.26
 openai>=1.59
+Pillow>=10.0
 pydantic>=2.10
 PyPDF2>=3.0
 python-dotenv>=1.0

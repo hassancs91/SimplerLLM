@@ -1,7 +1,7 @@
 import numpy as np
 import uuid
 from typing import List, Dict, Any, Optional, Callable, Tuple
-from .vector_db import VectorDB
+from .vector_db import VectorDB, VectorDBOptional, VectorDBError, DimensionMismatchError, VectorDBOperationError, VectorDBConnectionError, VectorNotFoundError
 
 try:
     from qdrant_client import QdrantClient
@@ -11,34 +11,37 @@ except ImportError:
     QDRANT_AVAILABLE = False
 
 
-class QdrantVectorDB(VectorDB):
+class QdrantVectorDB(VectorDB, VectorDBOptional):
     def __init__(self, provider, **config):
         super().__init__(provider, **config)
-        
+
         if not QDRANT_AVAILABLE:
             raise ImportError("qdrant-client is required for QdrantVectorDB. Install it with: pip install qdrant-client")
-        
+
         # Extract configuration
         self.url = config.get('url', 'localhost')
         self.port = config.get('port', 6333)
         self.collection_name = config.get('collection_name', 'default_collection')
         self.dimension = config.get('dimension', None)
         self.api_key = config.get('api_key', None)
-        
+
         # Initialize Qdrant client
-        if self.api_key:
-            # When using API key with URL, include port and timeout
-            self.client = QdrantClient(
-                url=self.url,
-                port=self.port,
-                api_key=self.api_key,
-                timeout=10
-            )
-        else:
-            self.client = QdrantClient(host=self.url, port=self.port, timeout=10)
-        
-        # Create collection if it doesn't exist
-        self._ensure_collection_exists()
+        try:
+            if self.api_key:
+                # When using API key with URL, include port and timeout
+                self.client = QdrantClient(
+                    url=self.url,
+                    port=self.port,
+                    api_key=self.api_key,
+                    timeout=10
+                )
+            else:
+                self.client = QdrantClient(host=self.url, port=self.port, timeout=10)
+
+            # Create collection if it doesn't exist
+            self._ensure_collection_exists()
+        except Exception as e:
+            raise VectorDBConnectionError(f"Failed to connect to Qdrant: {e}")
 
     def _ensure_collection_exists(self):
         """Create collection if it doesn't exist"""
@@ -53,7 +56,7 @@ class QdrantVectorDB(VectorDB):
                 
                 self.client.create_collection(
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=self.dimension, distance=Distance.COSINE)
+                    vectors_config=VectorParams(size=self.dimension, distance=Distance.DOT)
                 )
         except Exception as e:
             print(f"Warning: Could not check/create collection: {e}")
@@ -65,7 +68,7 @@ class QdrantVectorDB(VectorDB):
             try:
                 self.client.create_collection(
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=self.dimension, distance=Distance.COSINE)
+                    vectors_config=VectorParams(size=self.dimension, distance=Distance.DOT)
                 )
             except Exception as e:
                 # Collection might already exist, that's okay
@@ -74,62 +77,84 @@ class QdrantVectorDB(VectorDB):
     def add_vector(self, vector, meta, normalize=True, id=None):
         """
         Add a single vector with metadata to the database.
-        
+
         Parameters:
             vector (array-like): The vector to add
             meta (any): Metadata to associate with the vector
             normalize (bool): Whether to normalize the vector
+                - True: Normalizes to unit length, uses cosine similarity for search
+                - False: Keeps original magnitude, uses dot product for search
             id (str): Optional custom ID, will generate UUID if not provided
-            
+
         Returns:
             str: The ID of the added vector
+
+        Note:
+            Uses DOT distance metric. When normalize=True, dot product of normalized
+            vectors is equivalent to cosine similarity. When normalize=False, vector
+            magnitudes are preserved for use cases where scale matters.
         """
-        # Ensure vector is a numpy array
-        vector = np.array(vector, dtype=np.float32)
-        
-        # Create collection if needed
-        self._create_collection_if_needed(len(vector))
-        
-        if normalize:
-            norm = np.linalg.norm(vector)
-            if norm > 0:
-                vector = vector / norm
-        
-        # Generate or use provided ID
-        vector_id = id if id is not None else str(uuid.uuid4())
-        
-        # Prepare metadata for Qdrant
-        payload = {}
-        if isinstance(meta, dict):
-            payload = meta.copy()
-        else:
-            payload = {"metadata": meta}
-        
-        # Create point
-        point = PointStruct(
-            id=vector_id,
-            vector=vector.tolist(),
-            payload=payload
-        )
-        
-        # Insert into Qdrant
-        self.client.upsert(
-            collection_name=self.collection_name,
-            points=[point]
-        )
-        
-        return vector_id
+        try:
+            # Ensure vector is a numpy array
+            vector = np.array(vector, dtype=np.float32)
+
+            # Validate dimension
+            if self.dimension is not None and len(vector) != self.dimension:
+                raise DimensionMismatchError(f"Vector dimension mismatch. Expected {self.dimension}, got {len(vector)}")
+
+            # Create collection if needed
+            self._create_collection_if_needed(len(vector))
+
+            if normalize:
+                norm = np.linalg.norm(vector)
+                if norm > 0:
+                    vector = vector / norm
+
+            # Generate or use provided ID
+            vector_id = id if id is not None else str(uuid.uuid4())
+
+            # Prepare metadata for Qdrant
+            payload = {}
+            if isinstance(meta, dict):
+                payload = meta.copy()
+            else:
+                payload = {"metadata": meta}
+
+            # Create point
+            point = PointStruct(
+                id=vector_id,
+                vector=vector.tolist(),
+                payload=payload
+            )
+
+            # Insert into Qdrant
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=[point]
+            )
+
+            return vector_id
+        except DimensionMismatchError:
+            raise  # Re-raise dimension errors as-is
+        except Exception as e:
+            raise VectorDBOperationError(f"Failed to add vector: {e}")
 
     def add_vectors_batch(self, vectors_with_meta, normalize=False):
         """
         Add multiple vectors with metadata in batch.
-        
+
         Parameters:
             vectors_with_meta (list): List of (vector, metadata, [id]) tuples
             normalize (bool): Whether to normalize the vectors
-            
+                - True: Normalizes to unit length, uses cosine similarity for search
+                - False: Keeps original magnitude, uses dot product for search
+
         Returns:
             list: The IDs of the added vectors
+
+        Note:
+            Uses DOT distance metric. When normalize=True, enables cosine similarity.
+            When normalize=False, preserves vector magnitudes for dot product search.
         """
         points = []
         added_ids = []
@@ -212,10 +237,10 @@ class QdrantVectorDB(VectorDB):
     def delete_vector(self, vector_id):
         """
         Delete a vector by its ID.
-        
+
         Parameters:
             vector_id (str): The ID of the vector to delete
-            
+
         Returns:
             bool: True if successful, False if vector not found
         """
@@ -226,21 +251,26 @@ class QdrantVectorDB(VectorDB):
             )
             return True
         except Exception as e:
-            print(f"Error deleting vector: {e}")
-            return False
+            raise VectorDBOperationError(f"Failed to delete vector: {e}")
 
     def update_vector(self, vector_id, new_vector=None, new_metadata=None, normalize=True):
         """
         Update a vector or its metadata by ID.
-        
+
         Parameters:
             vector_id (str): The ID of the vector to update
             new_vector (array-like): The new vector (optional)
             new_metadata (any): The new metadata (optional)
-            normalize (bool): Whether to normalize the vector
-            
+            normalize (bool): Whether to normalize the new vector
+                - True: Normalizes to unit length for cosine similarity
+                - False: Keeps original magnitude for dot product
+
         Returns:
             bool: True if successful, False if vector not found
+
+        Note:
+            When updating vector data, ensure normalization matches the original
+            storage strategy for consistent search results.
         """
         try:
             # Get existing point
@@ -250,46 +280,52 @@ class QdrantVectorDB(VectorDB):
                 with_payload=True,
                 with_vectors=True
             )
-            
+
             if not existing_points:
                 return False
-            
+
             existing_point = existing_points[0]
-            
+
             # Prepare updated point
             vector = existing_point.vector
             payload = existing_point.payload
-            
+
             if new_vector is not None:
                 new_vector = np.array(new_vector, dtype=np.float32)
+
+                # Validate dimension
+                if self.dimension is not None and len(new_vector) != self.dimension:
+                    raise DimensionMismatchError(f"Vector dimension mismatch. Expected {self.dimension}, got {len(new_vector)}")
+
                 if normalize:
                     norm = np.linalg.norm(new_vector)
                     if norm > 0:
                         new_vector = new_vector / norm
                 vector = new_vector.tolist()
-            
+
             if new_metadata is not None:
                 if isinstance(new_metadata, dict):
                     payload = new_metadata.copy()
                 else:
                     payload = {"metadata": new_metadata}
-            
+
             # Update point
             point = PointStruct(
                 id=vector_id,
                 vector=vector,
                 payload=payload
             )
-            
+
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[point]
             )
-            
+
             return True
+        except DimensionMismatchError:
+            raise  # Re-raise dimension errors as-is
         except Exception as e:
-            print(f"Error updating vector: {e}")
-            return False
+            raise VectorDBOperationError(f"Failed to update vector: {e}")
 
     def top_cosine_similarity(self, target_vector, top_n=3, filter_func=None):
         """
@@ -306,10 +342,15 @@ class QdrantVectorDB(VectorDB):
         try:
             # Ensure vector is a numpy array and normalized
             target_vector = np.array(target_vector, dtype=np.float32)
+
+            # Validate dimension
+            if self.dimension is not None and len(target_vector) != self.dimension:
+                raise DimensionMismatchError(f"Query vector dimension mismatch. Expected {self.dimension}, got {len(target_vector)}")
+
             norm = np.linalg.norm(target_vector)
             if norm > 0:
                 target_vector = target_vector / norm
-            
+
             # Search in Qdrant
             search_result = self.client.search(
                 collection_name=self.collection_name,
@@ -317,57 +358,59 @@ class QdrantVectorDB(VectorDB):
                 limit=top_n * 2 if filter_func else top_n,  # Get more if we need to filter
                 with_payload=True
             )
-            
+
             results = []
             for point in search_result:
                 point_id = str(point.id)
                 metadata = point.payload
                 similarity = point.score
-                
+
                 # Apply filter if provided
                 if filter_func is None or filter_func(point_id, metadata):
                     results.append((point_id, metadata, similarity))
-                    
+
                     # Stop if we have enough results
                     if len(results) >= top_n:
                         break
-            
+
             return results
+        except DimensionMismatchError:
+            raise  # Re-raise dimension errors as-is
         except Exception as e:
-            print(f"Error in similarity search: {e}")
-            return []
+            raise VectorDBOperationError(f"Failed to search vectors: {e}")
 
     def search_by_text(self, query_text, embeddings_llm_instance, top_n=3, filter_func=None):
         """
         Search using text query - converts to embedding internally
-        
+
         Parameters:
             query_text (str): The text query to search for
             embeddings_llm_instance: Instance of EmbeddingsLLM to generate embeddings
             top_n (int): Number of top results to return
             filter_func (callable): Optional filter function that takes (id, metadata) and returns bool
-            
+
         Returns:
             list: Tuples of (id, metadata, similarity) for the top N most similar vectors
         """
         try:
             if not query_text or not query_text.strip():
-                raise ValueError("Query text cannot be empty")
-                
+                raise VectorDBOperationError("Query text cannot be empty")
+
             # Generate embedding for the query text
             query_embedding = embeddings_llm_instance.generate_embeddings(query_text)
-            
+
             # Convert to numpy array to ensure consistent format
             query_embedding = np.array(query_embedding, dtype=np.float32)
-            
+
             # Validate that we have a valid embedding
             if query_embedding.size == 0:
-                raise ValueError("Empty embedding returned from embeddings_llm_instance")
-                
+                raise VectorDBOperationError("Empty embedding returned from embeddings_llm_instance")
+
             return self.top_cosine_similarity(query_embedding, top_n, filter_func)
+        except (DimensionMismatchError, VectorDBOperationError):
+            raise  # Re-raise VectorDB errors as-is
         except Exception as e:
-            print(f"Error in text search: {e}")
-            return []
+            raise VectorDBOperationError(f"Failed to search by text: {e}")
 
     def query_by_metadata(self, **kwargs):
         """
@@ -502,7 +545,7 @@ class QdrantVectorDB(VectorDB):
             if self.dimension:
                 self.client.create_collection(
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=self.dimension, distance=Distance.COSINE)
+                    vectors_config=VectorParams(size=self.dimension, distance=Distance.DOT)
                 )
         except Exception as e:
             print(f"Error clearing database: {e}")
@@ -510,26 +553,23 @@ class QdrantVectorDB(VectorDB):
     def get_stats(self):
         """
         Get statistics about the vector database.
-        
+
         Returns:
             dict: Dictionary with statistics
         """
         try:
             info = self.client.get_collection(self.collection_name)
             return {
+                # Required fields
                 "total_vectors": info.points_count,
                 "dimension": self.dimension,
+                "provider": "qdrant",
+                # Qdrant-specific fields
                 "collection_name": self.collection_name,
                 "status": info.status,
             }
         except Exception as e:
-            print(f"Error getting stats: {e}")
-            return {
-                "total_vectors": 0,
-                "dimension": self.dimension,
-                "collection_name": self.collection_name,
-                "status": "error",
-            }
+            raise VectorDBOperationError(f"Failed to get stats: {e}")
 
     def compress_vectors(self, bits=16):
         """

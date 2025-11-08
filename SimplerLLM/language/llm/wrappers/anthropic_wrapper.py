@@ -2,6 +2,7 @@ import SimplerLLM.language.llm_providers.anthropic_llm as anthropic_llm
 import os
 from ..base import LLM
 from SimplerLLM.utils.custom_verbose import verbose_print
+from SimplerLLM.tools.image_helpers import prepare_vision_content_anthropic
 
 class AnthropicLLM(LLM):
     def __init__(self, provider, model_name, temperature, top_p, api_key, verbose=False):
@@ -27,6 +28,7 @@ class AnthropicLLM(LLM):
         prompt_caching: bool = False,
         cached_input: str = "",
         json_mode=False,
+        images: list = None,
     ):
         """
         Generate a response using the Anthropic LLM.
@@ -42,6 +44,8 @@ class AnthropicLLM(LLM):
             full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
             prompt_caching (bool, optional): Whether to use prompt caching. Defaults to False.
             cached_input (str, optional): The cached input to use if prompt_caching is True. Defaults to "".
+            json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
+            images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
 
         Returns:
             The generated response from the Anthropic LLM.
@@ -66,13 +70,24 @@ class AnthropicLLM(LLM):
             if self.verbose:
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
+                if images:
+                    verbose_print(f"Images provided: {len(images)} image(s)", "debug")
+
+            # Handle vision content if images are provided
+            if images:
+                user_content = prepare_vision_content_anthropic(prompt, images)
+            else:
+                user_content = prompt
+
             model_messages = [
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_content},
             ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+                if images:
+                    verbose_print("Warning: Images parameter is ignored when using messages format", "warning")
             model_messages = self.append_messages(messages)
 
         params.update(
@@ -84,10 +99,10 @@ class AnthropicLLM(LLM):
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
                 "cached_input": cached_input,
-                "json_mode" : json_mode     
+                "json_mode" : json_mode
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with Anthropic...", "info")
             
@@ -114,6 +129,7 @@ class AnthropicLLM(LLM):
         prompt_caching: bool = False,
         cached_input: str = "",
         json_mode=False,
+        images: list = None,
     ):
         """
         Asynchronously generate a response from the Anthropic LLM.
@@ -129,6 +145,8 @@ class AnthropicLLM(LLM):
             full_response (bool, optional): If True, returns the full API response. If False, returns only the generated text. Defaults to False.
             prompt_caching (bool, optional): Whether to use prompt caching. Defaults to False.
             cached_input (str, optional): The cached input to use. Defaults to "".
+            json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
+            images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
 
         Returns:
             The asynchronously generated response from the Anthropic LLM.
@@ -153,13 +171,24 @@ class AnthropicLLM(LLM):
             if self.verbose:
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
+                if images:
+                    verbose_print(f"Images provided: {len(images)} image(s)", "debug")
+
+            # Handle vision content if images are provided
+            if images:
+                user_content = prepare_vision_content_anthropic(prompt, images)
+            else:
+                user_content = prompt
+
             model_messages = [
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_content},
             ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+                if images:
+                    verbose_print("Warning: Images parameter is ignored when using messages format", "warning")
             model_messages = self.append_messages(messages)
 
         params.update(
@@ -170,11 +199,11 @@ class AnthropicLLM(LLM):
                 "max_tokens": max_tokens,
                 "full_response": full_response,
                 "prompt_caching": prompt_caching,
-                "cached_input": cached_input,  
-                "json_mode" : json_mode           
+                "cached_input": cached_input,
+                "json_mode" : json_mode
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with Anthropic (async)...", "info")
             
