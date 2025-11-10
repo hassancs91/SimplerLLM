@@ -32,6 +32,26 @@ from .llm_retrieval import (
     HierarchicalRetrievalResponse,
     RetrievalConfig
 )
+from .guardrails import (
+    GuardrailsLLM,
+    GuardrailAction,
+    GuardrailResult,
+    InputGuardrail,
+    OutputGuardrail,
+    CompositeGuardrail,
+    GuardrailException,
+    GuardrailBlockedException,
+    GuardrailValidationException,
+    GuardrailConfigurationException,
+    GuardrailTimeoutException,
+    PromptInjectionGuardrail,
+    TopicFilterGuardrail,
+    InputPIIDetectionGuardrail,
+    FormatValidatorGuardrail,
+    OutputPIIDetectionGuardrail,
+    ContentSafetyGuardrail,
+    LengthValidatorGuardrail,
+)
 
 __all__ = [
     'LLM',
@@ -84,4 +104,23 @@ __all__ = [
     'RetrievalResult',
     'HierarchicalRetrievalResponse',
     'RetrievalConfig',
+    # Guardrails
+    'GuardrailsLLM',
+    'GuardrailAction',
+    'GuardrailResult',
+    'InputGuardrail',
+    'OutputGuardrail',
+    'CompositeGuardrail',
+    'GuardrailException',
+    'GuardrailBlockedException',
+    'GuardrailValidationException',
+    'GuardrailConfigurationException',
+    'GuardrailTimeoutException',
+    'PromptInjectionGuardrail',
+    'TopicFilterGuardrail',
+    'InputPIIDetectionGuardrail',
+    'FormatValidatorGuardrail',
+    'OutputPIIDetectionGuardrail',
+    'ContentSafetyGuardrail',
+    'LengthValidatorGuardrail',
 ]
