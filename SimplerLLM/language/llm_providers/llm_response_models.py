@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Dict
 from datetime import datetime
 
 
@@ -13,6 +13,7 @@ class LLMFullResponse(BaseModel):
     model_object: Optional[Any] = None
     provider: Optional[Any] = None
     model_name: Optional[str] = None
+    guardrails_metadata: Optional[Dict[str, Any]] = None
 
 
 class LLMEmbeddingsResponse(BaseModel):
