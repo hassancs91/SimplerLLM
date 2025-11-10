@@ -1,6 +1,7 @@
 aiohttp>=3.9
 cohere>=5.0
 duckduckgo_search>=5.3
+elevenlabs>=1.0
 lxml_html_clean>=0.1
 newspaper3k>=0.2
 numpy>=1.26
@@ -17,3 +18,10 @@ scipy>=1.15
 tiktoken>=0.9
 qdrant-client==1.14.3
 voyageai==0.3.3
+pydub>=0.25.1
+elevenlabs>=2.22.0
+sounddevice>=0.4.6
+pynput>=1.7.6
+pygame>=2.5.0
+moviepy>=1.0.3
+yt-dlp>=2023.3.4

@@ -5,6 +5,33 @@ from .flow import MiniAgent, StepResult, FlowResult
 from .llm_judge import LLMJudge, JudgeMode, JudgeResult, ProviderResponse, ProviderEvaluation, EvaluationReport
 from .llm_feedback import LLMFeedbackLoop, FeedbackResult, IterationResult, Critique
 from .llm_provider_router import LLMProviderRouter, ProviderConfig, RoutingResult, QueryClassification
+from .llm_clustering import (
+    LLMClusterer,
+    Cluster,
+    ClusterMetadata,
+    ChunkReference,
+    ClusterTree,
+    ClusteringResult,
+    ClusteringConfig,
+    TreeConfig,
+    save_clustering_result,
+    load_clustering_result,
+    save_cluster_tree,
+    load_cluster_tree,
+    get_clustering_stats,
+    save_clustering_result_optimized,
+    load_clustering_result_optimized,
+    ChunkStore,
+    InMemoryChunkStore,
+    SQLiteChunkStore,
+    create_chunk_store
+)
+from .llm_retrieval import (
+    LLMRetriever,
+    RetrievalResult,
+    HierarchicalRetrievalResponse,
+    RetrievalConfig
+)
 
 __all__ = [
     'LLM',
@@ -32,4 +59,29 @@ __all__ = [
     'ProviderConfig',
     'RoutingResult',
     'QueryClassification',
+    # LLM Clustering
+    'LLMClusterer',
+    'Cluster',
+    'ClusterMetadata',
+    'ChunkReference',
+    'ClusterTree',
+    'ClusteringResult',
+    'ClusteringConfig',
+    'TreeConfig',
+    'save_clustering_result',
+    'load_clustering_result',
+    'save_cluster_tree',
+    'load_cluster_tree',
+    'get_clustering_stats',
+    'save_clustering_result_optimized',
+    'load_clustering_result_optimized',
+    'ChunkStore',
+    'InMemoryChunkStore',
+    'SQLiteChunkStore',
+    'create_chunk_store',
+    # LLM Retrieval
+    'LLMRetriever',
+    'RetrievalResult',
+    'HierarchicalRetrievalResponse',
+    'RetrievalConfig',
 ]
