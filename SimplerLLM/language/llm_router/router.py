@@ -68,6 +68,10 @@ class LLMRouter:
         else:
             raise IndexError("Choice index out of range")
 
+    def remove_all_choices(self) -> None:
+        """Remove all choices from the router"""
+        self._choices.clear()
+
     def update_choice(self, index: int, content: str, metadata: Optional[Dict] = None) -> None:
         """Update an existing choice"""
         if 0 <= index < len(self._choices):
