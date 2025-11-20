@@ -103,6 +103,16 @@ from .voice import (
     DubbedSegment,
     DubbingConfig,
     VideoDubbingResult,
+    RealtimeVoice,
+    RealtimeVoiceProvider,
+    RealtimeSessionConfig,
+    OpenAIRealtimeVoice,
+    TurnDetectionType,
+    Voice,
+    AudioFormat,
+    Modality,
+    RealtimeVoiceChat,
+    RealtimeVoiceChatConfig,
 )
 
 # Image module exports
@@ -223,6 +233,17 @@ __all__ = [
     'DubbedSegment',
     'DubbingConfig',
     'VideoDubbingResult',
+    # Voice module - Realtime Voice
+    'RealtimeVoice',
+    'RealtimeVoiceProvider',
+    'RealtimeSessionConfig',
+    'OpenAIRealtimeVoice',
+    'TurnDetectionType',
+    'Voice',
+    'AudioFormat',
+    'Modality',
+    'RealtimeVoiceChat',
+    'RealtimeVoiceChatConfig',
     # Image module
     'ImageGenerator',
     'ImageProvider',

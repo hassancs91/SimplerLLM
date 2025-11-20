@@ -2,6 +2,8 @@ import pygame
 import os
 import time
 from typing import Optional
+import sounddevice as sd
+import numpy as np
 from SimplerLLM.utils.custom_verbose import verbose_print
 
 
@@ -22,6 +24,11 @@ class AudioPlayer:
         """
         self.verbose = verbose
         self._initialized = False
+
+        # Streaming state (for realtime streaming)
+        self._stream_active = False
+        self._output_stream = None
+        self._stream_sample_rate = None
 
         if self.verbose:
             verbose_print("AudioPlayer initialized", "info")
@@ -171,3 +178,142 @@ class AudioPlayer:
                 self.cleanup()
             except:
                 pass  # Ignore errors during cleanup
+
+        # Also cleanup streaming resources
+        if self._stream_active:
+            try:
+                self.stop_stream()
+            except:
+                pass
+
+    # ========================================================================
+    # Streaming methods for Realtime API
+    # ========================================================================
+
+    def start_stream(
+        self,
+        sample_rate: int = 24000,
+        channels: int = 1,
+        dtype: str = 'int16'
+    ):
+        """
+        Start continuous audio streaming playback (for Realtime API).
+
+        This method enables low-latency playback of audio chunks instead of
+        playing from files. Useful for real-time voice applications.
+
+        Args:
+            sample_rate: Sample rate in Hz (24000 for OpenAI Realtime API)
+            channels: Number of audio channels (1=mono, 2=stereo)
+            dtype: Data type for audio samples ('int16' or 'float32')
+
+        Example:
+            ```python
+            player = AudioPlayer()
+            player.start_stream(sample_rate=24000)
+
+            # Play audio chunks as they arrive
+            for chunk in audio_chunks:
+                player.play_chunk(chunk)
+
+            player.stop_stream()
+            ```
+        """
+        if self._stream_active:
+            if self.verbose:
+                verbose_print("Stream already active", "warning")
+            return
+
+        self._stream_sample_rate = sample_rate
+
+        if self.verbose:
+            verbose_print(
+                f"Starting audio output stream: {sample_rate}Hz, {channels} channel(s)",
+                "info"
+            )
+
+        # Create output stream
+        self._output_stream = sd.OutputStream(
+            samplerate=sample_rate,
+            channels=channels,
+            dtype=dtype,
+            blocksize=4800  # ~200ms buffer at 24kHz
+        )
+
+        self._output_stream.start()
+        self._stream_active = True
+
+        if self.verbose:
+            verbose_print("Audio output stream started successfully", "info")
+
+    def play_chunk(self, pcm_data: bytes):
+        """
+        Play a chunk of PCM audio data.
+
+        Args:
+            pcm_data: Raw PCM audio bytes (must match stream format)
+
+        Raises:
+            RuntimeError: If stream not started
+
+        Example:
+            ```python
+            player.start_stream(sample_rate=24000)
+
+            # Receive audio from Realtime API
+            audio_base64 = event.get("delta")
+            audio_bytes = base64.b64decode(audio_base64)
+
+            # Play it
+            player.play_chunk(audio_bytes)
+            ```
+        """
+        if not self._stream_active:
+            raise RuntimeError(
+                "Stream not started. Call start_stream() first."
+            )
+
+        # Convert bytes to numpy array
+        audio_array = np.frombuffer(pcm_data, dtype=np.int16)
+
+        # Write to output stream
+        self._output_stream.write(audio_array)
+
+    def stop_stream(self):
+        """
+        Stop the audio output stream and cleanup resources.
+
+        Example:
+            ```python
+            player.start_stream()
+            # ... streaming playback ...
+            player.stop_stream()
+            ```
+        """
+        if not self._stream_active:
+            if self.verbose:
+                verbose_print("Stream not active", "warning")
+            return
+
+        if self.verbose:
+            verbose_print("Stopping audio output stream...", "info")
+
+        if self._output_stream:
+            self._output_stream.stop()
+            self._output_stream.close()
+            self._output_stream = None
+
+        self._stream_active = False
+        self._stream_sample_rate = None
+
+        if self.verbose:
+            verbose_print("Audio output stream stopped", "info")
+
+    def is_stream_active(self) -> bool:
+        """
+        Check if audio output stream is currently active.
+
+        Returns:
+            True if streaming, False otherwise
+        """
+        return self._stream_active

@@ -38,6 +38,18 @@ from .video_dubbing import (
     DubbingConfig,
     VideoDubbingResult
 )
+from .realtime_voice import (
+    RealtimeVoice,
+    RealtimeVoiceProvider,
+    RealtimeSessionConfig,
+    OpenAIRealtimeVoice,
+    TurnDetectionType,
+    Voice,
+    AudioFormat,
+    Modality,
+    RealtimeVoiceChat,
+    RealtimeVoiceChatConfig
+)
 
 __all__ = [
     # TTS
@@ -84,4 +96,15 @@ __all__ = [
     'DubbedSegment',
     'DubbingConfig',
     'VideoDubbingResult',
+    # Realtime Voice
+    'RealtimeVoice',
+    'RealtimeVoiceProvider',
+    'RealtimeSessionConfig',
+    'OpenAIRealtimeVoice',
+    'TurnDetectionType',
+    'Voice',
+    'AudioFormat',
+    'Modality',
+    'RealtimeVoiceChat',
+    'RealtimeVoiceChatConfig',
 ]
