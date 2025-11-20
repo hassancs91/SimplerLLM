@@ -37,10 +37,16 @@ class AudioRecorder:
         self.dtype = dtype
         self.verbose = verbose
 
-        # Recording state
+        # Recording state (for file-based recording)
         self.is_recording = False
         self.recording_data = []
         self.stream = None
+
+        # Streaming state (for realtime streaming)
+        self._streaming = False
+        self._input_stream = None
+        self._stream_sample_rate = None
+        self._chunk_size = None
 
         if self.verbose:
             verbose_print(
@@ -234,3 +240,135 @@ class AudioRecorder:
     def get_default_device():
         """Get default input device."""
         return sd.query_devices(kind='input')
+
+    # ========================================================================
+    # Streaming methods for Realtime API
+    # ========================================================================
+
+    def start_stream(
+        self,
+        sample_rate: Optional[int] = None,
+        chunk_duration: float = 0.2
+    ):
+        """
+        Start continuous audio streaming (for Realtime API).
+
+        This method enables low-latency streaming of audio chunks instead of
+        recording to files. Useful for real-time voice applications.
+
+        Args:
+            sample_rate: Sample rate in Hz (None = use instance sample_rate)
+                        For OpenAI Realtime API, use 24000 Hz
+            chunk_duration: Duration of each chunk in seconds (default 0.2 = 200ms)
+
+        Example:
+            ```python
+            recorder = AudioRecorder(sample_rate=24000)
+            recorder.start_stream(chunk_duration=0.2)
+
+            while recording:
+                chunk = recorder.read_chunk()  # Get raw audio bytes
+                # Send chunk to API
+
+            recorder.stop_stream()
+            ```
+        """
+        if self._streaming:
+            if self.verbose:
+                verbose_print("Stream already started", "warning")
+            return
+
+        # Use provided sample rate or fall back to instance sample rate
+        self._stream_sample_rate = sample_rate if sample_rate is not None else self.sample_rate
+        self._chunk_size = int(self._stream_sample_rate * chunk_duration)
+
+        if self.verbose:
+            verbose_print(
+                f"Starting audio stream: {self._stream_sample_rate}Hz, "
+                f"{chunk_duration}s chunks ({self._chunk_size} frames)",
+                "info"
+            )
+
+        # Create input stream
+        self._input_stream = sd.InputStream(
+            samplerate=self._stream_sample_rate,
+            channels=self.channels,
+            dtype=self.dtype,
+            blocksize=self._chunk_size
+        )
+
+        self._input_stream.start()
+        self._streaming = True
+
+        if self.verbose:
+            verbose_print("Audio stream started successfully", "info")
+
+    def read_chunk(self) -> bytes:
+        """
+        Read one chunk of audio from the stream.
+
+        Returns:
+            Raw audio bytes (PCM16 format)
+
+        Raises:
+            RuntimeError: If stream not started
+
+        Example:
+            ```python
+            recorder.start_stream(sample_rate=24000)
+            audio_chunk = recorder.read_chunk()  # bytes object
+            ```
+        """
+        if not self._streaming:
+            raise RuntimeError(
+                "Stream not started. Call start_stream() first."
+            )
+
+        # Read audio data (blocking until data available)
+        audio_data, overflowed = self._input_stream.read(self._chunk_size)
+
+        if overflowed and self.verbose:
+            verbose_print("Audio input overflow - some data may be lost", "warning")
+
+        # Convert numpy array to bytes
+        return audio_data.tobytes()
+
+    def stop_stream(self):
+        """
+        Stop the audio stream and cleanup resources.
+
+        Example:
+            ```python
+            recorder.start_stream()
+            # ... streaming operations ...
+            recorder.stop_stream()
+            ```
+        """
+        if not self._streaming:
+            if self.verbose:
+                verbose_print("Stream not running", "warning")
+            return
+
+        if self.verbose:
+            verbose_print("Stopping audio stream...", "info")
+
+        if self._input_stream:
+            self._input_stream.stop()
+            self._input_stream.close()
+            self._input_stream = None
+
+        self._streaming = False
+        self._stream_sample_rate = None
+        self._chunk_size = None
+
+        if self.verbose:
+            verbose_print("Audio stream stopped", "info")
+
+    def is_streaming(self) -> bool:
+        """
+        Check if audio stream is currently active.
+
+        Returns:
+            True if streaming, False otherwise
+        """
+        return self._streaming

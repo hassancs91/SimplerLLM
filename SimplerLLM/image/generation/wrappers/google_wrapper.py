@@ -17,11 +17,11 @@ class GoogleImageGenerator(ImageGenerator):
         Args:
             provider: ImageProvider.GOOGLE_GEMINI
             model_name: Model to use (default: gemini-2.5-flash-image)
-            api_key: Google API key (uses GOOGLE_API_KEY env var if not provided)
+            api_key: Google API key (uses GEMINI_API_KEY env var if not provided)
             verbose: Enable verbose logging
         """
         super().__init__(provider, model_name, api_key, verbose=verbose)
-        self.api_key = api_key or os.getenv("GOOGLE_API_KEY", "")
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
 
     def generate_image(
         self,

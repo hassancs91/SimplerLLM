@@ -46,9 +46,9 @@ def generate_image(
     start_time = time.time() if full_response else None
 
     # Get API key from parameter or environment
-    api_key = api_key or os.getenv("GOOGLE_API_KEY", "")
+    api_key = api_key or os.getenv("GEMINI_API_KEY", "")
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY not found in environment variables or parameters")
+        raise ValueError("GEMINI_API_KEY not found in environment variables or parameters")
 
     # Build endpoint URL
     endpoint = f"{GEMINI_API_BASE}/models/{model_name}:generateContent"
@@ -71,8 +71,10 @@ def generate_image(
                     "parts": [{"text": prompt}]
                 }],
                 "generationConfig": {
-                    "response_modalities": ["image"],
-                    "aspect_ratio": aspect_ratio
+                    "responseModalities": ["Image"],
+                    "imageConfig": {
+                        "aspectRatio": aspect_ratio
+                    }
                 }
             }
 
