@@ -1,8 +1,9 @@
 from dotenv import load_dotenv
 import os
 import time
-import requests
-import base64
+import mimetypes
+import google.genai as genai
+from google.genai import types
 from .image_response_models import ImageGenerationResponse
 
 # Load environment variables
@@ -11,13 +12,10 @@ load_dotenv(override=True)
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", 2))
 
-# Google Gemini API base URL
-GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
-
 
 def generate_image(
     prompt,
-    model_name="gemini-2.5-flash-image",
+    model_name="gemini-2.5-flash-image-preview",
     aspect_ratio="1:1",
     output_format="png",
     output_path=None,
@@ -26,11 +24,11 @@ def generate_image(
     verbose=False,
 ):
     """
-    Generate image from text prompt using Google Gemini API.
+    Generate image from text prompt using Google Gemini API SDK.
 
     Args:
         prompt: Text description of the desired image
-        model_name: Model to use (default: gemini-2.5-flash-image)
+        model_name: Model to use (default: gemini-2.5-flash-image-preview)
         aspect_ratio: Aspect ratio (1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9)
         output_format: Image format (png, jpeg, webp) - for metadata only
         output_path: Optional file path to save image
@@ -50,83 +48,76 @@ def generate_image(
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables or parameters")
 
-    # Build endpoint URL
-    endpoint = f"{GEMINI_API_BASE}/models/{model_name}:generateContent"
+    # Initialize client with API key
+    client = genai.Client(api_key=api_key)
 
     if verbose:
         print(f"[Google Gemini] Generating image with model={model_name}, aspect_ratio={aspect_ratio}")
-        print(f"[Google Gemini] Using endpoint: {endpoint}")
+
+    # Always print which model is being used for verification
+    print(f"[Google Gemini API] Using model: {model_name}")
+
+    retry_delay = RETRY_DELAY
 
     for attempt in range(MAX_RETRIES):
         try:
-            # Build request headers
-            headers = {
-                "x-goog-api-key": api_key,
-                "Content-Type": "application/json"
-            }
+            # Build content parts
+            parts = [types.Part.from_text(text=prompt)]
 
-            # Build request payload
-            payload = {
-                "contents": [{
-                    "parts": [{"text": prompt}]
-                }],
-                "generationConfig": {
-                    "responseModalities": ["Image"],
-                    "imageConfig": {
-                        "aspectRatio": aspect_ratio
-                    }
-                }
-            }
+            # Create contents with proper structure
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=parts,
+                ),
+            ]
 
-            # Make API request
-            response = requests.post(
-                endpoint,
-                headers=headers,
-                json=payload,
-                timeout=120
+            # Configure generation with both IMAGE and TEXT modalities
+            generate_content_config = types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+                temperature=1.0,
             )
 
-            # Check for errors
-            if response.status_code != 200:
-                error_msg = f"Google Gemini API error (status {response.status_code})"
-                try:
-                    error_data = response.json()
-                    error_msg += f": {error_data}"
-                except:
-                    error_msg += f": {response.text}"
-                raise Exception(error_msg)
+            image_data = None
+            mime_type = None
+            text_output = []
 
-            # Parse response
-            response_json = response.json()
-            candidates = response_json.get("candidates", [])
+            # Use streaming
+            for chunk in client.models.generate_content_stream(
+                model=model_name,
+                contents=contents,
+                config=generate_content_config,
+            ):
+                # Check if chunk has valid content
+                if (
+                    chunk.candidates is None
+                    or len(chunk.candidates) == 0
+                    or chunk.candidates[0].content is None
+                    or chunk.candidates[0].content.parts is None
+                ):
+                    continue
 
-            if not candidates:
-                raise Exception("No candidates in response")
+                # Process each part in the chunk
+                for part in chunk.candidates[0].content.parts:
+                    # Handle image data
+                    if hasattr(part, 'inline_data') and part.inline_data and part.inline_data.data:
+                        if verbose:
+                            print(f"[Google Gemini] Found image data, MIME type: {part.inline_data.mime_type}")
+                        image_data = part.inline_data.data
+                        mime_type = part.inline_data.mime_type
 
-            parts = candidates[0].get("content", {}).get("parts", [])
+                    # Handle text data
+                    elif hasattr(part, 'text') and part.text:
+                        text_output.append(part.text)
 
-            # Extract image and text from parts
-            image_data_base64 = None
-            text_description = None
-
-            for part in parts:
-                if "inline_data" in part:
-                    # Found image data
-                    inline_data = part["inline_data"]
-                    image_data_base64 = inline_data.get("data")
-                    # mime_type = inline_data.get("mime_type")  # e.g., "image/png"
-                elif "text" in part:
-                    # Found text description
-                    text_description = part["text"]
-
-            if not image_data_base64:
+            if not image_data:
                 raise Exception("No image data found in response")
 
-            # Decode base64 to bytes
-            image_bytes = base64.b64decode(image_data_base64)
+            # Combine text output
+            text_description = "".join(text_output) if text_output else None
 
             if verbose:
-                print(f"[Google Gemini] Image decoded: {len(image_bytes)} bytes")
+                print(f"[Google Gemini] Image decoded: {len(image_data)} bytes")
                 if text_description:
                     desc_preview = text_description[:100] + "..." if len(text_description) > 100 else text_description
                     print(f"[Google Gemini] Text description: {desc_preview}")
@@ -136,14 +127,14 @@ def generate_image(
                 # Save to file
                 os.makedirs(os.path.dirname(output_path), exist_ok=True) if os.path.dirname(output_path) else None
                 with open(output_path, 'wb') as f:
-                    f.write(image_bytes)
-                image_data = output_path
-                file_size = len(image_bytes)
+                    f.write(image_data)
+                result_data = output_path
+                file_size = len(image_data)
                 if verbose:
                     print(f"[Google Gemini] Image saved to: {output_path} ({file_size} bytes)")
             else:
-                image_data = image_bytes
-                file_size = len(image_bytes)
+                result_data = image_data
+                file_size = len(image_data)
                 if verbose:
                     print(f"[Google Gemini] Image generated in memory ({file_size} bytes)")
 
@@ -152,9 +143,14 @@ def generate_image(
                 end_time = time.time()
                 process_time = end_time - start_time
 
+                # Determine file extension from mime type
+                file_extension = mimetypes.guess_extension(mime_type) if mime_type else None
+                if not file_extension:
+                    file_extension = ".png"
+
                 # Create response with Gemini-specific fields
                 response_obj = ImageGenerationResponse(
-                    image_data=image_data,
+                    image_data=result_data,
                     model=model_name,
                     prompt=prompt,
                     revised_prompt=text_description,  # Store text description as revised_prompt
@@ -165,26 +161,35 @@ def generate_image(
                     provider="GOOGLE_GEMINI",
                     file_size=file_size,
                     output_path=output_path,
-                    llm_provider_response=response_json,
+                    llm_provider_response=None,  # SDK doesn't expose raw JSON
                 )
 
                 return response_obj
 
-            return image_data
+            return result_data
 
         except Exception as e:
-            if attempt < MAX_RETRIES - 1:
-                if verbose:
-                    print(f"[Google Gemini] Attempt {attempt + 1} failed: {e}. Retrying...")
-                time.sleep(RETRY_DELAY * (2**attempt))
-            else:
-                error_msg = f"Failed to generate image after {MAX_RETRIES} attempts due to: {e}"
-                raise Exception(error_msg)
+            error_msg = str(e)
+            if verbose:
+                print(f"[Google Gemini] Attempt {attempt + 1}/{MAX_RETRIES} failed: {error_msg}")
+
+            # Check if it's a 500 internal error
+            if "500" in error_msg or "INTERNAL" in error_msg:
+                if attempt < MAX_RETRIES - 1:
+                    if verbose:
+                        print(f"[Google Gemini] Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                    continue
+
+            # If not a 500 error or last attempt, raise exception
+            if attempt == MAX_RETRIES - 1:
+                raise Exception(f"Failed to generate image after {MAX_RETRIES} attempts due to: {error_msg}")
 
 
 async def generate_image_async(
     prompt,
-    model_name="gemini-2.5-flash-image",
+    model_name="gemini-2.5-flash-image-preview",
     aspect_ratio="1:1",
     output_format="png",
     output_path=None,
@@ -193,11 +198,11 @@ async def generate_image_async(
     verbose=False,
 ):
     """
-    Async version: Generate image from text prompt using Google Gemini API.
+    Async version: Generate image from text prompt using Google Gemini API SDK.
 
     Args:
         prompt: Text description of the desired image
-        model_name: Model to use (default: gemini-2.5-flash-image)
+        model_name: Model to use (default: gemini-2.5-flash-image-preview)
         aspect_ratio: Aspect ratio (1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9)
         output_format: Image format (png, jpeg, webp) - for metadata only
         output_path: Optional file path to save image
@@ -212,8 +217,7 @@ async def generate_image_async(
     """
     import asyncio
 
-    # Note: For a truly async implementation, you would use aiohttp instead of requests
-    # For now, we'll run the sync version in an executor
+    # Run the sync version in an executor since the SDK doesn't provide async methods
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         None,

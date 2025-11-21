@@ -6,6 +6,7 @@ lxml_html_clean>=0.1
 newspaper3k>=0.2
 numpy>=1.26
 openai>=1.59
+google-genai>=1.52.0
 Pillow>=10.0
 pydantic>=2.10
 PyPDF2>=3.0
@@ -22,6 +23,6 @@ pydub>=0.25.1
 elevenlabs>=2.22.0
 sounddevice>=0.4.6
 pynput>=1.7.6
-pygame>=2.5.0
+# pygame>=2.5.0  # Optional - only needed for AudioPlayer file playback. Install with: pip install pygame>=2.5.0
 moviepy>=1.0.3
 yt-dlp>=2023.3.4
