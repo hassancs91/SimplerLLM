@@ -1,9 +1,18 @@
 from setuptools import setup, find_packages
 
 
-# Read requirements
+# Read requirements (excluding comments and empty lines)
 with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+    requirements = [
+        line.strip() for line in f.read().splitlines()
+        if line.strip() and not line.strip().startswith('#')
+    ]
+
+# Optional dependencies for specific features
+extras_require = {
+    'voice': ['pygame>=2.5.0'],  # For AudioPlayer file playback
+    'all': ['pygame>=2.5.0']  # Install all optional dependencies
+}
 
 # Read the long description from the README file
 with open("README.md", encoding="utf-8") as f:
@@ -11,7 +20,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="SimplerLLM",
-    version="0.3.1.23",
+    version="0.3.2",
     author="Hasan Aboul Hasan",
     author_email="hasan@learnwithhasan.com",
     description="An easy-to-use Library for interacting with language models.",
@@ -20,6 +29,7 @@ setup(
     url="https://github.com/hassancs91/SimplerLLM",
     packages=find_packages(),
     install_requires=requirements,
+    extras_require=extras_require,
     python_requires=">=3.6",
     license='MIT',
     keywords="text generation, openai, LLM, RAG",

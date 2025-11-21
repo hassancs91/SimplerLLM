@@ -92,7 +92,7 @@ class ImageGenerator:
             from .wrappers.google_wrapper import GoogleImageGenerator
             return GoogleImageGenerator(
                 provider=provider,
-                model_name=model_name or "gemini-2.5-flash-image",
+                model_name=model_name or "gemini-2.5-flash-image-preview",
                 api_key=api_key,
                 verbose=verbose,
             )

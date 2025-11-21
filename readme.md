@@ -17,6 +17,15 @@ SimplerLLM is an open-source Python library designed to simplify interactions wi
 pip install simplerllm
 ```
 
+### Optional Dependencies
+
+For voice/audio features (AudioPlayer file playback):
+```bash
+pip install simplerllm[voice]
+# Or install pygame directly:
+pip install pygame>=2.5.0
+```
+
 ## Key Features
 
 ### 🔗 Unified LLM Interface

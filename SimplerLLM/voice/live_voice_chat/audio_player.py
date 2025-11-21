@@ -1,4 +1,3 @@
-import pygame
 import os
 import time
 from typing import Optional
@@ -14,6 +13,9 @@ class AudioPlayer:
     Supports MP3, WAV, OGG formats with volume control and
     both blocking and non-blocking playback modes.
     """
+
+    # Class variable to store pygame module after lazy import
+    _pygame = None
 
     def __init__(self, verbose: bool = False):
         """
@@ -36,12 +38,26 @@ class AudioPlayer:
     def _ensure_initialized(self):
         """Ensure pygame mixer is initialized."""
         if not self._initialized:
+            # Lazy import pygame - only when actually needed
+            if AudioPlayer._pygame is None:
+                try:
+                    import pygame
+                    AudioPlayer._pygame = pygame
+                except ImportError:
+                    error_msg = (
+                        "pygame is required for audio playback but not installed. "
+                        "Install it with: pip install pygame>=2.5.0"
+                    )
+                    if self.verbose:
+                        verbose_print(error_msg, "error")
+                    raise ImportError(error_msg)
+
             try:
-                pygame.mixer.init()
+                AudioPlayer._pygame.mixer.init()
                 self._initialized = True
                 if self.verbose:
                     verbose_print("Pygame mixer initialized", "debug")
-            except pygame.error as e:
+            except AudioPlayer._pygame.error as e:
                 if self.verbose:
                     verbose_print(f"Error initializing pygame mixer: {e}", "error")
                 raise
@@ -85,19 +101,19 @@ class AudioPlayer:
                 verbose_print(f"Playing: {audio_path} ({size_kb:.1f}KB)", "info")
 
             # Load and play audio
-            pygame.mixer.music.load(audio_path)
-            pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))
-            pygame.mixer.music.play()
+            AudioPlayer._pygame.mixer.music.load(audio_path)
+            AudioPlayer._pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))
+            AudioPlayer._pygame.mixer.music.play()
 
             if wait:
                 # Wait for playback to finish
-                while pygame.mixer.music.get_busy():
+                while AudioPlayer._pygame.mixer.music.get_busy():
                     time.sleep(0.1)
 
                 if self.verbose:
                     verbose_print("Playback finished", "info")
 
-        except pygame.error as e:
+        except AudioPlayer._pygame.error as e:
             error_msg = f"Error playing audio: {e}"
             if self.verbose:
                 verbose_print(error_msg, "error")
@@ -119,22 +135,22 @@ class AudioPlayer:
 
     def stop(self):
         """Stop currently playing audio."""
-        if self._initialized and pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
+        if self._initialized and AudioPlayer._pygame.mixer.music.get_busy():
+            AudioPlayer._pygame.mixer.music.stop()
             if self.verbose:
                 verbose_print("Playback stopped", "info")
 
     def pause(self):
         """Pause currently playing audio."""
-        if self._initialized and pygame.mixer.music.get_busy():
-            pygame.mixer.music.pause()
+        if self._initialized and AudioPlayer._pygame.mixer.music.get_busy():
+            AudioPlayer._pygame.mixer.music.pause()
             if self.verbose:
                 verbose_print("Playback paused", "info")
 
     def unpause(self):
         """Resume paused audio."""
         if self._initialized:
-            pygame.mixer.music.unpause()
+            AudioPlayer._pygame.mixer.music.unpause()
             if self.verbose:
                 verbose_print("Playback resumed", "info")
 
@@ -146,27 +162,27 @@ class AudioPlayer:
             volume: Volume level (0.0 to 1.0)
         """
         if self._initialized:
-            pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))
+            AudioPlayer._pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))
             if self.verbose:
                 verbose_print(f"Volume set to {volume:.2f}", "debug")
 
     def is_playing(self) -> bool:
         """Check if audio is currently playing."""
         if self._initialized:
-            return pygame.mixer.music.get_busy()
+            return AudioPlayer._pygame.mixer.music.get_busy()
         return False
 
     def get_volume(self) -> float:
         """Get current volume level."""
         if self._initialized:
-            return pygame.mixer.music.get_volume()
+            return AudioPlayer._pygame.mixer.music.get_volume()
         return 0.0
 
     def cleanup(self):
         """Cleanup pygame mixer resources."""
         if self._initialized:
-            pygame.mixer.music.stop()
-            pygame.mixer.quit()
+            AudioPlayer._pygame.mixer.music.stop()
+            AudioPlayer._pygame.mixer.quit()
             self._initialized = False
             if self.verbose:
                 verbose_print("AudioPlayer cleaned up", "debug")

@@ -16,7 +16,7 @@ class GoogleImageGenerator(ImageGenerator):
 
         Args:
             provider: ImageProvider.GOOGLE_GEMINI
-            model_name: Model to use (default: gemini-2.5-flash-image)
+            model_name: Model to use (default: gemini-2.5-flash-image-preview)
             api_key: Google API key (uses GEMINI_API_KEY env var if not provided)
             verbose: Enable verbose logging
         """
@@ -42,7 +42,7 @@ class GoogleImageGenerator(ImageGenerator):
                   or aspect ratio string (e.g., "16:9", "1:1", "21:9")
                   Default: ImageSize.SQUARE
             model: Model to use (None = use instance default)
-                   Default: gemini-2.5-flash-image
+                   Default: gemini-2.5-flash-image-preview
             output_format: How to return the image (default: "bytes")
                           Options: "bytes" (returns image bytes),
                                    "file" (saves to file, requires output_path)
