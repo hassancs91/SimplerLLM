@@ -5,17 +5,20 @@ from SimplerLLM.utils.custom_verbose import verbose_print
 from SimplerLLM.language.llm_providers.llm_response_models import LLMFullResponse
 
 class ReliableLLM:
-    def __init__(self, primary_llm: LLM, secondary_llm: LLM, verbose=False):
+    def __init__(self, primary_llm: LLM, secondary_llm: LLM, verbose=False, validation_max_tokens: int = 4000):
         """
         Initialize ReliableLLM with primary and secondary LLM providers.
-        
+
         Args:
             primary_llm (LLM): The primary LLM provider to use first
             secondary_llm (LLM): The secondary LLM provider to use as fallback
+            verbose (bool): Enable verbose logging
+            validation_max_tokens (int): Max tokens for provider validation test (default: 4000)
         """
         self.primary_llm = primary_llm
         self.secondary_llm = secondary_llm
         self.verbose = verbose
+        self.validation_max_tokens = validation_max_tokens
         
         if self.verbose:
             verbose_print("Initializing ReliableLLM with fallback support", "info")
@@ -38,7 +41,7 @@ class ReliableLLM:
                 verbose_print("Validating primary provider...", "info")
             response = self.primary_llm.generate_response(
                 prompt="test",
-                max_tokens=1
+                max_tokens=self.validation_max_tokens
             )
             if response is None:
                 self.primary_valid = False
@@ -55,7 +58,7 @@ class ReliableLLM:
                 verbose_print("Validating secondary provider...", "info")
             response = self.secondary_llm.generate_response(
                 prompt="test",
-                max_tokens=1
+                max_tokens=self.validation_max_tokens
             )
             if response is None:
                 self.secondary_valid = False
@@ -91,10 +94,12 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
     ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
-        
+
         Args:
             model_name (str, optional): The name of the model to use.
             prompt (str, optional): A single prompt string to generate a response for.
@@ -105,12 +110,15 @@ class ReliableLLM:
             top_p (float, optional): Controls diversity of output.
             full_response (bool, optional): If True, returns the full API response.
             return_provider (bool, optional): If True, returns a tuple of (response, provider) where provider is the LLMProvider that generated the response.
-            
+            json_mode (bool, optional): If True, enables JSON mode for structured output.
+            images (list, optional): A list of image URLs or file paths for vision tasks.
+            detail (str, optional): Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+
         Returns:
-            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]: 
+            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]:
                 - If return_provider is False: The generated response from either primary or secondary LLM
                 - If return_provider is True: A tuple of (response, provider, model_name) where provider is the LLMProvider that was used and model_name is the name of the model
-            
+
         Raises:
             Exception: If both primary and secondary LLMs fail
         """
@@ -128,6 +136,8 @@ class ReliableLLM:
                     top_p=top_p,
                     full_response=full_response,
                     json_mode=json_mode,
+                    images=images,
+                    detail=detail,
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
@@ -147,6 +157,8 @@ class ReliableLLM:
                         top_p=top_p,
                         full_response=full_response,
                         json_mode=json_mode,
+                        images=images,
+                        detail=detail,
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
@@ -167,6 +179,8 @@ class ReliableLLM:
                 top_p=top_p,
                 full_response=full_response,
                 json_mode=json_mode,
+                images=images,
+                detail=detail,
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")
@@ -187,10 +201,12 @@ class ReliableLLM:
         full_response: bool = False,
         return_provider: bool = False,
         json_mode: bool = False,
+        images: list = None,
+        detail: str = "auto",
     ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
-        
+
         Args:
             model_name (str, optional): The name of the model to use.
             prompt (str, optional): A single prompt string to generate a response for.
@@ -201,12 +217,15 @@ class ReliableLLM:
             top_p (float, optional): Controls diversity of output.
             full_response (bool, optional): If True, returns the full API response.
             return_provider (bool, optional): If True, returns a tuple of (response, provider) where provider is the LLMProvider that generated the response.
-            
+            json_mode (bool, optional): If True, enables JSON mode for structured output.
+            images (list, optional): A list of image URLs or file paths for vision tasks.
+            detail (str, optional): Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+
         Returns:
-            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]: 
+            Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]:
                 - If return_provider is False: The generated response from either primary or secondary LLM
                 - If return_provider is True: A tuple of (response, provider, model_name) where provider is the LLMProvider that was used and model_name is the name of the model
-            
+
         Raises:
             Exception: If both primary and secondary LLMs fail
         """
@@ -224,6 +243,8 @@ class ReliableLLM:
                     top_p=top_p,
                     full_response=full_response,
                     json_mode=json_mode,
+                    images=images,
+                    detail=detail,
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
@@ -243,6 +264,8 @@ class ReliableLLM:
                         top_p=top_p,
                         full_response=full_response,
                         json_mode=json_mode,
+                        images=images,
+                        detail=detail,
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
@@ -263,6 +286,8 @@ class ReliableLLM:
                 top_p=top_p,
                 full_response=full_response,
                 json_mode=json_mode,
+                images=images,
+                detail=detail,
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")

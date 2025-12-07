@@ -18,6 +18,7 @@ class ImageSize(Enum):
     SQUARE = "square"
     HORIZONTAL = "horizontal"
     VERTICAL = "vertical"
+    PORTRAIT_3_4 = "portrait_3_4"  # 3:4 aspect ratio, closest to A4 paper
 
 
 class ImageGenerator:
@@ -155,6 +156,7 @@ class ImageGenerator:
                 ImageSize.SQUARE: "1024x1024",
                 ImageSize.HORIZONTAL: "1792x1024",
                 ImageSize.VERTICAL: "1024x1792",
+                ImageSize.PORTRAIT_3_4: "768x1024",
             }
             return size_map.get(size, "1024x1024")
 
@@ -164,6 +166,7 @@ class ImageGenerator:
                 ImageSize.SQUARE: "1:1",
                 ImageSize.HORIZONTAL: "16:9",
                 ImageSize.VERTICAL: "9:16",
+                ImageSize.PORTRAIT_3_4: "3:4",
             }
             return size_map.get(size, "1:1")
 
@@ -173,6 +176,7 @@ class ImageGenerator:
                 ImageSize.SQUARE: "1:1",
                 ImageSize.HORIZONTAL: "16:9",
                 ImageSize.VERTICAL: "9:16",
+                ImageSize.PORTRAIT_3_4: "3:4",
             }
             return size_map.get(size, "1:1")
 

@@ -18,7 +18,8 @@
       "Bash(python:*)",
       "Bash(venv/Scripts/python.exe -m pytest:*)",
       "Bash(venv/Scripts/python.exe:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(pip show:*)"
     ],
     "deny": [],
     "ask": []
