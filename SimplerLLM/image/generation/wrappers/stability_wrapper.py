@@ -305,6 +305,7 @@ class StabilityImageGenerator(ImageGenerator):
             ImageSize.SQUARE: "1:1",
             ImageSize.HORIZONTAL: "16:9",
             ImageSize.VERTICAL: "9:16",
+            ImageSize.PORTRAIT_3_4: "3:4",
         }
 
         return size_map.get(size, "1:1")

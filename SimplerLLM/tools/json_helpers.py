@@ -1,8 +1,6 @@
 import re
 import json
 from pydantic import BaseModel, ValidationError
-from typing import get_type_hints
-from pydantic import BaseModel
 from typing import Type, get_type_hints, List, get_origin, get_args, Union, Dict, Any, Literal
 from enum import Enum
 from datetime import datetime, date, time
@@ -77,7 +75,6 @@ def __json_extend_search(text, span):
 
 
 
-@DeprecationWarning
 def __extend_search_deprecated(text, span):
     # Extend the search to try to capture nested structures
     start, end = span

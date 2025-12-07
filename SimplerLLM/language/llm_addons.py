@@ -76,6 +76,8 @@ def generate_pydantic_json_model(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
+    images: list = None,
+    detail: str = "auto",
 ) -> Union[BaseModel, LLMFullResponse, str]:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
@@ -91,8 +93,10 @@ def generate_pydantic_json_model(
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
     :param full_response: If True, returns the full API response including token counts.
+    :param images: A list of image URLs or file paths for vision tasks.
+    :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
 
-    :return: 
+    :return:
         - If full_response=False: BaseModel object
         - If full_response=True: LLMFullResponse object with model_object attribute and input_token_count and output_token_count
         - Error message string if unsuccessful
@@ -110,7 +114,9 @@ def generate_pydantic_json_model(
                 temperature=temperature,
                 top_p=top_p,
                 json_mode=True,
-                full_response=full_response
+                full_response=full_response,
+                images=images,
+                detail=detail,
             )
 
             response_text = ai_response.generated_text if full_response else ai_response
@@ -162,6 +168,8 @@ def generate_pydantic_json_model_reliable(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
+    images: list = None,
+    detail: str = "auto",
 ) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Generates a model instance using ReliableLLM with fallback capability.
@@ -177,8 +185,10 @@ def generate_pydantic_json_model_reliable(
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
     :param full_response: If True, returns the full API response including token counts.
+    :param images: A list of image URLs or file paths for vision tasks.
+    :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
 
-    :return: 
+    :return:
         - If full_response=False: Tuple of (model_object, provider, model_name)
         - If full_response=True: LLMFullResponse object with model_object, provider, and model_name attributes, and input_token_count and output_token_count
         - Error message string if unsuccessful
@@ -196,7 +206,9 @@ def generate_pydantic_json_model_reliable(
                 temperature=temperature,
                 top_p=top_p,
                 json_mode=True,
-                full_response=full_response
+                full_response=full_response,
+                images=images,
+                detail=detail,
             )
             
             if full_response:
@@ -253,6 +265,8 @@ async def generate_pydantic_json_model_reliable_async(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
+    images: list = None,
+    detail: str = "auto",
 ) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Asynchronously generates a model instance using ReliableLLM with fallback capability.
@@ -268,8 +282,10 @@ async def generate_pydantic_json_model_reliable_async(
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
     :param full_response: If True, returns the full API response including token counts.
+    :param images: A list of image URLs or file paths for vision tasks.
+    :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
 
-    :return: 
+    :return:
         - If full_response=False: Tuple of (model_object, provider, model_name)
         - If full_response=True: LLMFullResponse object with model_object, provider, and model_name attributes, and input_token_count and output_token_count
         - Error message string if unsuccessful
@@ -287,7 +303,9 @@ async def generate_pydantic_json_model_reliable_async(
                 temperature=temperature,
                 top_p=top_p,
                 json_mode=True,
-                full_response=full_response
+                full_response=full_response,
+                images=images,
+                detail=detail,
             )
             
             if full_response:
@@ -344,6 +362,8 @@ async def generate_pydantic_json_model_async(
     custom_prompt_suffix: str = None,
     system_prompt: str = "The Output is a VALID Structured JSON",
     full_response: bool = False,
+    images: list = None,
+    detail: str = "auto",
 ) -> Union[BaseModel, LLMFullResponse, str]:
     """
     Asynchronously generates a model instance based on a given prompt, retrying on validation errors.
@@ -359,8 +379,10 @@ async def generate_pydantic_json_model_async(
     :param custom_prompt_suffix: Optional string to customize or override the generated prompt extension.
     :param system_prompt: System prompt to set the context for the LLM.
     :param full_response: If True, returns the full API response including token counts.
+    :param images: A list of image URLs or file paths for vision tasks.
+    :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
 
-    :return: 
+    :return:
         - If full_response=False: BaseModel object
         - If full_response=True: LLMFullResponse object with model_object attribute and input_token_count and output_token_count
         - Error message string if unsuccessful
@@ -378,7 +400,9 @@ async def generate_pydantic_json_model_async(
                 temperature=temperature,
                 top_p=top_p,
                 json_mode=True,
-                full_response=full_response
+                full_response=full_response,
+                images=images,
+                detail=detail,
             )
 
             response_text = ai_response.generated_text if full_response else ai_response
