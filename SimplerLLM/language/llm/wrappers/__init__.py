@@ -4,6 +4,7 @@ from .anthropic_wrapper import AnthropicLLM
 from .ollama_wrapper import OllamaLLM
 from .deepseek_wrapper import DeepSeekLLM
 from .cohere_wrapper import CohereLLM
+from .perplexity_wrapper import PerplexityLLM
 
 __all__ = [
     'OpenAILLM',
@@ -12,4 +13,5 @@ __all__ = [
     'OllamaLLM',
     'DeepSeekLLM',
     'CohereLLM',
+    'PerplexityLLM',
 ]

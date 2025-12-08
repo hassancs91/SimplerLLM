@@ -96,6 +96,7 @@ class ReliableLLM:
         json_mode=False,
         images: list = None,
         detail: str = "auto",
+        web_search: bool = False,
     ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Generate a response using the primary LLM, falling back to secondary if primary fails.
@@ -113,6 +114,7 @@ class ReliableLLM:
             json_mode (bool, optional): If True, enables JSON mode for structured output.
             images (list, optional): A list of image URLs or file paths for vision tasks.
             detail (str, optional): Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+            web_search (bool, optional): If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
         Returns:
             Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]:
@@ -138,6 +140,7 @@ class ReliableLLM:
                     json_mode=json_mode,
                     images=images,
                     detail=detail,
+                    web_search=web_search,
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
@@ -159,6 +162,7 @@ class ReliableLLM:
                         json_mode=json_mode,
                         images=images,
                         detail=detail,
+                        web_search=web_search,
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
@@ -181,6 +185,7 @@ class ReliableLLM:
                 json_mode=json_mode,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")
@@ -203,6 +208,7 @@ class ReliableLLM:
         json_mode: bool = False,
         images: list = None,
         detail: str = "auto",
+        web_search: bool = False,
     ) -> Union[str, LLMFullResponse, Tuple[Union[str, LLMFullResponse], LLMProvider, str]]:
         """
         Asynchronously generate a response using the primary LLM, falling back to secondary if primary fails.
@@ -220,6 +226,7 @@ class ReliableLLM:
             json_mode (bool, optional): If True, enables JSON mode for structured output.
             images (list, optional): A list of image URLs or file paths for vision tasks.
             detail (str, optional): Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+            web_search (bool, optional): If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
         Returns:
             Union[str, dict, Tuple[Union[str, dict], LLMProvider, str]]:
@@ -245,6 +252,7 @@ class ReliableLLM:
                     json_mode=json_mode,
                     images=images,
                     detail=detail,
+                    web_search=web_search,
                 )
                 if self.verbose:
                     verbose_print("Primary provider generated response successfully", "info")
@@ -266,6 +274,7 @@ class ReliableLLM:
                         json_mode=json_mode,
                         images=images,
                         detail=detail,
+                        web_search=web_search,
                     )
                     if self.verbose:
                         verbose_print("Secondary provider generated response successfully", "info")
@@ -288,6 +297,7 @@ class ReliableLLM:
                 json_mode=json_mode,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
             if self.verbose:
                 verbose_print("Secondary provider generated response successfully", "info")

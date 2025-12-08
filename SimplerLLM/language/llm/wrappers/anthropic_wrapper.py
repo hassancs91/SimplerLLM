@@ -29,6 +29,7 @@ class AnthropicLLM(LLM):
         cached_input: str = "",
         json_mode=False,
         images: list = None,
+        web_search: bool = False,
     ):
         """
         Generate a response using the Anthropic LLM.
@@ -46,6 +47,7 @@ class AnthropicLLM(LLM):
             cached_input (str, optional): The cached input to use if prompt_caching is True. Defaults to "".
             json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
             images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
+            web_search (bool, optional): If True, enables web search before generating response. Defaults to False.
 
         Returns:
             The generated response from the Anthropic LLM.
@@ -53,6 +55,43 @@ class AnthropicLLM(LLM):
         Raises:
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
+        # Handle web search mode
+        if web_search:
+            if not prompt and not messages:
+                raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+            effective_model = model_name if model_name else self.model_name
+
+            # Prepare messages for web search
+            if prompt:
+                if images:
+                    user_content = prepare_vision_content_anthropic(prompt, images)
+                else:
+                    user_content = prompt
+                model_messages = [{"role": "user", "content": user_content}]
+            else:
+                model_messages = self.append_messages(messages)
+
+            if self.verbose:
+                verbose_print(f"Generating response with web search using {effective_model}...", "info")
+
+            try:
+                response = anthropic_llm.generate_response_with_web_search(
+                    model_name=effective_model,
+                    system_prompt=system_prompt,
+                    messages=model_messages,
+                    max_tokens=max_tokens,
+                    full_response=full_response,
+                    api_key=self.api_key,
+                )
+                if self.verbose:
+                    verbose_print("Web search response received successfully", "info")
+                return response
+            except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Error generating web search response: {str(e)}", "error")
+                raise
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -130,6 +169,7 @@ class AnthropicLLM(LLM):
         cached_input: str = "",
         json_mode=False,
         images: list = None,
+        web_search: bool = False,
     ):
         """
         Asynchronously generate a response from the Anthropic LLM.
@@ -147,6 +187,7 @@ class AnthropicLLM(LLM):
             cached_input (str, optional): The cached input to use. Defaults to "".
             json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
             images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
+            web_search (bool, optional): If True, enables web search before generating response. Defaults to False.
 
         Returns:
             The asynchronously generated response from the Anthropic LLM.
@@ -154,6 +195,43 @@ class AnthropicLLM(LLM):
         Raises:
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
+        # Handle web search mode
+        if web_search:
+            if not prompt and not messages:
+                raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+            effective_model = model_name if model_name else self.model_name
+
+            # Prepare messages for web search
+            if prompt:
+                if images:
+                    user_content = prepare_vision_content_anthropic(prompt, images)
+                else:
+                    user_content = prompt
+                model_messages = [{"role": "user", "content": user_content}]
+            else:
+                model_messages = self.append_messages(messages)
+
+            if self.verbose:
+                verbose_print(f"Generating response with web search (async) using {effective_model}...", "info")
+
+            try:
+                response = await anthropic_llm.generate_response_with_web_search_async(
+                    model_name=effective_model,
+                    system_prompt=system_prompt,
+                    messages=model_messages,
+                    max_tokens=max_tokens,
+                    full_response=full_response,
+                    api_key=self.api_key,
+                )
+                if self.verbose:
+                    verbose_print("Web search response received successfully", "info")
+                return response
+            except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Error generating web search response: {str(e)}", "error")
+                raise
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs

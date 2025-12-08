@@ -5,6 +5,7 @@ from .wrappers.gemini_wrapper import GeminiLLM
 from .wrappers.anthropic_wrapper import AnthropicLLM
 from .wrappers.ollama_wrapper import OllamaLLM
 from .wrappers.deepseek_wrapper import DeepSeekLLM
+from .wrappers.perplexity_wrapper import PerplexityLLM
 
 __all__ = [
     'LLM',
@@ -16,4 +17,5 @@ __all__ = [
     'AnthropicLLM',
     'OllamaLLM',
     'DeepSeekLLM',
+    'PerplexityLLM',
 ]

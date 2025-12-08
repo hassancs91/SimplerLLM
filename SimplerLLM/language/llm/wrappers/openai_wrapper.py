@@ -28,6 +28,7 @@ class OpenAILLM(LLM):
         json_mode=False,
         images: list = None,
         detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Generate a response using the OpenAI language model.
@@ -44,6 +45,7 @@ class OpenAILLM(LLM):
             json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
             images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
             detail (str, optional): Level of detail for image processing ("low", "high", "auto"). Defaults to "auto".
+            web_search (bool, optional): If True, enables web search before generating response. Defaults to False.
 
         Returns:
             str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
@@ -51,6 +53,43 @@ class OpenAILLM(LLM):
         Raises:
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
+        # Handle web search mode - uses Responses API
+        if web_search:
+            if not prompt and not messages:
+                raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+            # Combine system prompt and user input for web search
+            if prompt:
+                input_text = f"{system_prompt}\n\n{prompt}"
+            else:
+                # Convert messages to a single input string
+                input_text = system_prompt + "\n\n"
+                for msg in messages:
+                    role = msg.get("role", "user")
+                    content = msg.get("content", "")
+                    input_text += f"{role}: {content}\n"
+
+            effective_model = model_name if model_name else self.model_name
+
+            if self.verbose:
+                verbose_print(f"Generating response with web search using {effective_model}...", "info")
+
+            try:
+                response = openai_llm.generate_response_with_web_search(
+                    model_name=effective_model,
+                    input_text=input_text,
+                    max_tokens=max_tokens,
+                    full_response=full_response,
+                    api_key=self.api_key,
+                )
+                if self.verbose:
+                    verbose_print("Web search response received successfully", "info")
+                return response
+            except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Error generating web search response: {str(e)}", "error")
+                raise
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
@@ -126,6 +165,7 @@ class OpenAILLM(LLM):
         json_mode=False,
         images: list = None,
         detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Asynchronously generates a response using the OpenAI API.
@@ -142,6 +182,7 @@ class OpenAILLM(LLM):
             json_mode (bool, optional): If True, enables JSON mode. Defaults to False.
             images (list, optional): List of image sources (URLs or file paths) for vision-capable models. Defaults to None.
             detail (str, optional): Level of detail for image processing ("low", "high", "auto"). Defaults to "auto".
+            web_search (bool, optional): If True, enables web search before generating response. Defaults to False.
 
         Returns:
             str or dict: The generated response as a string, or the full API response as a dictionary if full_response is True.
@@ -149,6 +190,43 @@ class OpenAILLM(LLM):
         Raises:
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
+        # Handle web search mode - uses Responses API
+        if web_search:
+            if not prompt and not messages:
+                raise ValueError("Either 'prompt' or 'messages' must be provided.")
+
+            # Combine system prompt and user input for web search
+            if prompt:
+                input_text = f"{system_prompt}\n\n{prompt}"
+            else:
+                # Convert messages to a single input string
+                input_text = system_prompt + "\n\n"
+                for msg in messages:
+                    role = msg.get("role", "user")
+                    content = msg.get("content", "")
+                    input_text += f"{role}: {content}\n"
+
+            effective_model = model_name if model_name else self.model_name
+
+            if self.verbose:
+                verbose_print(f"Generating response with web search (async) using {effective_model}...", "info")
+
+            try:
+                response = await openai_llm.generate_response_with_web_search_async(
+                    model_name=effective_model,
+                    input_text=input_text,
+                    max_tokens=max_tokens,
+                    full_response=full_response,
+                    api_key=self.api_key,
+                )
+                if self.verbose:
+                    verbose_print("Web search response received successfully", "info")
+                return response
+            except Exception as e:
+                if self.verbose:
+                    verbose_print(f"Error generating web search response: {str(e)}", "error")
+                raise
+
         params = self.prepare_params(model_name, temperature, top_p)
 
         # Validate inputs
