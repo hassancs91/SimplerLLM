@@ -78,6 +78,7 @@ def generate_pydantic_json_model(
     full_response: bool = False,
     images: list = None,
     detail: str = "auto",
+    web_search: bool = False,
 ) -> Union[BaseModel, LLMFullResponse, str]:
     """
     Generates a model instance based on a given prompt, retrying on validation errors.
@@ -95,6 +96,7 @@ def generate_pydantic_json_model(
     :param full_response: If True, returns the full API response including token counts.
     :param images: A list of image URLs or file paths for vision tasks.
     :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+    :param web_search: If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
     :return:
         - If full_response=False: BaseModel object
@@ -117,6 +119,7 @@ def generate_pydantic_json_model(
                 full_response=full_response,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
 
             response_text = ai_response.generated_text if full_response else ai_response
@@ -170,6 +173,7 @@ def generate_pydantic_json_model_reliable(
     full_response: bool = False,
     images: list = None,
     detail: str = "auto",
+    web_search: bool = False,
 ) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Generates a model instance using ReliableLLM with fallback capability.
@@ -187,6 +191,7 @@ def generate_pydantic_json_model_reliable(
     :param full_response: If True, returns the full API response including token counts.
     :param images: A list of image URLs or file paths for vision tasks.
     :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+    :param web_search: If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
     :return:
         - If full_response=False: Tuple of (model_object, provider, model_name)
@@ -209,6 +214,7 @@ def generate_pydantic_json_model_reliable(
                 full_response=full_response,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
             
             if full_response:
@@ -267,6 +273,7 @@ async def generate_pydantic_json_model_reliable_async(
     full_response: bool = False,
     images: list = None,
     detail: str = "auto",
+    web_search: bool = False,
 ) -> Union[Tuple[BaseModel, LLMProvider, str], LLMFullResponse, str]:
     """
     Asynchronously generates a model instance using ReliableLLM with fallback capability.
@@ -284,6 +291,7 @@ async def generate_pydantic_json_model_reliable_async(
     :param full_response: If True, returns the full API response including token counts.
     :param images: A list of image URLs or file paths for vision tasks.
     :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+    :param web_search: If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
     :return:
         - If full_response=False: Tuple of (model_object, provider, model_name)
@@ -306,8 +314,9 @@ async def generate_pydantic_json_model_reliable_async(
                 full_response=full_response,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
-            
+
             if full_response:
                 ai_response, provider, model_name = result
                 response_text = ai_response.generated_text
@@ -316,7 +325,7 @@ async def generate_pydantic_json_model_reliable_async(
 
             if response_text:
                 json_object = extract_json_from_text(response_text)
-                
+
                 # Check if json_object is None (no valid JSON found)
                 if json_object is None:
                     if attempt < max_retries:
@@ -364,6 +373,7 @@ async def generate_pydantic_json_model_async(
     full_response: bool = False,
     images: list = None,
     detail: str = "auto",
+    web_search: bool = False,
 ) -> Union[BaseModel, LLMFullResponse, str]:
     """
     Asynchronously generates a model instance based on a given prompt, retrying on validation errors.
@@ -381,6 +391,7 @@ async def generate_pydantic_json_model_async(
     :param full_response: If True, returns the full API response including token counts.
     :param images: A list of image URLs or file paths for vision tasks.
     :param detail: Level of detail for image analysis ("low", "high", "auto"). OpenAI-specific parameter. Defaults to "auto".
+    :param web_search: If True, enables web search before generating response. OpenAI-specific parameter. Defaults to False.
 
     :return:
         - If full_response=False: BaseModel object
@@ -403,6 +414,7 @@ async def generate_pydantic_json_model_async(
                 full_response=full_response,
                 images=images,
                 detail=detail,
+                web_search=web_search,
             )
 
             response_text = ai_response.generated_text if full_response else ai_response

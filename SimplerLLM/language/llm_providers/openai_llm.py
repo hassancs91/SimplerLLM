@@ -234,6 +234,149 @@ async def generate_response_async(
                 error_msg = f"Failed after {MAX_RETRIES} attempts due to: {e}"
                 raise Exception(error_msg)
 
+
+def generate_response_with_web_search(
+    model_name,
+    input_text,
+    max_tokens=300,
+    full_response=False,
+    api_key=None,
+):
+    """
+    Generate a response using OpenAI's Responses API with web search enabled.
+
+    Args:
+        model_name: The model to use (e.g., 'gpt-4o', 'gpt-4o-mini')
+        input_text: The input prompt/question
+        max_tokens: Maximum tokens for the response
+        full_response: If True, returns LLMFullResponse with web_sources
+        api_key: OpenAI API key
+
+    Returns:
+        str or LLMFullResponse: Generated text or full response with web sources
+    """
+    start_time = time.time() if full_response else None
+    openai_client = OpenAI(api_key=api_key)
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = openai_client.responses.create(
+                model=model_name,
+                input=input_text,
+                tools=[{"type": "web_search"}],
+            )
+
+            # Extract text and citations from the response
+            generated_text = ""
+            web_sources = []
+
+            for output_item in response.output:
+                if output_item.type == "message":
+                    for content_item in output_item.content:
+                        if content_item.type == "output_text":
+                            generated_text = content_item.text
+                            # Extract URL citations from annotations
+                            if hasattr(content_item, 'annotations') and content_item.annotations:
+                                for annotation in content_item.annotations:
+                                    if annotation.type == "url_citation":
+                                        web_sources.append({
+                                            "title": annotation.title if hasattr(annotation, 'title') else "",
+                                            "url": annotation.url if hasattr(annotation, 'url') else "",
+                                        })
+
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=process_time,
+                    input_token_count=response.usage.input_tokens if hasattr(response, 'usage') and response.usage else 0,
+                    output_token_count=response.usage.output_tokens if hasattr(response, 'usage') and response.usage else 0,
+                    llm_provider_response=response,
+                    web_sources=web_sources if web_sources else None,
+                )
+            return generated_text
+
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(RETRY_DELAY * (2**attempt))
+            else:
+                error_msg = f"Failed after {MAX_RETRIES} attempts due to: {e}"
+                raise Exception(error_msg)
+
+
+async def generate_response_with_web_search_async(
+    model_name,
+    input_text,
+    max_tokens=300,
+    full_response=False,
+    api_key=None,
+):
+    """
+    Asynchronously generate a response using OpenAI's Responses API with web search enabled.
+
+    Args:
+        model_name: The model to use (e.g., 'gpt-4o', 'gpt-4o-mini')
+        input_text: The input prompt/question
+        max_tokens: Maximum tokens for the response
+        full_response: If True, returns LLMFullResponse with web_sources
+        api_key: OpenAI API key
+
+    Returns:
+        str or LLMFullResponse: Generated text or full response with web sources
+    """
+    start_time = time.time() if full_response else None
+    async_openai_client = AsyncOpenAI(api_key=api_key)
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = await async_openai_client.responses.create(
+                model=model_name,
+                input=input_text,
+                tools=[{"type": "web_search"}],
+            )
+
+            # Extract text and citations from the response
+            generated_text = ""
+            web_sources = []
+
+            for output_item in response.output:
+                if output_item.type == "message":
+                    for content_item in output_item.content:
+                        if content_item.type == "output_text":
+                            generated_text = content_item.text
+                            # Extract URL citations from annotations
+                            if hasattr(content_item, 'annotations') and content_item.annotations:
+                                for annotation in content_item.annotations:
+                                    if annotation.type == "url_citation":
+                                        web_sources.append({
+                                            "title": annotation.title if hasattr(annotation, 'title') else "",
+                                            "url": annotation.url if hasattr(annotation, 'url') else "",
+                                        })
+
+            if full_response:
+                end_time = time.time()
+                process_time = end_time - start_time
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=process_time,
+                    input_token_count=response.usage.input_tokens if hasattr(response, 'usage') and response.usage else 0,
+                    output_token_count=response.usage.output_tokens if hasattr(response, 'usage') and response.usage else 0,
+                    llm_provider_response=response,
+                    web_sources=web_sources if web_sources else None,
+                )
+            return generated_text
+
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                await asyncio.sleep(RETRY_DELAY * (2**attempt))
+            else:
+                error_msg = f"Failed after {MAX_RETRIES} attempts due to: {e}"
+                raise Exception(error_msg)
+
+
 def generate_embeddings(
     model_name,
     user_input=None,

@@ -185,3 +185,184 @@ async def generate_response_async(
                 else:
                     error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
                     raise Exception(error_msg)
+
+
+def generate_response_with_web_search(
+    model_name: str,
+    system_prompt: str = "You are a helpful AI Assistant",
+    messages=None,
+    max_tokens: int = 300,
+    full_response: bool = False,
+    api_key=None,
+) -> Optional[Dict]:
+    """
+    Generate a response using Anthropic's Messages API with web search enabled.
+
+    Args:
+        model_name: The model to use (e.g., 'claude-sonnet-4-5-20250929')
+        system_prompt: The system prompt
+        messages: List of message dictionaries
+        max_tokens: Maximum tokens for the response
+        full_response: If True, returns LLMFullResponse with web_sources
+        api_key: Anthropic API key
+
+    Returns:
+        str or LLMFullResponse: Generated text or full response with web sources
+    """
+    start_time = time.time() if full_response else None
+    retry_attempts = 3
+    retry_delay = 1
+
+    url = "https://api.anthropic.com/v1/messages"
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "model": model_name,
+        "max_tokens": max_tokens,
+        "messages": messages,
+        "system": system_prompt,
+        "tools": [{
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": 5
+        }]
+    }
+
+    for attempt in range(retry_attempts):
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            response_json = response.json()
+
+            # Extract text and citations from response content
+            generated_text = ""
+            web_sources = []
+
+            for content_block in response_json.get("content", []):
+                if content_block.get("type") == "text":
+                    generated_text += content_block.get("text", "")
+                    # Extract citations if present
+                    citations = content_block.get("citations", [])
+                    for citation in citations:
+                        if citation.get("type") == "web_search_result_location":
+                            web_sources.append({
+                                "title": citation.get("title", ""),
+                                "url": citation.get("url", ""),
+                                "cited_text": citation.get("cited_text", ""),
+                            })
+
+            if full_response:
+                return LLMFullResponse(
+                    generated_text=generated_text,
+                    model=model_name,
+                    process_time=time.time() - start_time,
+                    input_token_count=response_json.get("usage", {}).get("input_tokens", 0),
+                    output_token_count=response_json.get("usage", {}).get("output_tokens", 0),
+                    llm_provider_response=response_json,
+                    web_sources=web_sources if web_sources else None,
+                )
+            return generated_text
+
+        except Exception as e:
+            if attempt < retry_attempts - 1:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                time.sleep(retry_delay)
+                retry_delay *= 2
+            else:
+                error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
+                raise Exception(error_msg)
+
+
+async def generate_response_with_web_search_async(
+    model_name: str,
+    system_prompt: str = "You are a helpful AI Assistant",
+    messages=None,
+    max_tokens: int = 300,
+    full_response: bool = False,
+    api_key=None,
+) -> Optional[Dict]:
+    """
+    Asynchronously generate a response using Anthropic's Messages API with web search enabled.
+
+    Args:
+        model_name: The model to use (e.g., 'claude-sonnet-4-5-20250929')
+        system_prompt: The system prompt
+        messages: List of message dictionaries
+        max_tokens: Maximum tokens for the response
+        full_response: If True, returns LLMFullResponse with web_sources
+        api_key: Anthropic API key
+
+    Returns:
+        str or LLMFullResponse: Generated text or full response with web sources
+    """
+    start_time = time.time() if full_response else None
+    retry_attempts = 3
+    retry_delay = 1
+
+    url = "https://api.anthropic.com/v1/messages"
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "model": model_name,
+        "max_tokens": max_tokens,
+        "messages": messages,
+        "system": system_prompt,
+        "tools": [{
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": 5
+        }]
+    }
+
+    async with aiohttp.ClientSession() as session:
+        for attempt in range(retry_attempts):
+            try:
+                async with session.post(url, headers=headers, json=payload) as response:
+                    response.raise_for_status()
+                    response_json = await response.json()
+
+                    # Extract text and citations from response content
+                    generated_text = ""
+                    web_sources = []
+
+                    for content_block in response_json.get("content", []):
+                        if content_block.get("type") == "text":
+                            generated_text += content_block.get("text", "")
+                            # Extract citations if present
+                            citations = content_block.get("citations", [])
+                            for citation in citations:
+                                if citation.get("type") == "web_search_result_location":
+                                    web_sources.append({
+                                        "title": citation.get("title", ""),
+                                        "url": citation.get("url", ""),
+                                        "cited_text": citation.get("cited_text", ""),
+                                    })
+
+                    if full_response:
+                        return LLMFullResponse(
+                            generated_text=generated_text,
+                            model=model_name,
+                            process_time=time.time() - start_time,
+                            input_token_count=response_json.get("usage", {}).get("input_tokens", 0),
+                            output_token_count=response_json.get("usage", {}).get("output_tokens", 0),
+                            llm_provider_response=response_json,
+                            web_sources=web_sources if web_sources else None,
+                        )
+                    return generated_text
+
+            except Exception as e:
+                if attempt < retry_attempts - 1:
+                    print(f"Attempt {attempt + 1} failed: {e}")
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                else:
+                    error_msg = f"Failed after {retry_attempts} attempts due to: {e}"
+                    raise Exception(error_msg)

@@ -22,6 +22,7 @@ class LLMProvider(Enum):
     DEEPSEEK = 6
     OPENROUTER = 7
     COHERE = 8
+    PERPLEXITY = 9
 
 class LLM:
     def __init__(
@@ -77,6 +78,9 @@ class LLM:
         if provider == LLMProvider.COHERE:
             from .wrappers.cohere_wrapper import CohereLLM
             return CohereLLM(provider, model_name, temperature, top_p, api_key, verbose=verbose)
+        if provider == LLMProvider.PERPLEXITY:
+            from .wrappers.perplexity_wrapper import PerplexityLLM
+            return PerplexityLLM(provider, model_name, temperature, top_p, api_key, verbose=verbose)
         else:
             return None
 

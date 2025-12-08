@@ -14,6 +14,7 @@ class LLMFullResponse(BaseModel):
     provider: Optional[Any] = None
     model_name: Optional[str] = None
     guardrails_metadata: Optional[Dict[str, Any]] = None
+    web_sources: Optional[List[Dict[str, Any]]] = None
 
 
 class LLMEmbeddingsResponse(BaseModel):

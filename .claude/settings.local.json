@@ -1,25 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:cookbook.openai.com)",
-      "WebSearch",
-      "Bash(../venv/Scripts/django-admin.exe startproject config .)",
-      "Bash(./venv/Scripts/python.exe -m pip install:*)",
-      "Bash(../venv/Scripts/python.exe manage.py startapp core)",
-      "Bash(../venv/Scripts/python.exe manage.py migrate)",
-      "Bash(../venv/Scripts/python.exe manage.py runserver:*)",
-      "Bash(timeout:*)",
-      "Bash(findstr:*)",
-      "Bash(pip uninstall:*)",
-      "Bash(python manage.py:*)",
-      "Bash(dir:*)",
-      "Bash(cat:*)",
-      "Bash(python:*)",
-      "Bash(venv/Scripts/python.exe -m pytest:*)",
-      "Bash(venv/Scripts/python.exe:*)",
-      "Bash(tree:*)",
-      "Bash(pip show:*)"
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
