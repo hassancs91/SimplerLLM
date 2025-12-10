@@ -3,6 +3,7 @@ from .llm.reliable import ReliableLLM
 from .llm.wrappers import OpenAILLM, GeminiLLM, AnthropicLLM, OllamaLLM, DeepSeekLLM
 from .flow import MiniAgent, StepResult, FlowResult
 from .llm_judge import LLMJudge, JudgeMode, JudgeResult, ProviderResponse, ProviderEvaluation, EvaluationReport
+from .llm_validator import LLMValidator, ValidationResult, ValidatorScore, AggregationMethod
 from .llm_feedback import LLMFeedbackLoop, FeedbackResult, IterationResult, Critique
 from .llm_provider_router import LLMProviderRouter, ProviderConfig, RoutingResult, QueryClassification
 from .llm_clustering import (
@@ -71,6 +72,11 @@ __all__ = [
     'ProviderResponse',
     'ProviderEvaluation',
     'EvaluationReport',
+    # LLM Validator
+    'LLMValidator',
+    'ValidationResult',
+    'ValidatorScore',
+    'AggregationMethod',
     'LLMFeedbackLoop',
     'FeedbackResult',
     'IterationResult',
