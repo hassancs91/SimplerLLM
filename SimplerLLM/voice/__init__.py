@@ -9,12 +9,21 @@ from .voice_chat import (
     VoiceChatSession,
     ConversationManager
 )
-from .live_voice_chat import (
-    LiveVoiceChat,
-    LiveVoiceChatConfig,
-    AudioRecorder,
-    AudioPlayer
-)
+from .live_voice_chat import LiveVoiceChatConfig
+
+# LiveVoiceChat requires sounddevice/pynput which need PortAudio
+try:
+    from .live_voice_chat import (
+        LiveVoiceChat,
+        AudioRecorder,
+        AudioPlayer
+    )
+    _LIVE_VOICE_AVAILABLE = True
+except (ImportError, OSError):
+    LiveVoiceChat = None
+    AudioRecorder = None
+    AudioPlayer = None
+    _LIVE_VOICE_AVAILABLE = False
 from .dialogue_generator import (
     DialogueGenerator,
     Dialogue,
@@ -71,11 +80,9 @@ __all__ = [
     'VoiceTurnResult',
     'VoiceChatSession',
     'ConversationManager',
-    # LiveVoiceChat
-    'LiveVoiceChat',
+    # LiveVoiceChat (config always available, others require PortAudio)
     'LiveVoiceChatConfig',
-    'AudioRecorder',
-    'AudioPlayer',
+    '_LIVE_VOICE_AVAILABLE',
     # Dialogue Generator
     'DialogueGenerator',
     'Dialogue',
@@ -108,3 +115,7 @@ __all__ = [
     'RealtimeVoiceChat',
     'RealtimeVoiceChatConfig',
 ]
+
+# Conditionally add LiveVoiceChat exports if available
+if _LIVE_VOICE_AVAILABLE:
+    __all__.extend(['LiveVoiceChat', 'AudioRecorder', 'AudioPlayer'])

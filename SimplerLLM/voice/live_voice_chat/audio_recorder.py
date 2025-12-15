@@ -1,11 +1,44 @@
-import sounddevice as sd
 import numpy as np
 from scipy.io import wavfile
 import tempfile
 import os
 from typing import Optional
-from pynput import keyboard
 from SimplerLLM.utils.custom_verbose import verbose_print
+
+# Lazy-loaded dependencies (for optional audio hardware support)
+_sounddevice = None
+_pynput_keyboard = None
+
+
+def _ensure_sounddevice():
+    """Lazily import sounddevice when actually needed."""
+    global _sounddevice
+    if _sounddevice is None:
+        try:
+            import sounddevice as sd
+            _sounddevice = sd
+        except (ImportError, OSError) as e:
+            raise ImportError(
+                "sounddevice is required for audio recording but not available. "
+                "Install with: pip install sounddevice>=0.4.6 "
+                "Also ensure PortAudio is installed on your system."
+            ) from e
+    return _sounddevice
+
+
+def _ensure_pynput():
+    """Lazily import pynput keyboard when actually needed."""
+    global _pynput_keyboard
+    if _pynput_keyboard is None:
+        try:
+            from pynput import keyboard
+            _pynput_keyboard = keyboard
+        except ImportError as e:
+            raise ImportError(
+                "pynput is required for push-to-talk but not installed. "
+                "Install with: pip install pynput>=1.7.6"
+            ) from e
+    return _pynput_keyboard
 
 
 class AudioRecorder:
@@ -105,7 +138,7 @@ class AudioRecorder:
                         self.is_recording = True
                         if self.verbose:
                             verbose_print("Recording started...", "info")
-                elif k == keyboard.KeyCode.from_char(key):
+                elif k == _ensure_pynput().KeyCode.from_char(key):
                     key_pressed = True
                     if not self.is_recording:
                         self.is_recording = True
@@ -123,7 +156,7 @@ class AudioRecorder:
                     if self.verbose:
                         verbose_print("Recording stopped", "info")
                     return False  # Stop listener
-                elif k == keyboard.KeyCode.from_char(key):
+                elif k == _ensure_pynput().KeyCode.from_char(key):
                     key_pressed = False
                     self.is_recording = False
                     if self.verbose:
@@ -133,14 +166,14 @@ class AudioRecorder:
                 pass
 
         # Start audio stream
-        with sd.InputStream(
+        with _ensure_sounddevice().InputStream(
             samplerate=self.sample_rate,
             channels=self.channels,
             dtype=self.dtype,
             callback=self._audio_callback
         ):
             # Start keyboard listener
-            with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            with _ensure_pynput().Listener(on_press=on_press, on_release=on_release) as listener:
                 listener.join()  # Wait for key release
 
         if not self.recording_data:
@@ -203,6 +236,7 @@ class AudioRecorder:
             verbose_print(f"Recording for {duration} seconds...", "info")
 
         # Record for specified duration
+        sd = _ensure_sounddevice()
         audio_data = sd.rec(
             int(duration * self.sample_rate),
             samplerate=self.sample_rate,
@@ -234,12 +268,12 @@ class AudioRecorder:
         Returns:
             List of device information
         """
-        return sd.query_devices()
+        return _ensure_sounddevice().query_devices()
 
     @staticmethod
     def get_default_device():
         """Get default input device."""
-        return sd.query_devices(kind='input')
+        return _ensure_sounddevice().query_devices(kind='input')
 
     # ========================================================================
     # Streaming methods for Realtime API
@@ -290,7 +324,7 @@ class AudioRecorder:
             )
 
         # Create input stream
-        self._input_stream = sd.InputStream(
+        self._input_stream = _ensure_sounddevice().InputStream(
             samplerate=self._stream_sample_rate,
             channels=self.channels,
             dtype=self.dtype,

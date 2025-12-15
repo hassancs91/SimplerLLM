@@ -1,7 +1,6 @@
 import os
 import time
 from typing import Optional
-import sounddevice as sd
 import numpy as np
 from SimplerLLM.utils.custom_verbose import verbose_print
 
@@ -14,8 +13,9 @@ class AudioPlayer:
     both blocking and non-blocking playback modes.
     """
 
-    # Class variable to store pygame module after lazy import
+    # Class variables for lazy-loaded modules
     _pygame = None
+    _sounddevice = None
 
     def __init__(self, verbose: bool = False):
         """
@@ -61,6 +61,20 @@ class AudioPlayer:
                 if self.verbose:
                     verbose_print(f"Error initializing pygame mixer: {e}", "error")
                 raise
+
+    def _ensure_sounddevice(self):
+        """Ensure sounddevice is available for streaming."""
+        if AudioPlayer._sounddevice is None:
+            try:
+                import sounddevice as sd
+                AudioPlayer._sounddevice = sd
+            except (ImportError, OSError) as e:
+                raise ImportError(
+                    "sounddevice is required for audio streaming but not available. "
+                    "Install with: pip install sounddevice>=0.4.6 "
+                    "Also ensure PortAudio is installed on your system."
+                ) from e
+        return AudioPlayer._sounddevice
 
     def play(
         self,
@@ -249,7 +263,7 @@ class AudioPlayer:
             )
 
         # Create output stream
-        self._output_stream = sd.OutputStream(
+        self._output_stream = self._ensure_sounddevice().OutputStream(
             samplerate=sample_rate,
             channels=channels,
             dtype=dtype,

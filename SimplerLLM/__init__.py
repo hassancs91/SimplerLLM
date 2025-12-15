@@ -82,10 +82,8 @@ from .voice import (
     VoiceTurnResult,
     VoiceChatSession,
     ConversationManager,
-    LiveVoiceChat,
     LiveVoiceChatConfig,
-    AudioRecorder,
-    AudioPlayer,
+    _LIVE_VOICE_AVAILABLE,
     DialogueGenerator,
     Dialogue,
     DialogueLine,
@@ -114,6 +112,14 @@ from .voice import (
     RealtimeVoiceChat,
     RealtimeVoiceChatConfig,
 )
+
+# LiveVoiceChat requires PortAudio - import conditionally
+if _LIVE_VOICE_AVAILABLE:
+    from .voice import LiveVoiceChat, AudioRecorder, AudioPlayer
+else:
+    LiveVoiceChat = None
+    AudioRecorder = None
+    AudioPlayer = None
 
 # Image module exports
 from .image import (
@@ -208,11 +214,8 @@ __all__ = [
     'VoiceTurnResult',
     'VoiceChatSession',
     'ConversationManager',
-    # Voice module - LiveVoiceChat
-    'LiveVoiceChat',
+    # Voice module - LiveVoiceChat (config always available, others require PortAudio)
     'LiveVoiceChatConfig',
-    'AudioRecorder',
-    'AudioPlayer',
     # Voice module - Dialogue
     'DialogueGenerator',
     'Dialogue',
@@ -253,3 +256,7 @@ __all__ = [
     'GoogleImageGenerator',
     'ImageGenerationResponse',
 ]
+
+# Conditionally add LiveVoiceChat exports if PortAudio is available
+if _LIVE_VOICE_AVAILABLE:
+    __all__.extend(['LiveVoiceChat', 'AudioRecorder', 'AudioPlayer'])
