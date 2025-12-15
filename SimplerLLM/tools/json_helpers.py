@@ -335,6 +335,8 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
             return 0.5  # Default to 0.5 instead of 0.0 to clearly show it's a float
         elif field_type == bool:
             return True
+        elif field_type == dict:
+            return {}  # Plain dict type returns empty dict
         else:
             return "example_value"  # More generic fallback value
     elif origin == list:  # It's a List

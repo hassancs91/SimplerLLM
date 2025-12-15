@@ -21,8 +21,8 @@ qdrant-client==1.14.3
 voyageai==0.3.3
 pydub>=0.25.1
 elevenlabs>=2.22.0
-sounddevice>=0.4.6
-pynput>=1.7.6
+# sounddevice>=0.4.6  # Optional - for live voice features. Requires PortAudio. Install with: pip install SimplerLLM[voice]
+# pynput>=1.7.6  # Optional - for push-to-talk. Install with: pip install SimplerLLM[voice]
 # pygame>=2.5.0  # Optional - only needed for AudioPlayer file playback. Install with: pip install pygame>=2.5.0
 moviepy>=1.0.3
 yt-dlp>=2023.3.4
