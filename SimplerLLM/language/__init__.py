@@ -6,6 +6,7 @@ from .llm_judge import LLMJudge, JudgeMode, JudgeResult, ProviderResponse, Provi
 from .llm_validator import LLMValidator, ValidationResult, ValidatorScore, AggregationMethod
 from .llm_feedback import LLMFeedbackLoop, FeedbackResult, IterationResult, Critique
 from .llm_provider_router import LLMProviderRouter, ProviderConfig, RoutingResult, QueryClassification
+from .llm_consistency import SelfConsistency, ConsistencyResult, SampleResponse, AnswerGroup, AnswerType
 from .llm_clustering import (
     LLMClusterer,
     Cluster,
@@ -85,6 +86,12 @@ __all__ = [
     'ProviderConfig',
     'RoutingResult',
     'QueryClassification',
+    # Self-Consistency
+    'SelfConsistency',
+    'ConsistencyResult',
+    'SampleResponse',
+    'AnswerGroup',
+    'AnswerType',
     # LLM Clustering
     'LLMClusterer',
     'Cluster',
