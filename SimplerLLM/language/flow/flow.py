@@ -6,6 +6,7 @@ Inspired by n8n/Make.com/Zapier - Linear workflow execution without conditions/l
 
 import time
 import asyncio
+import re
 from typing import Any, Dict, List, Optional, Union, Type
 from pydantic import BaseModel
 from SimplerLLM.language.llm import LLM
@@ -53,6 +54,10 @@ class MiniAgent:
         self.max_steps = max_steps
         self.verbose = verbose
         self.steps: List[Dict[str, Any]] = []
+
+        # State for variable substitution during flow execution
+        self.initial_input: Any = None
+        self.step_outputs: Dict[int, Any] = {}
 
         if self.verbose:
             verbose_print(f"Initialized MiniAgent: {name}", "info")
@@ -136,6 +141,10 @@ class MiniAgent:
         if not self.steps:
             raise ValueError("No steps defined. Add at least one step before running.")
 
+        # Store initial input for {input} placeholder and reset step outputs
+        self.initial_input = user_input
+        self.step_outputs = {}
+
         if self.verbose:
             verbose_print(f"\n{'='*60}", "info")
             verbose_print(f"Starting flow execution: {self.name}", "info")
@@ -169,6 +178,9 @@ class MiniAgent:
                     if self.verbose:
                         verbose_print(f"Error in step {step_number}: {step_result.error}", "error")
                     break
+
+                # Store step output for {step_N} placeholder references
+                self.step_outputs[step_number] = step_result.output_data
 
                 # Use this step's output as next step's input
                 current_data = step_result.output_data
@@ -308,6 +320,50 @@ class MiniAgent:
 
         return result
 
+    def _process_prompt_template(self, prompt_template: str, input_data: Any) -> str:
+        """
+        Process prompt template by replacing placeholders with actual values.
+
+        Supported placeholders:
+        - {input}: The initial user input provided to run()
+        - {previous_output}: Output from the previous step
+        - {step_N}: Output from step N (e.g., {step_1}, {step_2})
+
+        Args:
+            prompt_template: The prompt template with placeholders
+            input_data: The input data for the current step (previous step's output)
+
+        Returns:
+            The processed prompt with all placeholders replaced
+        """
+        final_prompt = prompt_template
+
+        # Replace {input} with initial user input
+        if "{input}" in final_prompt:
+            final_prompt = final_prompt.replace("{input}", str(self.initial_input))
+
+        # Replace {previous_output} with the previous step's output
+        if "{previous_output}" in final_prompt:
+            final_prompt = final_prompt.replace("{previous_output}", str(input_data))
+
+        # Replace {step_N} with specific step outputs
+        step_refs = re.findall(r'\{step_(\d+)\}', final_prompt)
+        for step_num in step_refs:
+            step_key = int(step_num)
+            if step_key in self.step_outputs:
+                final_prompt = final_prompt.replace(
+                    f"{{step_{step_num}}}",
+                    str(self.step_outputs[step_key])
+                )
+            else:
+                if self.verbose:
+                    verbose_print(
+                        f"Warning: {{step_{step_num}}} referenced but step {step_num} has no output yet",
+                        "warning"
+                    )
+
+        return final_prompt
+
     def _execute_llm_step(self, step_config: Dict[str, Any], input_data: Any) -> Union[str, BaseModel]:
         """Execute an LLM step, optionally with structured JSON output."""
         prompt_template = step_config["prompt"]
@@ -315,13 +371,11 @@ class MiniAgent:
         output_model = step_config.get("output_model")
         max_retries = step_config.get("max_retries", 3)
 
-        # Replace {previous_output} or {input} placeholder with actual input
-        if "{previous_output}" in prompt_template:
-            final_prompt = prompt_template.replace("{previous_output}", str(input_data))
-        elif "{input}" in prompt_template:
-            final_prompt = prompt_template.replace("{input}", str(input_data))
-        else:
-            # If no placeholder, append input to prompt
+        # Process template placeholders: {input}, {previous_output}, {step_N}
+        final_prompt = self._process_prompt_template(prompt_template, input_data)
+
+        # If no placeholders were used, append input to prompt for backwards compatibility
+        if final_prompt == prompt_template and "{" not in prompt_template:
             final_prompt = f"{prompt_template}\n\nInput: {input_data}"
 
         if self.verbose:
@@ -370,8 +424,10 @@ class MiniAgent:
             return response
 
     def clear_steps(self):
-        """Clear all steps from the flow."""
+        """Clear all steps from the flow and reset execution state."""
         self.steps = []
+        self.initial_input = None
+        self.step_outputs = {}
         if self.verbose:
             verbose_print(f"Cleared all steps from {self.name}", "debug")
 
@@ -395,6 +451,10 @@ class MiniAgent:
         """
         if not self.steps:
             raise ValueError("No steps defined. Add at least one step before running.")
+
+        # Store initial input for {input} placeholder and reset step outputs
+        self.initial_input = user_input
+        self.step_outputs = {}
 
         if self.verbose:
             verbose_print(f"\n{'='*60}", "info")
@@ -429,6 +489,9 @@ class MiniAgent:
                     if self.verbose:
                         verbose_print(f"Error in step {step_number}: {step_result.error}", "error")
                     break
+
+                # Store step output for {step_N} placeholder references
+                self.step_outputs[step_number] = step_result.output_data
 
                 # Use this step's output as next step's input
                 current_data = step_result.output_data
@@ -577,13 +640,11 @@ class MiniAgent:
         output_model = step_config.get("output_model")
         max_retries = step_config.get("max_retries", 3)
 
-        # Replace {previous_output} or {input} placeholder with actual input
-        if "{previous_output}" in prompt_template:
-            final_prompt = prompt_template.replace("{previous_output}", str(input_data))
-        elif "{input}" in prompt_template:
-            final_prompt = prompt_template.replace("{input}", str(input_data))
-        else:
-            # If no placeholder, append input to prompt
+        # Process template placeholders: {input}, {previous_output}, {step_N}
+        final_prompt = self._process_prompt_template(prompt_template, input_data)
+
+        # If no placeholders were used, append input to prompt for backwards compatibility
+        if final_prompt == prompt_template and "{" not in prompt_template:
             final_prompt = f"{prompt_template}\n\nInput: {input_data}"
 
         if self.verbose:

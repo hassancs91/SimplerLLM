@@ -8,6 +8,7 @@ from .base import ImageGenerator, ImageProvider, ImageSize
 from .wrappers.openai_wrapper import OpenAIImageGenerator
 from .wrappers.stability_wrapper import StabilityImageGenerator
 from .wrappers.google_wrapper import GoogleImageGenerator
+from .wrappers.seedream_wrapper import SeedreamImageGenerator
 from .providers.image_response_models import ImageGenerationResponse
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     'OpenAIImageGenerator',
     'StabilityImageGenerator',
     'GoogleImageGenerator',
+    'SeedreamImageGenerator',
     'ImageGenerationResponse',
 ]

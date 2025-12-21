@@ -8,9 +8,10 @@ class ImageProvider(Enum):
     OPENAI_DALL_E = 1
     STABILITY_AI = 2
     GOOGLE_GEMINI = 3
+    SEEDREAM = 4
     # Future providers can be added here:
-    # MIDJOURNEY = 4
-    # REPLICATE = 5
+    # MIDJOURNEY = 5
+    # REPLICATE = 6
 
 
 class ImageSize(Enum):
@@ -97,6 +98,14 @@ class ImageGenerator:
                 api_key=api_key,
                 verbose=verbose,
             )
+        elif provider == ImageProvider.SEEDREAM:
+            from .wrappers.seedream_wrapper import SeedreamImageGenerator
+            return SeedreamImageGenerator(
+                provider=provider,
+                model_name=model_name or "seedream-4-5-251128",
+                api_key=api_key,
+                verbose=verbose,
+            )
         # Future providers can be added here
         # elif provider == ImageProvider.MIDJOURNEY:
         #     from .wrappers.midjourney_wrapper import MidjourneyImageGenerator
@@ -179,6 +188,16 @@ class ImageGenerator:
                 ImageSize.PORTRAIT_3_4: "3:4",
             }
             return size_map.get(size, "1:1")
+
+        elif provider == ImageProvider.SEEDREAM:
+            # Seedream uses resolution presets (2K, 4K) rather than aspect ratios
+            size_map = {
+                ImageSize.SQUARE: "2K",
+                ImageSize.HORIZONTAL: "2K",
+                ImageSize.VERTICAL: "2K",
+                ImageSize.PORTRAIT_3_4: "2K",
+            }
+            return size_map.get(size, "2K")
 
         # Default fallback
         return "1024x1024"

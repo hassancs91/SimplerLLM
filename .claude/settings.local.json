@@ -3,7 +3,8 @@
     "allow": [
       "Bash(find:*)",
       "Bash(python -c:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
