@@ -24,6 +24,13 @@ const TOOLS = [
         description: 'Compare multiple LLMs with an AI judge',
         icon: '⚖️',
         viewId: 'judge-view'
+    },
+    {
+        id: 'feedback',
+        name: 'LLM Feedback',
+        description: 'Iteratively improve responses with self-critique',
+        icon: '🔄',
+        viewId: 'feedback-view'
     }
 ];
 
@@ -98,6 +105,7 @@ class App {
         this.chatView = document.getElementById('chat-view');
         this.brainstormView = document.getElementById('brainstorm-view');
         this.judgeView = document.getElementById('judge-view');
+        this.feedbackView = document.getElementById('feedback-view');
 
         this.providerSelect = document.getElementById('provider-select');
         this.modelSelect = document.getElementById('model-select');
@@ -115,6 +123,7 @@ class App {
         settingsManager = new SettingsManager();
         brainstormManager = new BrainstormManager();
         judgeManager = new JudgeManager();
+        feedbackManager = new FeedbackManager();
 
         // Setup window controls
         this.setupWindowControls();
@@ -159,6 +168,7 @@ class App {
         this.chatView.classList.add('hidden');
         this.brainstormView.classList.add('hidden');
         this.judgeView.classList.add('hidden');
+        this.feedbackView.classList.add('hidden');
 
         // Show target view
         document.getElementById(viewId).classList.remove('hidden');
@@ -170,6 +180,9 @@ class App {
         }
         if (viewId === 'judge-view' && judgeManager) {
             judgeManager.refresh();
+        }
+        if (viewId === 'feedback-view' && feedbackManager) {
+            feedbackManager.refresh();
         }
     }
 

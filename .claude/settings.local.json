@@ -4,7 +4,8 @@
       "Bash(find:*)",
       "Bash(python -c:*)",
       "Bash(tree:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
