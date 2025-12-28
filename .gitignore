@@ -72,3 +72,12 @@ simplerllm_desktop_app/.env
 simplerllm_desktop_app/__pycache__/
 simplerllm_desktop_app/**/__pycache__/
 simplerllm_desktop_app/*.log
+
+
+simplerllm_img_desktop_app/node_modules/
+simplerllm_img_desktop_app/dist/
+simplerllm_img_desktop_app/python/
+simplerllm_img_desktop_app/.env
+simplerllm_img_desktop_app/__pycache__/
+simplerllm_img_desktop_app/**/__pycache__/
+simplerllm_img_desktop_app/*.log

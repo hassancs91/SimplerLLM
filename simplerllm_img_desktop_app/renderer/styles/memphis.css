@@ -1,0 +1,326 @@
+/**
+ * MEMPHIS Design System - Patterns & Decorations
+ * Geometric shapes, squiggly lines, and playful patterns
+ */
+
+/* ============================================
+   BASE RESET & DEFAULTS
+   ============================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    overflow: hidden;
+}
+
+/* ============================================
+   BACKGROUND PATTERNS
+   ============================================ */
+
+/* Dotted pattern */
+.memphis-dots {
+    background-image: radial-gradient(var(--memphis-black) 1.5px, transparent 1.5px);
+    background-size: 16px 16px;
+}
+
+.memphis-dots-light {
+    background-image: radial-gradient(var(--memphis-gray) 1.5px, transparent 1.5px);
+    background-size: 16px 16px;
+}
+
+.memphis-dots-colored {
+    background-image:
+        radial-gradient(var(--memphis-pink) 2px, transparent 2px),
+        radial-gradient(var(--memphis-teal) 2px, transparent 2px);
+    background-size: 32px 32px;
+    background-position: 0 0, 16px 16px;
+}
+
+/* Grid pattern */
+.memphis-grid {
+    background-image:
+        linear-gradient(var(--memphis-gray-light) 1px, transparent 1px),
+        linear-gradient(90deg, var(--memphis-gray-light) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Diagonal lines */
+.memphis-diagonal {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 8px,
+        var(--memphis-gray-light) 8px,
+        var(--memphis-gray-light) 10px
+    );
+}
+
+/* Zigzag pattern (SVG) */
+.memphis-zigzag {
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6 L10 0 L20 6 L30 0 L40 6 L40 12 L30 6 L20 12 L10 6 L0 12 Z' fill='%23FFE156' stroke='%231A1A2E' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 40px 12px;
+    background-repeat: repeat-x;
+}
+
+/* Squiggly line (SVG) */
+.memphis-squiggle {
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 12.5 0, 25 10 T 50 10 T 75 10 T 100 10' fill='none' stroke='%23FF6B9D' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: 100px 20px;
+    background-repeat: repeat-x;
+}
+
+/* ============================================
+   GEOMETRIC SHAPES (Decorative)
+   ============================================ */
+
+.memphis-shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Circle */
+.memphis-circle {
+    border-radius: 50%;
+    border: var(--border-width) solid var(--border-color);
+}
+
+.memphis-circle--sm {
+    width: 24px;
+    height: 24px;
+}
+
+.memphis-circle--md {
+    width: 48px;
+    height: 48px;
+}
+
+.memphis-circle--lg {
+    width: 80px;
+    height: 80px;
+}
+
+.memphis-circle--pink { background: var(--memphis-pink); }
+.memphis-circle--yellow { background: var(--memphis-yellow); }
+.memphis-circle--teal { background: var(--memphis-teal); }
+.memphis-circle--blue { background: var(--memphis-blue); }
+
+/* Triangle */
+.memphis-triangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.memphis-triangle--up {
+    border-width: 0 20px 35px 20px;
+    border-color: transparent transparent var(--memphis-pink) transparent;
+}
+
+.memphis-triangle--down {
+    border-width: 35px 20px 0 20px;
+    border-color: var(--memphis-yellow) transparent transparent transparent;
+}
+
+.memphis-triangle--right {
+    border-width: 20px 0 20px 35px;
+    border-color: transparent transparent transparent var(--memphis-teal);
+}
+
+/* Square (rotated = diamond) */
+.memphis-square {
+    border: var(--border-width) solid var(--border-color);
+}
+
+.memphis-square--sm { width: 20px; height: 20px; }
+.memphis-square--md { width: 32px; height: 32px; }
+.memphis-square--lg { width: 48px; height: 48px; }
+
+.memphis-diamond {
+    transform: rotate(45deg);
+}
+
+/* Cross / Plus */
+.memphis-cross {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.memphis-cross::before,
+.memphis-cross::after {
+    content: '';
+    position: absolute;
+    background: var(--memphis-black);
+}
+
+.memphis-cross::before {
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    transform: translateX(-50%);
+}
+
+.memphis-cross::after {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    transform: translateY(-50%);
+}
+
+/* Squiggle line decoration */
+.memphis-wavy-line {
+    height: 8px;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='8' viewBox='0 0 40 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 4 Q 5 0, 10 4 T 20 4 T 30 4 T 40 4' fill='none' stroke='%231A1A2E' stroke-width='2'/%3E%3C/svg%3E") repeat-x;
+}
+
+/* ============================================
+   ANIMATED DECORATIONS
+   ============================================ */
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-bounce {
+    animation: bounce 1s ease-in-out infinite;
+}
+
+/* ============================================
+   DECORATIVE BORDERS
+   ============================================ */
+
+/* Thick black border (signature MEMPHIS look) */
+.memphis-border {
+    border: var(--border-width) solid var(--border-color);
+}
+
+.memphis-border--thick {
+    border-width: var(--border-width-thick);
+}
+
+/* Dashed border */
+.memphis-border--dashed {
+    border-style: dashed;
+}
+
+/* Double border effect */
+.memphis-double-border {
+    border: var(--border-width) solid var(--border-color);
+    outline: var(--border-width) solid var(--border-color);
+    outline-offset: 4px;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Background colors */
+.bg-pink { background-color: var(--memphis-pink); }
+.bg-yellow { background-color: var(--memphis-yellow); }
+.bg-teal { background-color: var(--memphis-teal); }
+.bg-blue { background-color: var(--memphis-blue); }
+.bg-orange { background-color: var(--memphis-orange); }
+.bg-purple { background-color: var(--memphis-purple); }
+.bg-black { background-color: var(--memphis-black); }
+.bg-white { background-color: var(--memphis-white); }
+
+/* Text colors */
+.text-pink { color: var(--memphis-pink); }
+.text-yellow { color: var(--memphis-yellow); }
+.text-teal { color: var(--memphis-teal); }
+.text-blue { color: var(--memphis-blue); }
+.text-black { color: var(--memphis-black); }
+.text-white { color: var(--memphis-white); }
+
+/* Shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-pink { box-shadow: var(--shadow-pink); }
+.shadow-yellow { box-shadow: var(--shadow-yellow); }
+.shadow-teal { box-shadow: var(--shadow-teal); }
+
+/* Text styles */
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+.uppercase { text-transform: uppercase; }
+.bold { font-weight: var(--font-weight-bold); }
+.black { font-weight: var(--font-weight-black); }
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--memphis-gray-light);
+    border: 2px solid var(--memphis-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--memphis-yellow);
+    border: 2px solid var(--memphis-black);
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--memphis-pink);
+}
+
+/* ============================================
+   SELECTION STYLING
+   ============================================ */
+
+::selection {
+    background: var(--memphis-yellow);
+    color: var(--memphis-black);
+}

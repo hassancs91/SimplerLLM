@@ -1,0 +1,35 @@
+{
+  "appId": "com.simplerllm.image-tools",
+  "productName": "SimplerLLM Image Tools",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "electron/**/*",
+    "renderer/**/*",
+    "backend/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "python-dist",
+      "to": "python",
+      "filter": ["**/*"]
+    }
+  ],
+  "win": {
+    "target": ["nsis", "portable"],
+    "icon": "renderer/assets/icons/icon.ico"
+  },
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "renderer/assets/icons/icon.icns"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "renderer/assets/icons"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

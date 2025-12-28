@@ -308,6 +308,126 @@ class APIClient {
             })
         });
     }
+
+    // Feedback
+    /**
+     * Start an LLM Feedback loop with SSE streaming.
+     *
+     * @param {string} prompt - The prompt to improve an answer for
+     * @param {Object} config - Configuration object:
+     *   - architecture: 'single', 'dual', or 'multi'
+     *   - generator: {provider, model} for generator LLM
+     *   - critic: {provider, model} for critic LLM (dual mode)
+     *   - providers: [{provider, model}, ...] for multi mode
+     *   - max_iterations: number (1-10)
+     *   - criteria: array of criteria strings
+     *   - initial_answer: optional starting answer
+     *   - convergence_threshold: number (0-0.5)
+     *   - quality_threshold: optional number (1-10)
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamFeedback(prompt, config, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        fetch(`${this.baseURL}/feedback/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt,
+                architecture: config.architecture,
+                generator: config.generator,
+                critic: config.critic,
+                providers: config.providers,
+                max_iterations: config.max_iterations,
+                criteria: config.criteria,
+                initial_answer: config.initial_answer,
+                convergence_threshold: config.convergence_threshold,
+                quality_threshold: config.quality_threshold
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Run feedback without streaming (fallback).
+     */
+    async runFeedback(prompt, config) {
+        return this.request('/feedback/run', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                architecture: config.architecture,
+                generator: config.generator,
+                critic: config.critic,
+                providers: config.providers,
+                max_iterations: config.max_iterations,
+                criteria: config.criteria,
+                initial_answer: config.initial_answer,
+                convergence_threshold: config.convergence_threshold,
+                quality_threshold: config.quality_threshold
+            })
+        });
+    }
 }
 
 // Global API client instance

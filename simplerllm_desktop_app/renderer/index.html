@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/brainstorm.css">
     <link rel="stylesheet" href="styles/judge.css">
+    <link rel="stylesheet" href="styles/feedback.css">
 
     <style>
         /* Layout styles */
@@ -707,6 +708,210 @@
             </div>
         </div> <!-- End Judge View -->
 
+        <!-- Feedback View -->
+        <div class="feedback-view hidden" id="feedback-view">
+            <div class="main-container">
+                <!-- Left Pane: Visualization -->
+                <div class="feedback-viz-pane">
+                    <div class="feedback-viz-header">
+                        <button class="btn btn--ghost btn--sm" id="btn-back-from-feedback">← Back</button>
+                        <h2 class="feedback-viz-title">LLM Feedback Loop</h2>
+                    </div>
+
+                    <!-- Line Chart Container -->
+                    <div class="feedback-chart-section">
+                        <h3 class="section-title">Score Trajectory</h3>
+                        <div class="feedback-chart-container" id="feedback-chart-container">
+                            <!-- SVG chart rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Iterations Container -->
+                    <div class="feedback-iterations-section">
+                        <h3 class="section-title">Iterations</h3>
+                        <div class="feedback-iterations-container" id="feedback-iterations-container">
+                            <!-- Iteration cards populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Final Answer Section -->
+                    <div class="feedback-final-answer hidden" id="feedback-final-answer">
+                        <h3 class="section-title">Final Answer</h3>
+                        <div class="final-answer-card" id="feedback-final-answer-content"></div>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Controls -->
+                <div class="feedback-control-pane">
+                    <!-- Prompt Input -->
+                    <div class="feedback-input-section">
+                        <h3 class="section-title">Prompt</h3>
+                        <textarea class="input textarea feedback-prompt" id="feedback-prompt"
+                            placeholder="Enter the prompt to improve an answer for..."
+                            rows="3"></textarea>
+                    </div>
+
+                    <!-- Initial Answer (Collapsible) -->
+                    <div class="feedback-initial-section">
+                        <button class="btn btn--ghost btn--sm" id="toggle-initial-answer">+ Add Initial Answer</button>
+                        <div class="hidden" id="feedback-initial-answer-section">
+                            <textarea class="input textarea" id="feedback-initial-answer"
+                                placeholder="Optional: Provide an existing answer to improve..."
+                                rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Architecture Selection -->
+                    <div class="feedback-architecture-section">
+                        <h3 class="section-title">Architecture</h3>
+                        <div class="mode-toggle" id="feedback-architecture-toggle">
+                            <button class="mode-btn active" data-architecture="single">Single</button>
+                            <button class="mode-btn" data-architecture="dual">Dual</button>
+                            <button class="mode-btn" data-architecture="multi">Multi</button>
+                        </div>
+                        <p class="architecture-description" id="architecture-description">
+                            Same LLM generates, critiques, and improves its own answers.
+                        </p>
+                    </div>
+
+                    <!-- Single Provider Config -->
+                    <div class="feedback-provider-config" id="feedback-single-config">
+                        <h3 class="section-title">LLM Configuration</h3>
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="feedback-single-provider"></select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="feedback-single-model" placeholder="e.g., gpt-4o">
+                        </div>
+                    </div>
+
+                    <!-- Dual Provider Config (hidden by default) -->
+                    <div class="feedback-provider-config hidden" id="feedback-dual-config">
+                        <h3 class="section-title">Generator LLM</h3>
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="feedback-generator-provider"></select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="feedback-generator-model" placeholder="e.g., gpt-4o">
+                        </div>
+                        <h3 class="section-title" style="margin-top: var(--spacing-md);">Critic LLM</h3>
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="feedback-critic-provider"></select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="feedback-critic-model" placeholder="e.g., claude-3-5-sonnet-20241022">
+                        </div>
+                    </div>
+
+                    <!-- Multi Provider Config (hidden by default) -->
+                    <div class="feedback-provider-config hidden" id="feedback-multi-config">
+                        <h3 class="section-title">Providers (Rotation)</h3>
+                        <div class="multi-providers-list" id="feedback-multi-providers">
+                            <!-- Provider rows added dynamically -->
+                        </div>
+                        <button class="btn btn--secondary btn--sm" id="btn-add-provider">+ Add Provider</button>
+                    </div>
+
+                    <!-- Parameters Section -->
+                    <div class="feedback-params-section">
+                        <h3 class="section-title">Parameters</h3>
+                        <div class="input-group">
+                            <label class="input-label">Max Iterations: <span id="feedback-iterations-value">3</span></label>
+                            <input type="range" class="slider" id="feedback-iterations" min="1" max="10" value="3">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Convergence Threshold: <span id="feedback-convergence-value">10%</span></label>
+                            <input type="range" class="slider" id="feedback-convergence" min="0" max="0.5" step="0.05" value="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Quality Threshold (optional)</label>
+                            <input type="number" class="input" id="feedback-quality-threshold" placeholder="e.g., 8.5" min="1" max="10" step="0.5">
+                        </div>
+                    </div>
+
+                    <!-- Criteria Configuration -->
+                    <div class="feedback-criteria-section">
+                        <h3 class="section-title">Evaluation Criteria</h3>
+                        <div class="criteria-tags" id="feedback-criteria-tags">
+                            <span class="criteria-tag active" data-criterion="accuracy">accuracy</span>
+                            <span class="criteria-tag active" data-criterion="clarity">clarity</span>
+                            <span class="criteria-tag active" data-criterion="completeness">completeness</span>
+                            <span class="criteria-tag" data-criterion="creativity">creativity</span>
+                            <span class="criteria-tag" data-criterion="conciseness">conciseness</span>
+                        </div>
+                        <div class="input-group" style="margin-top: var(--spacing-sm);">
+                            <input type="text" class="input" id="feedback-custom-criterion"
+                                   placeholder="Add custom criterion (press Enter)">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="feedback-actions">
+                        <button class="btn btn--primary" id="btn-start-feedback">
+                            <span id="feedback-btn-text">Start Improvement</span>
+                        </button>
+                        <button class="btn btn--ghost" id="btn-cancel-feedback" style="display: none;">Cancel</button>
+                        <button class="btn btn--ghost" id="btn-clear-feedback">Clear</button>
+                    </div>
+
+                    <!-- Status Section -->
+                    <div class="feedback-status hidden" id="feedback-status">
+                        <div class="status-header">
+                            <span class="badge badge--warning" id="feedback-status-badge">Running...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" id="feedback-progress"></div>
+                        </div>
+                        <div class="status-info">
+                            <span>Iterations: <strong id="iterations-done">0</strong>/<strong id="iterations-total">0</strong></span>
+                            <span>Time: <strong id="feedback-elapsed-time">0s</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="feedback-stats hidden" id="feedback-stats">
+                        <h3 class="section-title">Results Summary</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-initial-score">-</div>
+                                <div class="stat-label">Initial Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-final-score">-</div>
+                                <div class="stat-label">Final Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-improvement">-</div>
+                                <div class="stat-label">Improvement</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-stopped-reason">-</div>
+                                <div class="stat-label">Stopped</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Section -->
+                    <div class="feedback-code-section" id="feedback-code-section">
+                        <div class="code-section-header" id="toggle-feedback-code">
+                            <h3 class="section-title">Code Example</h3>
+                            <span class="toggle-icon" id="feedback-code-toggle-icon">▼</span>
+                        </div>
+                        <div class="code-section-content" id="feedback-code-content">
+                            <pre class="code-block"><code id="feedback-code-snippet"></code></pre>
+                            <button class="btn btn--ghost btn--sm" id="btn-copy-feedback-code">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Feedback View -->
+
         <!-- Settings Panel (Slide-in) -->
         <div class="settings-panel" id="settings-panel">
             <div class="settings-panel__header">
@@ -735,6 +940,8 @@
     <script src="js/brainstorm.js"></script>
     <script src="js/radar-chart.js"></script>
     <script src="js/judge.js"></script>
+    <script src="js/line-chart.js"></script>
+    <script src="js/feedback.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
