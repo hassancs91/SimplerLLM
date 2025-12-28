@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="styles/variables.css">
     <link rel="stylesheet" href="styles/memphis.css">
     <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/brainstorm.css">
 
     <style>
         /* Layout styles */
@@ -386,6 +387,174 @@
         </div>
         </div> <!-- End Chat View -->
 
+        <!-- Brainstorm View -->
+        <div class="brainstorm-view hidden" id="brainstorm-view">
+            <div class="main-container">
+                <!-- Left Pane: Tree Visualization -->
+                <div class="brainstorm-tree-pane">
+                    <div class="brainstorm-tree-header">
+                        <button class="btn btn--ghost btn--sm" id="btn-back-from-brainstorm">← Back</button>
+                        <h2 class="brainstorm-tree-title">Idea Tree</h2>
+                        <div class="brainstorm-tree-controls">
+                            <button class="btn btn--ghost btn--sm" id="btn-zoom-in" title="Zoom In">+</button>
+                            <button class="btn btn--ghost btn--sm" id="btn-zoom-out" title="Zoom Out">-</button>
+                            <button class="btn btn--ghost btn--sm" id="btn-zoom-reset" title="Reset View">Reset</button>
+                        </div>
+                    </div>
+                    <div class="brainstorm-tree-container" id="brainstorm-tree-container">
+                        <svg id="brainstorm-svg" width="100%" height="100%"></svg>
+                    </div>
+                    <div class="brainstorm-tree-legend">
+                        <span class="legend-item"><span class="legend-dot legend-dot--high"></span> High (8-10)</span>
+                        <span class="legend-item"><span class="legend-dot legend-dot--mid"></span> Medium (5-7)</span>
+                        <span class="legend-item"><span class="legend-dot legend-dot--low"></span> Low (1-4)</span>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Controls & Details -->
+                <div class="brainstorm-control-pane">
+                    <!-- Input Section -->
+                    <div class="brainstorm-input-section">
+                        <h3 class="section-title">Brainstorm Prompt</h3>
+                        <textarea
+                            class="input textarea brainstorm-prompt"
+                            id="brainstorm-prompt"
+                            placeholder="Enter your brainstorming topic... (e.g., 'Ways to improve customer engagement')"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Provider/Model Section -->
+                    <div class="brainstorm-params-section">
+                        <h3 class="section-title">LLM Configuration</h3>
+
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="brainstorm-provider">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="brainstorm-model" placeholder="e.g., gpt-4o">
+                        </div>
+                    </div>
+
+                    <!-- Brainstorm Parameters -->
+                    <div class="brainstorm-params-section">
+                        <h3 class="section-title">Parameters</h3>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Max Depth</span>
+                                <span id="max-depth-value">2</span>
+                            </div>
+                            <input type="range" class="slider" id="max-depth-slider" min="1" max="5" step="1" value="2">
+                        </div>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Ideas per Level</span>
+                                <span id="ideas-per-level-value">5</span>
+                            </div>
+                            <input type="range" class="slider" id="ideas-per-level-slider" min="3" max="10" step="1" value="5">
+                        </div>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Top N to Expand</span>
+                                <span id="top-n-value">3</span>
+                            </div>
+                            <input type="range" class="slider" id="top-n-slider" min="1" max="5" step="1" value="3">
+                        </div>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Min Quality Threshold</span>
+                                <span id="min-quality-value">5</span>
+                            </div>
+                            <input type="range" class="slider" id="min-quality-slider" min="1" max="10" step="0.5" value="5">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="brainstorm-actions">
+                        <button class="btn btn--primary" id="btn-start-brainstorm">
+                            <span id="brainstorm-btn-text">Start Brainstorm</span>
+                        </button>
+                        <button class="btn btn--ghost" id="btn-cancel-brainstorm" style="display: none;">Cancel</button>
+                        <button class="btn btn--ghost" id="btn-clear-brainstorm">Clear</button>
+                    </div>
+
+                    <!-- Progress/Status -->
+                    <div class="brainstorm-status hidden" id="brainstorm-status">
+                        <div class="status-header">
+                            <span class="badge badge--warning" id="brainstorm-status-badge">Running...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" id="brainstorm-progress"></div>
+                        </div>
+                        <div class="status-info">
+                            <span>Depth: <strong id="current-depth">0</strong></span>
+                            <span>Ideas: <strong id="ideas-count">0</strong></span>
+                            <span>Time: <strong id="elapsed-time">0s</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section (shown after completion) -->
+                    <div class="brainstorm-stats hidden" id="brainstorm-stats">
+                        <h3 class="section-title">Results</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-total-ideas">0</div>
+                                <div class="stat-label">Total Ideas</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-best-score">0</div>
+                                <div class="stat-label">Best Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-avg-score">0</div>
+                                <div class="stat-label">Avg Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-exec-time">0s</div>
+                                <div class="stat-label">Time</div>
+                            </div>
+                        </div>
+                        <button class="btn btn--secondary" id="btn-export-results">Export Results</button>
+                    </div>
+
+                    <!-- Selected Idea Detail -->
+                    <div class="brainstorm-idea-detail hidden" id="brainstorm-idea-detail">
+                        <h3 class="section-title">Selected Idea</h3>
+                        <div class="idea-detail-card">
+                            <div class="idea-score-badge" id="detail-score">8.5</div>
+                            <p class="idea-text" id="detail-text"></p>
+                            <p class="idea-reasoning" id="detail-reasoning"></p>
+                            <div class="idea-meta">
+                                <span>Depth: <strong id="detail-depth">0</strong></span>
+                                <span>ID: <code id="detail-id"></code></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Example Section -->
+                    <div class="brainstorm-code-section" id="brainstorm-code-section">
+                        <div class="code-section-header" id="toggle-code-section">
+                            <h3 class="section-title">Code Example</h3>
+                            <span class="toggle-icon" id="code-toggle-icon">▼</span>
+                        </div>
+                        <div class="code-section-content" id="code-section-content">
+                            <pre class="code-block"><code id="code-snippet"></code></pre>
+                            <button class="btn btn--ghost btn--sm" id="btn-copy-code">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Brainstorm View -->
+
         <!-- Settings Panel (Slide-in) -->
         <div class="settings-panel" id="settings-panel">
             <div class="settings-panel__header">
@@ -410,6 +579,8 @@
     <script src="js/api.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/tree-visualizer.js"></script>
+    <script src="js/brainstorm.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

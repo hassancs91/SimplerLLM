@@ -10,6 +10,13 @@ const TOOLS = [
         description: 'Have a conversation with an LLM',
         icon: '💬',
         viewId: 'chat-view'
+    },
+    {
+        id: 'brainstorm',
+        name: 'Brainstorm',
+        description: 'Generate and explore ideas with visual tree',
+        icon: '🧠',
+        viewId: 'brainstorm-view'
     }
 ];
 
@@ -82,6 +89,7 @@ class App {
         this.currentView = 'tools-view';
         this.toolsView = document.getElementById('tools-view');
         this.chatView = document.getElementById('chat-view');
+        this.brainstormView = document.getElementById('brainstorm-view');
 
         this.providerSelect = document.getElementById('provider-select');
         this.modelSelect = document.getElementById('model-select');
@@ -97,6 +105,7 @@ class App {
         // Initialize managers
         chatManager = new ChatManager();
         settingsManager = new SettingsManager();
+        brainstormManager = new BrainstormManager();
 
         // Setup window controls
         this.setupWindowControls();
@@ -139,10 +148,16 @@ class App {
         // Hide all views
         this.toolsView.classList.add('hidden');
         this.chatView.classList.add('hidden');
+        this.brainstormView.classList.add('hidden');
 
         // Show target view
         document.getElementById(viewId).classList.remove('hidden');
         this.currentView = viewId;
+
+        // Refresh view-specific data
+        if (viewId === 'brainstorm-view' && brainstormManager) {
+            brainstormManager.refresh();
+        }
     }
 
     renderToolCards() {

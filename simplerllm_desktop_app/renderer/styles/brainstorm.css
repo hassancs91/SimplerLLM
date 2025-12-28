@@ -1,0 +1,499 @@
+/**
+ * Brainstorm Tool Styles
+ * Memphis design system extension
+ */
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.brainstorm-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.brainstorm-view .main-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Left Pane - Tree Visualization */
+.brainstorm-tree-pane {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border-right: var(--border-width) solid var(--border-color);
+    min-width: 500px;
+}
+
+.brainstorm-tree-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.brainstorm-tree-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    flex: 1;
+}
+
+.brainstorm-tree-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.brainstorm-tree-container {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255, 107, 157, 0.08) 0%, transparent 25%),
+        radial-gradient(circle at 90% 90%, rgba(0, 212, 170, 0.08) 0%, transparent 25%),
+        radial-gradient(circle at 50% 50%, rgba(255, 225, 86, 0.05) 0%, transparent 35%),
+        var(--bg-secondary);
+}
+
+#brainstorm-svg {
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.brainstorm-tree-legend {
+    display: flex;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-top: var(--border-width) solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+}
+
+.legend-dot--high { background: var(--memphis-teal); }
+.legend-dot--mid { background: var(--memphis-yellow); }
+.legend-dot--low { background: var(--memphis-pink); }
+
+/* Right Pane - Controls */
+.brainstorm-control-pane {
+    width: 450px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    gap: var(--spacing-lg);
+    background: var(--bg-primary);
+}
+
+.section-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* ============================================
+   INPUT SECTION
+   ============================================ */
+
+.brainstorm-input-section {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.brainstorm-prompt {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* ============================================
+   PARAMETERS SECTION
+   ============================================ */
+
+.brainstorm-params-section {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.brainstorm-params-section .input-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.brainstorm-params-section .input-group:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   ACTIONS
+   ============================================ */
+
+.brainstorm-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.brainstorm-actions .btn--primary {
+    flex: 1;
+}
+
+/* ============================================
+   STATUS SECTION
+   ============================================ */
+
+.brainstorm-status {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--memphis-gray-light);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--memphis-teal), var(--memphis-yellow));
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.status-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   STATS SECTION
+   ============================================ */
+
+.brainstorm-stats {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-card {
+    background: var(--bg-primary);
+    padding: var(--spacing-sm);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--memphis-teal);
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   IDEA DETAIL
+   ============================================ */
+
+.brainstorm-idea-detail {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.idea-detail-card {
+    position: relative;
+    padding-right: 50px;
+}
+
+.idea-score-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    border: var(--border-width) solid var(--border-color);
+}
+
+.idea-score-badge.score-high {
+    background: var(--memphis-teal);
+    color: var(--memphis-black);
+}
+
+.idea-score-badge.score-mid {
+    background: var(--memphis-yellow);
+    color: var(--memphis-black);
+}
+
+.idea-score-badge.score-low {
+    background: var(--memphis-pink);
+    color: var(--memphis-white);
+}
+
+.idea-text {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.idea-reasoning {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-sm);
+    border-left: 3px solid var(--memphis-purple);
+}
+
+.idea-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.idea-meta code {
+    font-family: var(--font-mono);
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* ============================================
+   CODE EXAMPLE SECTION
+   ============================================ */
+
+.brainstorm-code-section {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.code-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    min-height: 48px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.code-section-header:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.code-section-header .section-title {
+    margin-bottom: 0;
+}
+
+.toggle-icon {
+    font-size: var(--font-size-sm);
+    transition: transform 0.2s ease;
+}
+
+.toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.code-section-content {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+}
+
+.code-section-content.hidden {
+    display: none;
+}
+
+.code-block {
+    background: #1A1A2E;
+    color: #E0E0E0;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', var(--font-mono), monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 0 0 var(--spacing-sm) 0;
+    white-space: pre;
+    min-height: 200px;
+    max-height: 350px;
+    overflow-y: auto;
+    border: 2px solid var(--border-color);
+}
+
+.code-block code {
+    font-family: inherit;
+    background: none;
+    padding: 0;
+    color: inherit;
+    display: block;
+}
+
+.code-section-content .btn {
+    width: 100%;
+}
+
+/* ============================================
+   TREE NODE STYLES (SVG)
+   ============================================ */
+
+.tree-node {
+    cursor: pointer;
+}
+
+.tree-node:hover .node-bg {
+    filter: brightness(1.1);
+}
+
+.tree-node.selected .node-bg {
+    stroke: var(--memphis-purple);
+    stroke-width: 4;
+}
+
+.node-text {
+    font-family: 'Space Grotesk', var(--font-primary), sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.node-score {
+    font-family: 'JetBrains Mono', var(--font-mono), monospace;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.node-depth {
+    font-family: 'JetBrains Mono', var(--font-mono), monospace;
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.tree-edge {
+    pointer-events: none;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .brainstorm-view .main-container {
+        flex-direction: column;
+    }
+
+    .brainstorm-tree-pane {
+        min-width: 100%;
+        max-height: 50vh;
+        border-right: none;
+        border-bottom: var(--border-width) solid var(--border-color);
+    }
+
+    .brainstorm-control-pane {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   EMPTY STATE FOR TREE
+   ============================================ */
+
+.brainstorm-tree-container:empty::after,
+.brainstorm-tree-container svg:empty::after {
+    content: 'Enter a prompt and click Start to visualize your ideas';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-muted);
+    font-size: var(--font-size-lg);
+    text-align: center;
+    max-width: 300px;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes nodeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(0, 212, 170, 0);
+    }
+}
+
+.brainstorm-status .badge--warning {
+    animation: pulseGlow 2s infinite;
+}

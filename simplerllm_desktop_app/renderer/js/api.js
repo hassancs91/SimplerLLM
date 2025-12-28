@@ -101,6 +101,109 @@ class APIClient {
             method: 'DELETE'
         });
     }
+
+    // Brainstorm
+    /**
+     * Start a brainstorming session with SSE streaming.
+     *
+     * @param {string} prompt - The brainstorming prompt
+     * @param {string} provider - LLM provider (e.g., 'openai')
+     * @param {string} model - Model name (e.g., 'gpt-4o')
+     * @param {Object} params - Brainstorm parameters
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamBrainstorm(prompt, provider, model, params, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        // Start the streaming request
+        fetch(`${this.baseURL}/brainstorm/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt,
+                provider,
+                model,
+                params
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // Keep incomplete line in buffer
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        // Return controller with abort method
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Run brainstorm without streaming (fallback).
+     */
+    async runBrainstorm(prompt, provider, model, params) {
+        return this.request('/brainstorm/run', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                provider,
+                model,
+                params
+            })
+        });
+    }
 }
 
 // Global API client instance
