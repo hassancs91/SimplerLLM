@@ -63,3 +63,12 @@ examples
 
 guides
 projects
+
+# SimplerLLM Desktop App
+simplerllm_desktop_app/node_modules/
+simplerllm_desktop_app/dist/
+simplerllm_desktop_app/python/
+simplerllm_desktop_app/.env
+simplerllm_desktop_app/__pycache__/
+simplerllm_desktop_app/**/__pycache__/
+simplerllm_desktop_app/*.log

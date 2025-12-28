@@ -1,0 +1,156 @@
+/**
+ * MEMPHIS Design System - CSS Variables
+ * Inspired by the 1980s Memphis Design Movement
+ * Bold colors, geometric shapes, playful patterns
+ */
+
+:root {
+    /* ============================================
+       MEMPHIS PRIMARY COLORS
+       ============================================ */
+    --memphis-pink: #FF6B9D;
+    --memphis-pink-light: #FFB3CC;
+    --memphis-pink-dark: #E54578;
+
+    --memphis-yellow: #FFE156;
+    --memphis-yellow-light: #FFF0A3;
+    --memphis-yellow-dark: #E6C22E;
+
+    --memphis-teal: #00D4AA;
+    --memphis-teal-light: #66E8CC;
+    --memphis-teal-dark: #00A888;
+
+    --memphis-blue: #4ECDC4;
+    --memphis-blue-light: #8EEBE5;
+    --memphis-blue-dark: #2BA89E;
+
+    --memphis-orange: #FF8C42;
+    --memphis-orange-light: #FFBB8C;
+    --memphis-orange-dark: #E66A1A;
+
+    --memphis-purple: #9B59B6;
+    --memphis-purple-light: #C49BD8;
+    --memphis-purple-dark: #7A3E92;
+
+    --memphis-red: #FF5252;
+    --memphis-green: #4CAF50;
+
+    /* ============================================
+       NEUTRALS
+       ============================================ */
+    --memphis-black: #1A1A2E;
+    --memphis-black-soft: #2D2D44;
+    --memphis-white: #FEFEFE;
+    --memphis-gray-lightest: #F8F8FC;
+    --memphis-gray-light: #E8E8F0;
+    --memphis-gray: #C0C0D0;
+    --memphis-gray-dark: #6B6B80;
+
+    /* ============================================
+       SEMANTIC COLORS
+       ============================================ */
+    --bg-primary: var(--memphis-white);
+    --bg-secondary: var(--memphis-gray-lightest);
+    --bg-tertiary: var(--memphis-gray-light);
+    --bg-accent: var(--memphis-yellow);
+    --bg-dark: var(--memphis-black);
+
+    --text-primary: var(--memphis-black);
+    --text-secondary: var(--memphis-gray-dark);
+    --text-muted: var(--memphis-gray);
+    --text-inverse: var(--memphis-white);
+    --text-accent: var(--memphis-pink);
+
+    --border-color: var(--memphis-black);
+    --border-light: var(--memphis-gray-light);
+
+    /* ============================================
+       TYPOGRAPHY
+       ============================================ */
+    --font-primary: 'Space Grotesk', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --font-display: 'Bangers', 'Impact', sans-serif;
+
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 2rem;      /* 32px */
+    --font-size-4xl: 2.5rem;    /* 40px */
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-black: 900;
+
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* ============================================
+       SPACING
+       ============================================ */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    --spacing-3xl: 64px;
+
+    /* ============================================
+       BORDERS
+       ============================================ */
+    --border-width-thin: 2px;
+    --border-width: 3px;
+    --border-width-thick: 4px;
+
+    --border-radius-none: 0;
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 20px;
+    --border-radius-2xl: 28px;
+    --border-radius-full: 9999px;
+
+    /* ============================================
+       SHADOWS (Bold MEMPHIS-style offset shadows)
+       ============================================ */
+    --shadow-sm: 3px 3px 0px var(--memphis-black);
+    --shadow-md: 5px 5px 0px var(--memphis-black);
+    --shadow-lg: 8px 8px 0px var(--memphis-black);
+    --shadow-xl: 12px 12px 0px var(--memphis-black);
+
+    --shadow-pink: 5px 5px 0px var(--memphis-pink);
+    --shadow-yellow: 5px 5px 0px var(--memphis-yellow);
+    --shadow-teal: 5px 5px 0px var(--memphis-teal);
+    --shadow-blue: 5px 5px 0px var(--memphis-blue);
+
+    --shadow-inset: inset 3px 3px 0px var(--memphis-black);
+
+    /* ============================================
+       TRANSITIONS
+       ============================================ */
+    --transition-fast: 100ms ease;
+    --transition-normal: 200ms ease;
+    --transition-slow: 300ms ease;
+    --transition-bounce: 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* ============================================
+       Z-INDEX
+       ============================================ */
+    --z-dropdown: 100;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+    --sidebar-width: 280px;
+    --titlebar-height: 40px;
+    --chat-input-height: 120px;
+}
