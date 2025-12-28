@@ -204,6 +204,110 @@ class APIClient {
             })
         });
     }
+
+    // Judge
+    /**
+     * Start an LLM Judge evaluation with SSE streaming.
+     *
+     * @param {string} prompt - The prompt to evaluate
+     * @param {Array} contestants - Array of {provider, model} objects
+     * @param {Object} judgeConfig - {provider, model} for the judge LLM
+     * @param {string} mode - Evaluation mode: 'select_best', 'synthesize', or 'compare'
+     * @param {Array} criteria - Evaluation criteria array
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamJudge(prompt, contestants, judgeConfig, mode, criteria, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        fetch(`${this.baseURL}/judge/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt,
+                contestants,
+                judge: judgeConfig,
+                mode,
+                criteria
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Run judge without streaming (fallback).
+     */
+    async runJudge(prompt, contestants, judgeConfig, mode, criteria) {
+        return this.request('/judge/run', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                contestants,
+                judge: judgeConfig,
+                mode,
+                criteria
+            })
+        });
+    }
 }
 
 // Global API client instance

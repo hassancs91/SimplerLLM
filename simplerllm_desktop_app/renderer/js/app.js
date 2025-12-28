@@ -17,6 +17,13 @@ const TOOLS = [
         description: 'Generate and explore ideas with visual tree',
         icon: '🧠',
         viewId: 'brainstorm-view'
+    },
+    {
+        id: 'judge',
+        name: 'LLM Judge',
+        description: 'Compare multiple LLMs with an AI judge',
+        icon: '⚖️',
+        viewId: 'judge-view'
     }
 ];
 
@@ -90,6 +97,7 @@ class App {
         this.toolsView = document.getElementById('tools-view');
         this.chatView = document.getElementById('chat-view');
         this.brainstormView = document.getElementById('brainstorm-view');
+        this.judgeView = document.getElementById('judge-view');
 
         this.providerSelect = document.getElementById('provider-select');
         this.modelSelect = document.getElementById('model-select');
@@ -106,6 +114,7 @@ class App {
         chatManager = new ChatManager();
         settingsManager = new SettingsManager();
         brainstormManager = new BrainstormManager();
+        judgeManager = new JudgeManager();
 
         // Setup window controls
         this.setupWindowControls();
@@ -149,6 +158,7 @@ class App {
         this.toolsView.classList.add('hidden');
         this.chatView.classList.add('hidden');
         this.brainstormView.classList.add('hidden');
+        this.judgeView.classList.add('hidden');
 
         // Show target view
         document.getElementById(viewId).classList.remove('hidden');
@@ -157,6 +167,9 @@ class App {
         // Refresh view-specific data
         if (viewId === 'brainstorm-view' && brainstormManager) {
             brainstormManager.refresh();
+        }
+        if (viewId === 'judge-view' && judgeManager) {
+            judgeManager.refresh();
         }
     }
 
