@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="styles/memphis.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/brainstorm.css">
+    <link rel="stylesheet" href="styles/judge.css">
 
     <style>
         /* Layout styles */
@@ -555,6 +556,157 @@
             </div>
         </div> <!-- End Brainstorm View -->
 
+        <!-- Judge View -->
+        <div class="judge-view hidden" id="judge-view">
+            <div class="main-container">
+                <!-- Left Pane: Visualization -->
+                <div class="judge-viz-pane">
+                    <div class="judge-viz-header">
+                        <button class="btn btn--ghost btn--sm" id="btn-back-from-judge">← Back</button>
+                        <h2 class="judge-viz-title">LLM Judge Arena</h2>
+                    </div>
+
+                    <!-- Radar Chart Container -->
+                    <div class="judge-radar-container" id="judge-radar-container">
+                        <svg id="judge-radar-svg" width="100%" height="350"></svg>
+                        <div class="radar-legend" id="radar-legend">
+                            <!-- Legend items populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Response Cards Grid -->
+                    <div class="judge-responses-container" id="judge-responses-container">
+                        <!-- Response cards populated by JS -->
+                    </div>
+
+                    <!-- Final Answer Section -->
+                    <div class="judge-final-answer hidden" id="judge-final-answer">
+                        <h3 class="section-title">Final Answer</h3>
+                        <div class="final-answer-card" id="final-answer-content"></div>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Controls -->
+                <div class="judge-control-pane">
+                    <!-- Prompt Input -->
+                    <div class="judge-input-section">
+                        <h3 class="section-title">Prompt</h3>
+                        <textarea class="input textarea judge-prompt" id="judge-prompt"
+                            placeholder="Enter your prompt for all contestants..."
+                            rows="4"></textarea>
+                    </div>
+
+                    <!-- Mode Selection -->
+                    <div class="judge-mode-section">
+                        <h3 class="section-title">Judge Mode</h3>
+                        <div class="mode-toggle" id="judge-mode-toggle">
+                            <button class="mode-btn active" data-mode="select_best">Select Best</button>
+                            <button class="mode-btn" data-mode="synthesize">Synthesize</button>
+                            <button class="mode-btn" data-mode="compare">Compare</button>
+                        </div>
+                        <p class="mode-description" id="mode-description">
+                            Pick the single best response from all contestants.
+                        </p>
+                    </div>
+
+                    <!-- Contestants Selection -->
+                    <div class="judge-contestants-section">
+                        <h3 class="section-title">Contestants</h3>
+                        <div class="contestants-list" id="contestants-list">
+                            <!-- Contestant rows populated dynamically -->
+                        </div>
+                        <button class="btn btn--secondary btn--sm" id="btn-add-contestant">
+                            + Add Contestant
+                        </button>
+                    </div>
+
+                    <!-- Judge Configuration -->
+                    <div class="judge-config-section">
+                        <h3 class="section-title">Judge LLM</h3>
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="judge-provider"></select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="judge-model" placeholder="e.g., claude-3-opus-20240229">
+                        </div>
+                    </div>
+
+                    <!-- Criteria Configuration -->
+                    <div class="judge-criteria-section">
+                        <h3 class="section-title">Evaluation Criteria</h3>
+                        <div class="criteria-tags" id="criteria-tags">
+                            <span class="criteria-tag active" data-criterion="accuracy">accuracy</span>
+                            <span class="criteria-tag active" data-criterion="clarity">clarity</span>
+                            <span class="criteria-tag active" data-criterion="completeness">completeness</span>
+                            <span class="criteria-tag" data-criterion="creativity">creativity</span>
+                            <span class="criteria-tag" data-criterion="conciseness">conciseness</span>
+                        </div>
+                        <div class="input-group" style="margin-top: var(--spacing-sm);">
+                            <input type="text" class="input" id="custom-criterion"
+                                   placeholder="Add custom criterion (press Enter)">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="judge-actions">
+                        <button class="btn btn--primary" id="btn-start-judge">
+                            <span id="judge-btn-text">Start Evaluation</span>
+                        </button>
+                        <button class="btn btn--ghost" id="btn-cancel-judge" style="display: none;">Cancel</button>
+                        <button class="btn btn--ghost" id="btn-clear-judge">Clear</button>
+                    </div>
+
+                    <!-- Status Section -->
+                    <div class="judge-status hidden" id="judge-status">
+                        <div class="status-header">
+                            <span class="badge badge--warning" id="judge-status-badge">Running...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" id="judge-progress"></div>
+                        </div>
+                        <div class="status-info">
+                            <span>Contestants: <strong id="contestants-done">0</strong>/<strong id="contestants-total">0</strong></span>
+                            <span>Time: <strong id="judge-elapsed-time">0s</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="judge-stats hidden" id="judge-stats">
+                        <h3 class="section-title">Results Summary</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-winner">-</div>
+                                <div class="stat-label">Winner</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-best-score">0</div>
+                                <div class="stat-label">Best Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-total-time">0s</div>
+                                <div class="stat-label">Total Time</div>
+                            </div>
+                        </div>
+                        <button class="btn btn--secondary" id="btn-export-judge">Export Results</button>
+                    </div>
+
+                    <!-- Code Section -->
+                    <div class="judge-code-section" id="judge-code-section">
+                        <div class="code-section-header" id="toggle-judge-code">
+                            <h3 class="section-title">Code Example</h3>
+                            <span class="toggle-icon" id="judge-code-toggle-icon">▼</span>
+                        </div>
+                        <div class="code-section-content" id="judge-code-content">
+                            <pre class="code-block"><code id="judge-code-snippet"></code></pre>
+                            <button class="btn btn--ghost btn--sm" id="btn-copy-judge-code">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Judge View -->
+
         <!-- Settings Panel (Slide-in) -->
         <div class="settings-panel" id="settings-panel">
             <div class="settings-panel__header">
@@ -581,6 +733,8 @@
     <script src="js/settings.js"></script>
     <script src="js/tree-visualizer.js"></script>
     <script src="js/brainstorm.js"></script>
+    <script src="js/radar-chart.js"></script>
+    <script src="js/judge.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
