@@ -16,6 +16,13 @@ class App {
         settingsManager = new SettingsManager();
         galleryManager = new GalleryManager();
         imageGenerationManager = new ImageGenerationManager();
+        imageEditingManager = new ImageEditingManager();
+        sketchManager = new SketchManager();
+        productEnhancerManager = new ProductEnhancerManager();
+        youTubeThumbnailManager = new YouTubeThumbnailManager();
+        portraitStudioManager = new PortraitStudioManager();
+        characterGeneratorManager = new CharacterGeneratorManager();
+        imageFusionManager = new ImageFusionManager();
 
         // Check backend status
         await this.checkBackendStatus();
@@ -71,11 +78,19 @@ class App {
                 this.showView('tools');
             });
         });
+
+        // Configure API Key button
+        const configureApiKeyBtn = document.getElementById('btn-configure-api-key');
+        if (configureApiKeyBtn) {
+            configureApiKeyBtn.addEventListener('click', () => {
+                settingsManager.open();
+            });
+        }
     }
 
     showView(viewName) {
         // Hide all views
-        document.querySelectorAll('.tools-view, .generate-view').forEach(view => {
+        document.querySelectorAll('.tools-view, .generate-view, .edit-view, .sketch-view, .enhance-view, .thumbnail-view, .portrait-view, .character-view, .fusion-view').forEach(view => {
             view.classList.add('hidden');
         });
 

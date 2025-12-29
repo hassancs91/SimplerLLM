@@ -31,6 +31,27 @@ const TOOLS = [
         description: 'Iteratively improve responses with self-critique',
         icon: '🔄',
         viewId: 'feedback-view'
+    },
+    {
+        id: 'retrieval',
+        name: 'LLM Retrieval',
+        description: 'Explore hierarchical LLM-based document retrieval',
+        icon: '🔍',
+        viewId: 'retrieval-view'
+    },
+    {
+        id: 'compare',
+        name: 'Compare',
+        description: 'Chat with two models side by side',
+        icon: '⚔️',
+        viewId: 'compare-view'
+    },
+    {
+        id: 'websearch-json',
+        name: 'Web Search + JSON',
+        description: 'Search the web and extract structured JSON data',
+        icon: '🌐',
+        viewId: 'websearch-json-view'
     }
 ];
 
@@ -106,6 +127,9 @@ class App {
         this.brainstormView = document.getElementById('brainstorm-view');
         this.judgeView = document.getElementById('judge-view');
         this.feedbackView = document.getElementById('feedback-view');
+        this.retrievalView = document.getElementById('retrieval-view');
+        this.compareView = document.getElementById('compare-view');
+        this.websearchJsonView = document.getElementById('websearch-json-view');
 
         this.providerSelect = document.getElementById('provider-select');
         this.modelSelect = document.getElementById('model-select');
@@ -124,6 +148,9 @@ class App {
         brainstormManager = new BrainstormManager();
         judgeManager = new JudgeManager();
         feedbackManager = new FeedbackManager();
+        retrievalManager.init();
+        compareManager = new CompareManager();
+        websearchJsonManager = new WebSearchJsonManager();
 
         // Setup window controls
         this.setupWindowControls();
@@ -169,6 +196,9 @@ class App {
         this.brainstormView.classList.add('hidden');
         this.judgeView.classList.add('hidden');
         this.feedbackView.classList.add('hidden');
+        this.retrievalView.classList.add('hidden');
+        this.compareView.classList.add('hidden');
+        this.websearchJsonView.classList.add('hidden');
 
         // Show target view
         document.getElementById(viewId).classList.remove('hidden');
@@ -183,6 +213,15 @@ class App {
         }
         if (viewId === 'feedback-view' && feedbackManager) {
             feedbackManager.refresh();
+        }
+        if (viewId === 'retrieval-view' && typeof retrievalManager !== 'undefined') {
+            retrievalManager.refresh();
+        }
+        if (viewId === 'compare-view' && typeof compareManager !== 'undefined') {
+            compareManager.refresh();
+        }
+        if (viewId === 'websearch-json-view' && typeof websearchJsonManager !== 'undefined') {
+            websearchJsonManager.refresh();
         }
     }
 

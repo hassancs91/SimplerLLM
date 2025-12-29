@@ -1,0 +1,285 @@
+/**
+ * Product Enhancer View Styles
+ */
+
+/* ============================================
+   ENHANCE VIEW LAYOUT
+   ============================================ */
+
+.enhance-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   ENHANCE SOURCE PANE (Left)
+   ============================================ */
+
+.enhance-source-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.enhance-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.enhance-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   PRESET CARDS
+   ============================================ */
+
+.presets-section {
+    padding: var(--spacing-lg);
+    border-bottom: 2px dashed var(--memphis-gray-light);
+}
+
+.presets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.preset-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--bg-primary);
+    border: 3px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.preset-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--memphis-teal);
+}
+
+.preset-card--active {
+    border-color: var(--memphis-teal);
+    background: rgba(0, 212, 170, 0.1);
+    box-shadow: var(--shadow-memphis-sm);
+}
+
+.preset-card__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.preset-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.preset-card__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 2px;
+}
+
+.preset-card__description {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* ============================================
+   COMPARISON VIEW
+   ============================================ */
+
+.enhance-comparison {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: var(--spacing-md);
+}
+
+.enhance-comparison__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.enhance-comparison__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.enhance-comparison__arrow {
+    color: var(--memphis-teal);
+}
+
+.enhance-comparison__image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: var(--border-radius-md);
+    border: 3px solid var(--border-color);
+    object-fit: contain;
+    box-shadow: var(--shadow-sm);
+}
+
+.enhance-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-md);
+}
+
+/* ============================================
+   ENHANCED BADGE IN GALLERY
+   ============================================ */
+
+.image-card__badge--enhanced {
+    background: var(--memphis-green);
+    color: var(--memphis-black);
+}
+
+.image-badge--enhanced {
+    background: var(--memphis-green);
+    color: var(--memphis-black);
+}
+
+/* ============================================
+   ENHANCE SOURCE SECTION
+   ============================================ */
+
+.enhance-source-pane .source-section {
+    padding: var(--spacing-lg);
+    border-bottom: 2px dashed var(--memphis-gray-light);
+}
+
+.enhance-source-pane .source-preview {
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.enhance-source-pane .source-preview__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.enhance-source-pane .source-preview__empty svg {
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.enhance-source-pane .source-preview__empty p {
+    font-size: var(--font-size-sm);
+}
+
+.enhance-source-pane .source-preview__image-container {
+    position: relative;
+    width: 100%;
+}
+
+.enhance-source-pane .source-preview__image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+}
+
+.enhance-source-pane .source-preview__clear {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--memphis-white);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    opacity: 0.8;
+}
+
+.enhance-source-pane .source-preview__clear:hover {
+    background: var(--memphis-pink);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.enhance-source-pane .source-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.enhance-source-pane .source-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+/* ============================================
+   RESULT PREVIEW SECTION
+   ============================================ */
+
+.enhance-source-pane .preview-section {
+    padding: var(--spacing-lg);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .enhance-view .main-container {
+        flex-direction: column;
+    }
+
+    .enhance-source-pane {
+        height: 50%;
+    }
+
+    .enhance-view .control-pane {
+        width: 100%;
+        height: 50%;
+        border-left: none;
+        border-top: var(--border-width) solid var(--border-color);
+    }
+
+    .presets-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,264 @@
+/**
+ * Image Fusion View Styles
+ */
+
+/* ============================================
+   FUSION VIEW LAYOUT
+   ============================================ */
+
+.fusion-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   FUSION SOURCE PANE (Left)
+   ============================================ */
+
+.fusion-source-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.fusion-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.fusion-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   SELECTED IMAGES SECTION
+   ============================================ */
+
+.fusion-images-section {
+    padding: var(--spacing-lg);
+    border-bottom: 2px dashed var(--memphis-gray-light);
+}
+
+.fusion-images-section .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fusion-images-count {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-normal);
+}
+
+/* Selected images grid */
+.fusion-selected-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.fusion-image-slot {
+    aspect-ratio: 1;
+    background: var(--bg-primary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.fusion-image-slot--empty {
+    color: var(--text-muted);
+    font-size: var(--font-size-xl);
+}
+
+.fusion-image-slot--filled {
+    border-style: solid;
+    border-color: var(--memphis-teal);
+}
+
+.fusion-image-slot__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fusion-image-slot__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--memphis-white);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    opacity: 0;
+}
+
+.fusion-image-slot:hover .fusion-image-slot__remove {
+    opacity: 1;
+}
+
+.fusion-image-slot__remove:hover {
+    background: var(--memphis-pink);
+    transform: scale(1.1);
+}
+
+.fusion-image-slot__number {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--memphis-teal);
+    color: var(--memphis-white);
+    border-radius: 50%;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Add image actions */
+.fusion-add-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.fusion-add-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+/* ============================================
+   FUSION RESULT
+   ============================================ */
+
+.fusion-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+}
+
+.fusion-result__image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--border-radius-md);
+    border: 3px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.fusion-result__info {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.fusion-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-md);
+}
+
+/* ============================================
+   RESULT PREVIEW SECTION
+   ============================================ */
+
+.fusion-source-pane .preview-section {
+    padding: var(--spacing-lg);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============================================
+   FUSION BADGE IN GALLERY
+   ============================================ */
+
+.image-badge--fusion {
+    background: var(--memphis-teal);
+    color: var(--memphis-white);
+}
+
+.image-card__badge--fusion {
+    background: var(--memphis-teal);
+    color: var(--memphis-white);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.fusion-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.fusion-empty-state svg {
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.fusion-empty-state p {
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .fusion-view .main-container {
+        flex-direction: column;
+    }
+
+    .fusion-source-pane {
+        height: 40%;
+    }
+
+    .fusion-view .control-pane {
+        width: 100%;
+        height: 60%;
+        border-left: none;
+        border-top: var(--border-width) solid var(--border-color);
+    }
+
+    .fusion-selected-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .fusion-selected-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

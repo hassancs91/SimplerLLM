@@ -18,7 +18,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // File system
-    showItemInFolder: (filePath) => ipcRenderer.invoke('shell:showItemInFolder', filePath)
+    showItemInFolder: (filePath) => ipcRenderer.invoke('shell:showItemInFolder', filePath),
+
+    // File dialog
+    openFileDialog: (options) => ipcRenderer.invoke('dialog:openFile', options)
 });
 
 // Log when preload script is loaded

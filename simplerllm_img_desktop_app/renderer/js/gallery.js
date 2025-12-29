@@ -32,6 +32,53 @@ class GalleryManager {
                 }
             });
         }
+
+        // Lightbox action buttons
+        const lightboxOpenFileBtn = document.getElementById('lightbox-open-file');
+        if (lightboxOpenFileBtn) {
+            lightboxOpenFileBtn.addEventListener('click', () => {
+                if (this.currentImage) {
+                    this.openFileLocation(this.currentImage.id);
+                }
+            });
+        }
+
+        const lightboxDeleteBtn = document.getElementById('lightbox-delete');
+        if (lightboxDeleteBtn) {
+            lightboxDeleteBtn.addEventListener('click', () => {
+                if (this.currentImage) {
+                    this.deleteImage(this.currentImage.id);
+                }
+            });
+        }
+
+        // Gallery grid event delegation
+        if (this.gridContainer) {
+            this.gridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.image-card');
+                if (!card) return;
+
+                const imageId = card.dataset.id;
+
+                // Check if clicked on action button
+                const actionBtn = e.target.closest('.image-card__action-btn');
+                if (actionBtn) {
+                    e.stopPropagation();
+                    const action = actionBtn.dataset.action;
+                    if (action === 'open-file') {
+                        this.openFileLocation(imageId);
+                    } else if (action === 'delete') {
+                        this.deleteImage(imageId);
+                    } else if (action === 'edit') {
+                        this.editImage(imageId);
+                    }
+                    return;
+                }
+
+                // Otherwise open lightbox
+                this.openLightbox(imageId);
+            });
+        }
     }
 
     async loadGallery() {
@@ -62,20 +109,27 @@ class GalleryManager {
         }
 
         this.gridContainer.innerHTML = this.images.map(image => `
-            <div class="image-card" data-id="${image.id}" onclick="galleryManager.openLightbox('${image.id}')">
+            <div class="image-card" data-id="${image.id}">
+                ${image.type === 'edited' ? '<span class="image-card__badge image-card__badge--edited">Edited</span>' : ''}
+                ${image.type === 'imported' ? '<span class="image-card__badge image-card__badge--imported">Imported</span>' : ''}
+                ${image.type === 'sketch' ? '<span class="image-card__badge image-card__badge--sketch">Sketch</span>' : ''}
                 <img class="image-card__img" src="${api.getImageUrl(image.id)}" alt="${this.escapeHtml(image.prompt)}" loading="lazy">
                 <div class="image-card__overlay">
                     <div class="image-card__prompt">${this.escapeHtml(image.prompt)}</div>
                 </div>
                 <div class="image-card__actions">
-                    <button class="image-card__action-btn" onclick="event.stopPropagation(); galleryManager.downloadImage('${image.id}')" title="Download">
+                    <button class="image-card__action-btn" data-action="edit" title="Edit this image">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
                     </button>
-                    <button class="image-card__action-btn" onclick="event.stopPropagation(); galleryManager.deleteImage('${image.id}')" title="Delete">
+                    <button class="image-card__action-btn" data-action="open-file" title="Open file location">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="image-card__action-btn" data-action="delete" title="Delete">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -162,37 +216,41 @@ class GalleryManager {
         }, 50);
     }
 
-    async downloadImage(imageId) {
+    async openFileLocation(imageId) {
         if (!imageId) return;
 
-        const image = this.images.find(img => img.id === imageId);
-        const filename = image?.prompt
-            ? `simplerllm-${image.prompt.slice(0, 30).replace(/[^a-z0-9]/gi, '_')}.png`
-            : `simplerllm-${imageId}.png`;
-
         try {
-            showToast('Preparing download...', 'info');
-
-            // Fetch the image as a blob
-            const response = await fetch(api.getImageUrl(imageId));
-            const blob = await response.blob();
-
-            // Create object URL and download
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up the object URL
-            URL.revokeObjectURL(url);
-
-            showToast('Download started!', 'success');
+            // Get the file path from the backend
+            const result = await api.getImagePath(imageId);
+            if (result.success && result.path) {
+                // Use Electron to show the file in folder
+                await window.electronAPI.showItemInFolder(result.path);
+            } else {
+                showToast('Could not find file location', 'error');
+            }
         } catch (error) {
-            console.error('Download error:', error);
-            showToast('Failed to download image', 'error');
+            console.error('Open file location error:', error);
+            showToast('Failed to open file location', 'error');
+        }
+    }
+
+    /**
+     * Navigate to edit view with the selected image
+     */
+    editImage(imageId) {
+        if (window.imageEditingManager) {
+            imageEditingManager.editFromGallery(imageId);
+        }
+    }
+
+    /**
+     * Remove an image from the gallery array without reloading
+     */
+    removeImage(imageId) {
+        const index = this.images.findIndex(img => img.id === imageId);
+        if (index !== -1) {
+            this.images.splice(index, 1);
+            this.render();
         }
     }
 
