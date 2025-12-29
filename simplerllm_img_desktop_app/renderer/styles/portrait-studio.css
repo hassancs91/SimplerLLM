@@ -1,0 +1,266 @@
+/**
+ * Portrait Studio View Styles
+ */
+
+/* ============================================
+   PORTRAIT VIEW LAYOUT
+   ============================================ */
+
+.portrait-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   PORTRAIT SOURCE PANE (Left)
+   ============================================ */
+
+.portrait-source-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.portrait-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.portrait-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   FACE REFERENCE SECTION (Reuse from thumbnail)
+   ============================================ */
+
+.portrait-view .face-section {
+    padding: var(--spacing-lg);
+    border-bottom: 2px dashed var(--memphis-gray-light);
+}
+
+.portrait-view .face-preview {
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portrait-view .face-preview__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.portrait-view .face-preview__empty svg {
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.portrait-view .face-preview__empty p {
+    font-size: var(--font-size-sm);
+}
+
+.portrait-view .face-preview__image-container {
+    position: relative;
+    width: 100%;
+}
+
+.portrait-view .face-preview__image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    display: block;
+}
+
+.portrait-view .face-preview__clear {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--memphis-white);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    opacity: 0.8;
+}
+
+.portrait-view .face-preview__clear:hover {
+    background: var(--memphis-pink);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.portrait-view .face-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.portrait-view .face-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+/* ============================================
+   PORTRAIT RESULT
+   ============================================ */
+
+.portrait-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+}
+
+.portrait-result__image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--border-radius-md);
+    border: 3px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.portrait-result__info {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.portrait-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-md);
+}
+
+/* ============================================
+   RESULT PREVIEW SECTION
+   ============================================ */
+
+.portrait-source-pane .preview-section {
+    padding: var(--spacing-lg);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============================================
+   PORTRAIT BADGE IN GALLERY
+   ============================================ */
+
+.image-badge--portrait {
+    background: var(--memphis-purple);
+    color: var(--memphis-white);
+}
+
+.image-card__badge--portrait {
+    background: var(--memphis-purple);
+    color: var(--memphis-white);
+}
+
+/* ============================================
+   PRESET CARDS
+   ============================================ */
+
+.portrait-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+    max-height: 280px;
+    overflow-y: auto;
+    padding: var(--spacing-xs);
+}
+
+.preset-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.preset-card:hover {
+    border-color: var(--memphis-purple);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.preset-card--active {
+    border-color: var(--memphis-purple);
+    background: rgba(156, 89, 182, 0.1);
+    box-shadow: 0 0 0 2px rgba(156, 89, 182, 0.2);
+}
+
+.preset-card__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.preset-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.preset-card__name {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+}
+
+.preset-card__description {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .portrait-view .main-container {
+        flex-direction: column;
+    }
+
+    .portrait-source-pane {
+        height: 40%;
+    }
+
+    .portrait-view .control-pane {
+        width: 100%;
+        height: 60%;
+        border-left: none;
+        border-top: var(--border-width) solid var(--border-color);
+    }
+}

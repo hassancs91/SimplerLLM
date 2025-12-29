@@ -16,6 +16,13 @@
     <link rel="stylesheet" href="styles/memphis.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/gallery.css">
+    <link rel="stylesheet" href="styles/edit.css">
+    <link rel="stylesheet" href="styles/sketch.css">
+    <link rel="stylesheet" href="styles/enhance.css">
+    <link rel="stylesheet" href="styles/youtube-thumbnail.css">
+    <link rel="stylesheet" href="styles/portrait-studio.css">
+    <link rel="stylesheet" href="styles/character-generator.css">
+    <link rel="stylesheet" href="styles/image-fusion.css">
 
     <style>
         /* App Layout */
@@ -89,23 +96,59 @@
                     <div class="tool-card__description">Create images from text prompts using AI</div>
                 </div>
 
-                <!-- Future Tool Cards (placeholder for extensibility) -->
-                <div class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
-                    <div class="tool-card__icon" style="background: var(--memphis-gray-light);">✨</div>
+                <!-- Edit Tool Card -->
+                <div class="tool-card" data-tool="edit">
+                    <div class="tool-card__icon">✨</div>
                     <div class="tool-card__name">Edit</div>
-                    <div class="tool-card__description">Coming soon - Edit and modify images with AI</div>
+                    <div class="tool-card__description">Edit and modify images with AI prompts</div>
+                </div>
+
+                <!-- Sketch Tool Card -->
+                <div class="tool-card" data-tool="sketch">
+                    <div class="tool-card__icon" style="background: var(--memphis-teal);">✏️</div>
+                    <div class="tool-card__name">Sketch</div>
+                    <div class="tool-card__description">Draw a sketch and transform it into a realistic image</div>
+                </div>
+
+                <!-- Product Enhancer Tool Card -->
+                <div class="tool-card" data-tool="enhance">
+                    <div class="tool-card__icon" style="background: var(--memphis-green);">🛍️</div>
+                    <div class="tool-card__name">Enhance</div>
+                    <div class="tool-card__description">Enhance product images with AI presets</div>
+                </div>
+
+                <!-- YouTube Thumbnail Tool Card -->
+                <div class="tool-card" data-tool="thumbnail">
+                    <div class="tool-card__icon" style="background: var(--memphis-pink);">📺</div>
+                    <div class="tool-card__name">YouTube Thumbnail</div>
+                    <div class="tool-card__description">Generate eye-catching thumbnails with face reference</div>
+                </div>
+
+                <!-- Portrait Studio Tool Card -->
+                <div class="tool-card" data-tool="portrait">
+                    <div class="tool-card__icon" style="background: var(--memphis-purple);">🎭</div>
+                    <div class="tool-card__name">Portrait Studio</div>
+                    <div class="tool-card__description">Generate images with face reference for character consistency</div>
+                </div>
+
+                <!-- Character Generator Tool Card -->
+                <div class="tool-card" data-tool="character">
+                    <div class="tool-card__icon" style="background: var(--memphis-orange);">👤</div>
+                    <div class="tool-card__name">Character Generator</div>
+                    <div class="tool-card__description">Create consistent characters with style presets and pose variations</div>
+                </div>
+
+                <!-- Image Fusion Tool Card -->
+                <div class="tool-card" data-tool="fusion">
+                    <div class="tool-card__icon" style="background: var(--memphis-teal);">🔀</div>
+                    <div class="tool-card__name">Image Fusion</div>
+                    <div class="tool-card__description">Combine up to 5 images into one with AI</div>
                 </div>
 
                 <div class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
                     <div class="tool-card__icon" style="background: var(--memphis-gray-light);">🔍</div>
                     <div class="tool-card__name">Upscale</div>
                     <div class="tool-card__description">Coming soon - Enhance image resolution</div>
-                </div>
-
-                <div class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
-                    <div class="tool-card__icon" style="background: var(--memphis-gray-light);">🔄</div>
-                    <div class="tool-card__name">Variations</div>
-                    <div class="tool-card__description">Coming soon - Create variations of images</div>
                 </div>
             </div>
         </div>
@@ -195,11 +238,1053 @@ Example: A serene Japanese garden with cherry blossoms, a small pond with koi fi
                             <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
                                 <strong>Note:</strong> You need a Google AI API key to generate images.
                             </p>
-                            <button class="btn btn--ghost btn--sm" onclick="settingsManager.open()">
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key">
                                 Configure API Key
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit View -->
+        <div class="edit-view hidden" id="edit-view">
+            <div class="main-container">
+                <!-- Left: Source Image & Version History -->
+                <div class="edit-source-pane">
+                    <div class="edit-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="edit-header__title">Edit Image</h2>
+                    </div>
+
+                    <!-- Source Image Section -->
+                    <div class="source-section">
+                        <h3 class="section-title">Source Image</h3>
+                        <div class="source-preview" id="source-preview">
+                            <div class="source-preview__empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p>Select an image to edit</p>
+                            </div>
+                        </div>
+                        <div class="source-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-browse-image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Browse Local
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="btn-select-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Version History Section -->
+                    <div class="version-section hidden" id="version-section">
+                        <h3 class="section-title">Version History</h3>
+                        <div class="version-tree" id="version-tree">
+                            <!-- Version tree will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Edit Controls -->
+                <div class="control-pane">
+                    <!-- Edit Prompt Section -->
+                    <div class="control-section">
+                        <h3 class="section-title">Edit Prompt</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="edit-prompt-input"
+                            placeholder="Describe how you want to edit this image...
+
+Example: Change the background to a sunset sky, or Make it look like a watercolor painting"
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="edit-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Apply Edit Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-apply-edit" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Apply Edit
+                        </button>
+
+                        <!-- Edit Status -->
+                        <div class="generation-status hidden" id="edit-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Edit Result Preview -->
+                    <div class="control-section preview-section hidden" id="edit-preview-section">
+                        <!-- Preview will be rendered by JS -->
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to edit images.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-edit">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sketch View -->
+        <div class="sketch-view hidden" id="sketch-view">
+            <div class="main-container">
+                <!-- Left: Canvas & Brush Controls -->
+                <div class="sketch-canvas-pane">
+                    <div class="sketch-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="sketch-header__title">Sketch to Image</h2>
+                    </div>
+
+                    <!-- Canvas Section -->
+                    <div class="canvas-section">
+                        <div class="sketch-canvas-container" id="sketch-canvas-container">
+                            <!-- Canvas will be created by JS -->
+                        </div>
+
+                        <!-- Brush Controls -->
+                        <div class="brush-controls">
+                            <div class="brush-control-group">
+                                <label class="brush-control__label">Brush Size</label>
+                                <div class="brush-size-control">
+                                    <input type="range" id="brush-size-slider" class="brush-size-slider"
+                                           min="1" max="50" value="5">
+                                    <span class="brush-size-display" id="brush-size-display">5px</span>
+                                </div>
+                            </div>
+
+                            <div class="brush-control-group">
+                                <label class="brush-control__label">Color</label>
+                                <div class="color-controls">
+                                    <input type="color" id="brush-color-picker" class="color-picker" value="#000000">
+                                    <div class="color-presets" id="color-presets">
+                                        <button class="color-preset active" data-color="#000000" style="background: #000000;"></button>
+                                        <button class="color-preset" data-color="#FF0000" style="background: #FF0000;"></button>
+                                        <button class="color-preset" data-color="#00FF00" style="background: #00FF00;"></button>
+                                        <button class="color-preset" data-color="#0000FF" style="background: #0000FF;"></button>
+                                        <button class="color-preset" data-color="#FFFF00" style="background: #FFFF00;"></button>
+                                        <button class="color-preset" data-color="#FF00FF" style="background: #FF00FF;"></button>
+                                        <button class="color-preset" data-color="#00FFFF" style="background: #00FFFF;"></button>
+                                        <button class="color-preset" data-color="#808080" style="background: #808080;"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn--secondary btn--sm" id="btn-sketch-clear">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                Clear Canvas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Generation Controls -->
+                <div class="control-pane">
+                    <!-- Prompt Section -->
+                    <div class="control-section">
+                        <h3 class="section-title">Describe Your Vision</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="sketch-prompt-input"
+                            placeholder="Edit this prompt to describe what you want your sketch to become..."
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="sketch-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-section">
+                        <h3 class="section-title">Aspect Ratio</h3>
+                        <div class="aspect-ratio-selector" id="sketch-aspect-ratio-selector">
+                            <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                                <span class="aspect-btn__icon aspect-btn__icon--square"></span>
+                                <span class="aspect-btn__label">1:1</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="16:9" title="Landscape">
+                                <span class="aspect-btn__icon aspect-btn__icon--landscape"></span>
+                                <span class="aspect-btn__label">16:9</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="9:16" title="Portrait">
+                                <span class="aspect-btn__icon aspect-btn__icon--portrait"></span>
+                                <span class="aspect-btn__label">9:16</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-sketch-generate" style="width: 100%;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                                <path d="M2 2l7.586 7.586"></path>
+                                <circle cx="11" cy="11" r="2"></circle>
+                            </svg>
+                            Generate from Sketch
+                        </button>
+
+                        <!-- Generation Status -->
+                        <div class="generation-status hidden" id="sketch-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="control-section preview-section hidden" id="sketch-preview-section">
+                        <!-- Preview will be rendered by JS -->
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to generate images.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-sketch">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhance View -->
+        <div class="enhance-view hidden" id="enhance-view">
+            <div class="main-container">
+                <!-- Left: Source & Result Preview -->
+                <div class="enhance-source-pane">
+                    <div class="enhance-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="enhance-header__title">Product Enhancer</h2>
+                    </div>
+
+                    <!-- Source Image Section -->
+                    <div class="source-section">
+                        <h3 class="section-title">Product Image</h3>
+                        <div class="source-preview" id="enhance-source-preview">
+                            <div class="source-preview__empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p>Select a product image</p>
+                            </div>
+                        </div>
+                        <div class="source-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-browse-enhance-image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Browse Local
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="btn-select-enhance-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Result Preview Section -->
+                    <div class="control-section preview-section hidden" id="enhance-result-preview">
+                        <!-- Result will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Enhancement Controls -->
+                <div class="control-pane">
+                    <!-- Preset Selection -->
+                    <div class="control-section presets-section">
+                        <h3 class="section-title">Enhancement Preset</h3>
+                        <div class="presets-grid" id="enhance-presets">
+                            <!-- Presets will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Custom Instructions -->
+                    <div class="control-section">
+                        <h3 class="section-title">Custom Instructions (Optional)</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="enhance-custom-prompt"
+                            placeholder="Add any specific enhancement instructions...
+
+Example: Make the colors more vibrant, or Add a subtle reflection"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="enhance-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Enhance Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-enhance" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+                            </svg>
+                            Enhance Product
+                        </button>
+
+                        <!-- Enhancement Status -->
+                        <div class="generation-status hidden" id="enhance-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to enhance images.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-enhance">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thumbnail View -->
+        <div class="thumbnail-view hidden" id="thumbnail-view">
+            <div class="main-container">
+                <!-- Left: Face Reference & Result Preview -->
+                <div class="thumbnail-source-pane">
+                    <div class="thumbnail-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="thumbnail-header__title">YouTube Thumbnail Generator</h2>
+                    </div>
+
+                    <!-- Face Reference Section -->
+                    <div class="face-section">
+                        <h3 class="section-title">
+                            Face Reference
+                            <span class="face-optional-label">(Optional - for character consistency)</span>
+                        </h3>
+                        <div class="face-preview" id="thumbnail-face-preview">
+                            <div class="face-preview__empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+                                </svg>
+                                <p>Select a face reference image</p>
+                            </div>
+                        </div>
+                        <div class="face-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-browse-face-image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Browse Local
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="btn-select-face-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Result Preview Section -->
+                    <div class="control-section preview-section hidden" id="thumbnail-result-preview">
+                        <!-- Result will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Thumbnail Controls -->
+                <div class="control-pane">
+                    <!-- Style Preset Selection -->
+                    <div class="control-section presets-section">
+                        <h3 class="section-title">Thumbnail Style</h3>
+                        <div class="thumbnail-presets-grid" id="thumbnail-presets">
+                            <!-- Presets will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail Text -->
+                    <div class="control-section">
+                        <h3 class="section-title">Thumbnail Text (Optional)</h3>
+                        <input
+                            type="text"
+                            class="thumbnail-text-input"
+                            id="thumbnail-text-input"
+                            placeholder="e.g., YOU WON'T BELIEVE THIS!"
+                            maxlength="50"
+                        >
+                        <p style="font-size: var(--font-size-xs); color: var(--text-muted); margin-top: var(--spacing-xs);">
+                            AI will render this text directly on the thumbnail
+                        </p>
+                    </div>
+
+                    <!-- Full Prompt -->
+                    <div class="control-section">
+                        <h3 class="section-title">Thumbnail Description</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="thumbnail-prompt-input"
+                            placeholder="Describe your thumbnail in detail...
+
+Example: Me looking shocked while pointing at a laptop screen showing amazing results. Bright yellow background with bold red accents."
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="thumbnail-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-generate-thumbnail" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                                <line x1="7" y1="2" x2="7" y2="22"></line>
+                                <line x1="17" y1="2" x2="17" y2="22"></line>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <line x1="2" y1="7" x2="7" y2="7"></line>
+                                <line x1="2" y1="17" x2="7" y2="17"></line>
+                                <line x1="17" y1="17" x2="22" y2="17"></line>
+                                <line x1="17" y1="7" x2="22" y2="7"></line>
+                            </svg>
+                            Generate Thumbnail
+                        </button>
+
+                        <!-- Generation Status -->
+                        <div class="generation-status hidden" id="thumbnail-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to generate thumbnails.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-thumbnail">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portrait View -->
+        <div class="portrait-view hidden" id="portrait-view">
+            <div class="main-container">
+                <!-- Left: Face Reference & Result Preview -->
+                <div class="portrait-source-pane">
+                    <div class="portrait-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="portrait-header__title">Portrait Studio</h2>
+                    </div>
+
+                    <!-- Face Reference Section -->
+                    <div class="face-section">
+                        <h3 class="section-title">
+                            Face Reference
+                            <span class="face-optional-label">(Optional - for character consistency)</span>
+                        </h3>
+                        <div class="face-preview" id="portrait-face-preview">
+                            <div class="face-preview__empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+                                </svg>
+                                <p>Select a face reference image</p>
+                            </div>
+                        </div>
+                        <div class="face-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-browse-portrait-face">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Browse Local
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="btn-select-portrait-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Result Preview Section -->
+                    <div class="control-section preview-section hidden" id="portrait-result-preview">
+                        <!-- Result will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Portrait Controls -->
+                <div class="control-pane">
+                    <!-- Transformation Presets -->
+                    <div class="control-section">
+                        <h3 class="section-title">
+                            Transformation Preset
+                            <span style="font-weight: normal; color: var(--text-muted); font-size: var(--font-size-sm);">(Optional)</span>
+                        </h3>
+                        <div class="portrait-presets-grid" id="portrait-presets">
+                            <!-- Presets will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Prompt Section -->
+                    <div class="control-section">
+                        <h3 class="section-title">
+                            Additional Prompt
+                            <span style="font-weight: normal; color: var(--text-muted); font-size: var(--font-size-sm);">(Optional if preset selected)</span>
+                        </h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="portrait-prompt-input"
+                            placeholder="Describe additional details or use without a preset...
+
+Example: Wearing a red scarf, winter background with snow"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-section">
+                        <h3 class="section-title">Aspect Ratio</h3>
+                        <div class="aspect-ratio-selector" id="portrait-aspect-ratio-selector">
+                            <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                                <span class="aspect-btn__icon aspect-btn__icon--square"></span>
+                                <span class="aspect-btn__label">1:1</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="16:9" title="Landscape">
+                                <span class="aspect-btn__icon aspect-btn__icon--landscape"></span>
+                                <span class="aspect-btn__label">16:9</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="9:16" title="Portrait">
+                                <span class="aspect-btn__icon aspect-btn__icon--portrait"></span>
+                                <span class="aspect-btn__label">9:16</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="portrait-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-generate-portrait" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="8" r="4"></circle>
+                                <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+                            </svg>
+                            Generate Portrait
+                        </button>
+
+                        <!-- Generation Status -->
+                        <div class="generation-status hidden" id="portrait-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to generate images.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-portrait">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Generator View -->
+        <div class="character-view hidden" id="character-view">
+            <div class="main-container">
+                <!-- Left: Create Phase OR Variation Phase -->
+                <div class="character-source-pane">
+                    <div class="character-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="character-header__title">Character Generator</h2>
+                    </div>
+
+                    <!-- Create Phase Section -->
+                    <div class="character-phase" id="character-create-phase">
+                        <div class="character-intro">
+                            <p>Create unique characters for games, stories, or illustrations. Start by describing your character, then generate pose variations.</p>
+                        </div>
+                    </div>
+
+                    <!-- Variation Phase Section -->
+                    <div class="character-phase hidden" id="character-variation-phase">
+                        <!-- Reference Character -->
+                        <div class="reference-section">
+                            <h3 class="section-title">
+                                Reference Character
+                                <button class="btn btn--ghost btn--xs" id="btn-select-character-gallery">Change</button>
+                            </h3>
+                            <div class="character-reference-preview" id="character-reference-preview">
+                                <!-- Will be rendered by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Pose Presets -->
+                        <div class="pose-section">
+                            <h3 class="section-title">Select Pose</h3>
+                            <div class="pose-presets-grid" id="character-pose-presets">
+                                <!-- Pose presets will be rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Section -->
+                    <div class="control-section preview-section hidden" id="character-result-section">
+                        <!-- Results will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Controls -->
+                <div class="control-pane">
+                    <!-- Create Phase Controls -->
+                    <div id="character-create-controls">
+                        <!-- Character Prompt -->
+                        <div class="control-section">
+                            <h3 class="section-title">Character Description</h3>
+                            <textarea
+                                class="prompt-textarea"
+                                id="character-prompt-input"
+                                placeholder="Describe your character in detail...
+
+Example: A young female warrior with long silver hair, wearing ornate blue armor, determined expression, holding a magical sword"
+                                rows="5"
+                            ></textarea>
+                        </div>
+
+                        <!-- Style Presets -->
+                        <div class="control-section">
+                            <h3 class="section-title">Art Style</h3>
+                            <div class="style-presets-grid" id="character-style-presets">
+                                <!-- Style presets will be rendered by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Aspect Ratio -->
+                        <div class="control-section">
+                            <h3 class="section-title">Aspect Ratio</h3>
+                            <div class="aspect-ratio-selector" id="character-aspect-ratio-selector">
+                                <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                                    <span class="aspect-btn__icon aspect-btn__icon--square"></span>
+                                    <span class="aspect-btn__label">1:1</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="16:9" title="Landscape">
+                                    <span class="aspect-btn__icon aspect-btn__icon--landscape"></span>
+                                    <span class="aspect-btn__label">16:9</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="9:16" title="Portrait">
+                                    <span class="aspect-btn__icon aspect-btn__icon--portrait"></span>
+                                    <span class="aspect-btn__label">9:16</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Model Configuration -->
+                        <div class="control-section">
+                            <h3 class="section-title">Model</h3>
+                            <div class="input-group">
+                                <select class="select" id="character-model-select">
+                                    <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <div class="control-section">
+                            <button class="btn btn--primary btn--lg" id="btn-generate-character" style="width: 100%;" disabled>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Generate Character
+                            </button>
+
+                            <!-- Generation Status -->
+                            <div class="generation-status hidden" id="character-status">
+                                <!-- Status content will be rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Variation Phase Controls (hidden by default) -->
+                    <div id="character-variation-controls" class="hidden">
+                        <!-- Custom Instructions -->
+                        <div class="control-section">
+                            <h3 class="section-title">Additional Instructions (Optional)</h3>
+                            <textarea
+                                class="prompt-textarea"
+                                id="character-variation-prompt"
+                                placeholder="Any additional details for this variation...
+
+Example: Smiling, holding a flower, in a garden background"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <!-- Variation Aspect Ratio -->
+                        <div class="control-section">
+                            <h3 class="section-title">Aspect Ratio</h3>
+                            <div class="aspect-ratio-selector" id="character-variation-aspect-selector">
+                                <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                                    <span class="aspect-btn__icon aspect-btn__icon--square"></span>
+                                    <span class="aspect-btn__label">1:1</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="16:9" title="Landscape">
+                                    <span class="aspect-btn__icon aspect-btn__icon--landscape"></span>
+                                    <span class="aspect-btn__label">16:9</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="9:16" title="Portrait">
+                                    <span class="aspect-btn__icon aspect-btn__icon--portrait"></span>
+                                    <span class="aspect-btn__label">9:16</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Generate Variation Button -->
+                        <div class="control-section">
+                            <button class="btn btn--secondary btn--sm" id="btn-back-to-create" style="margin-bottom: var(--spacing-sm);">
+                                ← Back to Create
+                            </button>
+                            <button class="btn btn--primary btn--lg" id="btn-generate-variation" style="width: 100%;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="17 1 21 5 17 9"></polyline>
+                                    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                                    <polyline points="7 23 3 19 7 15"></polyline>
+                                    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                                </svg>
+                                Generate Variation
+                            </button>
+
+                            <!-- Variation Status -->
+                            <div class="generation-status hidden" id="character-variation-status">
+                                <!-- Status content will be rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to generate characters.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-character">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fusion View -->
+        <div class="fusion-view hidden" id="fusion-view">
+            <div class="main-container">
+                <!-- Left: Selected Images & Result Preview -->
+                <div class="fusion-source-pane">
+                    <div class="fusion-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="fusion-header__title">Image Fusion</h2>
+                    </div>
+
+                    <!-- Selected Images Section -->
+                    <div class="fusion-images-section">
+                        <h3 class="section-title">
+                            Selected Images
+                            <span class="fusion-images-count" id="fusion-images-count">0/5</span>
+                        </h3>
+                        <div class="fusion-selected-grid" id="fusion-selected-grid">
+                            <!-- Slots will be rendered by JS -->
+                        </div>
+                        <div class="fusion-add-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-browse-fusion-image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Browse Local
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="btn-select-fusion-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Result Preview Section -->
+                    <div class="control-section preview-section hidden" id="fusion-result-preview">
+                        <!-- Result will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Fusion Controls -->
+                <div class="control-pane">
+                    <!-- Prompt Section -->
+                    <div class="control-section">
+                        <h3 class="section-title">Fusion Prompt</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="fusion-prompt-input"
+                            placeholder="Describe how you want to combine the selected images...
+
+Example: Combine all these reference images into a single cohesive scene, keeping the style consistent"
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-section">
+                        <h3 class="section-title">Aspect Ratio</h3>
+                        <div class="aspect-ratio-selector" id="fusion-aspect-ratio-selector">
+                            <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                                <span class="aspect-btn__icon aspect-btn__icon--square"></span>
+                                <span class="aspect-btn__label">1:1</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="16:9" title="Landscape">
+                                <span class="aspect-btn__icon aspect-btn__icon--landscape"></span>
+                                <span class="aspect-btn__label">16:9</span>
+                            </button>
+                            <button class="aspect-btn" data-ratio="9:16" title="Portrait">
+                                <span class="aspect-btn__icon aspect-btn__icon--portrait"></span>
+                                <span class="aspect-btn__label">9:16</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <div class="input-group">
+                            <select class="select" id="fusion-model-select">
+                                <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-generate-fusion" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                            Fuse Images
+                        </button>
+
+                        <!-- Generation Status -->
+                        <div class="generation-status hidden" id="fusion-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- API Key Reminder -->
+                    <div class="control-section" style="margin-top: auto;">
+                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                                <strong>Note:</strong> You need a Google AI API key to fuse images.
+                            </p>
+                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-fusion">
+                                Configure API Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fusion Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="fusion-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Images for Fusion</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-fusion-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="fusion-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="character-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Reference Character</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-character-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="character-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Portrait Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="portrait-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Face Reference Image</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-portrait-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="portrait-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Thumbnail Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="thumbnail-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Face Reference Image</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-thumbnail-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="thumbnail-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhance Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="enhance-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Product Image</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-enhance-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="enhance-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Image from Gallery</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
                 </div>
             </div>
         </div>
@@ -214,15 +1299,13 @@ Example: A serene Japanese garden with cherry blossoms, a small pond with koi fi
                 <p class="lightbox__prompt" id="lightbox-prompt"></p>
                 <span class="lightbox__meta" id="lightbox-meta"></span>
                 <div class="lightbox__actions">
-                    <button class="btn btn--primary btn--sm" onclick="galleryManager.downloadImage(galleryManager.currentImage?.id)">
+                    <button class="btn btn--primary btn--sm" id="lightbox-open-file">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
-                        Download
+                        Open File Location
                     </button>
-                    <button class="btn btn--ghost btn--sm" onclick="galleryManager.deleteImage(galleryManager.currentImage?.id)">
+                    <button class="btn btn--ghost btn--sm" id="lightbox-delete">
                         Delete
                     </button>
                 </div>
@@ -254,6 +1337,13 @@ Example: A serene Japanese garden with cherry blossoms, a small pond with koi fi
     <script src="js/settings.js"></script>
     <script src="js/gallery.js"></script>
     <script src="js/image-generation.js"></script>
+    <script src="js/image-editing.js"></script>
+    <script src="js/sketch.js"></script>
+    <script src="js/product-enhancer.js"></script>
+    <script src="js/youtube-thumbnail.js"></script>
+    <script src="js/portrait-studio.js"></script>
+    <script src="js/character-generator.js"></script>
+    <script src="js/image-fusion.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

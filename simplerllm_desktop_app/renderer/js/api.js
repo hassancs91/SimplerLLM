@@ -428,6 +428,406 @@ class APIClient {
             })
         });
     }
+
+    // Retrieval
+    /**
+     * Get available sample datasets.
+     */
+    async getRetrievalSamples() {
+        return this.request('/retrieval/samples');
+    }
+
+    /**
+     * Get current index status.
+     */
+    async getRetrievalStatus() {
+        return this.request('/retrieval/status');
+    }
+
+    /**
+     * Build a retrieval index with SSE streaming.
+     *
+     * @param {string} source - 'text' or 'sample'
+     * @param {string} text - Text to index (if source='text')
+     * @param {string} sampleId - Sample dataset ID (if source='sample')
+     * @param {string} provider - LLM provider
+     * @param {string} model - Model name
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamBuildIndex(source, text, sampleId, provider, model, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        fetch(`${this.baseURL}/retrieval/build-index/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                source,
+                text,
+                sample_id: sampleId,
+                provider,
+                model
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Build index without streaming (fallback).
+     */
+    async buildIndex(source, text, sampleId, provider, model) {
+        return this.request('/retrieval/build-index', {
+            method: 'POST',
+            body: JSON.stringify({
+                source,
+                text,
+                sample_id: sampleId,
+                provider,
+                model
+            })
+        });
+    }
+
+    /**
+     * Query the retrieval index with SSE streaming.
+     *
+     * @param {string} query - Search query
+     * @param {number} topK - Number of results to return
+     * @param {string} provider - LLM provider
+     * @param {string} model - Model name
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamRetrieve(query, topK, provider, model, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        fetch(`${this.baseURL}/retrieval/query/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query,
+                top_k: topK,
+                provider,
+                model
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Query without streaming (fallback).
+     */
+    async retrieve(query, topK, provider, model) {
+        return this.request('/retrieval/query', {
+            method: 'POST',
+            body: JSON.stringify({
+                query,
+                top_k: topK,
+                provider,
+                model
+            })
+        });
+    }
+
+    /**
+     * Clear the retrieval index.
+     */
+    async clearRetrievalIndex() {
+        return this.request('/retrieval/clear', {
+            method: 'POST'
+        });
+    }
+
+    // Compare
+    /**
+     * Send a message to two models for comparison with SSE streaming.
+     *
+     * @param {string} message - The message to send
+     * @param {Array} models - Array of {provider, model} for both models (exactly 2)
+     * @param {string} conversationId - Optional conversation ID for continuing chat
+     * @param {Object} settings - Settings (temperature, max_tokens, system_prompt)
+     * @param {Function} onEvent - Callback for each SSE event
+     * @param {Function} onError - Callback for errors
+     * @param {Function} onComplete - Callback when complete
+     * @returns {Object} Controller with abort() method
+     */
+    streamCompare(message, models, conversationId, settings, onEvent, onError, onComplete) {
+        const controller = { aborted: false };
+
+        fetch(`${this.baseURL}/compare/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message,
+                models,
+                conversation_id: conversationId,
+                settings
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function processStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done || controller.aborted) {
+                        return;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'complete') {
+                                    onComplete(data);
+                                } else if (data.type === 'error') {
+                                    onError(new Error(data.error));
+                                } else {
+                                    onEvent(data);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+
+                    processStream();
+                }).catch(error => {
+                    if (!controller.aborted) {
+                        onError(error);
+                    }
+                });
+            }
+
+            processStream();
+        }).catch(error => {
+            onError(error);
+        });
+
+        controller.abort = () => {
+            controller.aborted = true;
+        };
+
+        return controller;
+    }
+
+    /**
+     * Run compare without streaming (fallback).
+     */
+    async runCompare(message, models, conversationId, settings) {
+        return this.request('/compare/run', {
+            method: 'POST',
+            body: JSON.stringify({
+                message,
+                models,
+                conversation_id: conversationId,
+                settings
+            })
+        });
+    }
+
+    /**
+     * Clear a compare conversation.
+     */
+    async clearCompareConversation(conversationId) {
+        return this.request(`/compare/${conversationId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    /**
+     * Get compare conversation history.
+     */
+    async getCompareHistory(conversationId) {
+        return this.request(`/compare/${conversationId}/history`);
+    }
+
+    // Web Search + JSON
+    /**
+     * Get available web search providers.
+     */
+    async getWebSearchProviders() {
+        return this.request('/websearch-json/providers');
+    }
+
+    /**
+     * Generate structured JSON from web search.
+     *
+     * @param {string} prompt - The search query/prompt
+     * @param {string} provider - LLM provider ('openai' or 'perplexity')
+     * @param {string} model - Model name
+     * @param {Object} schema - Schema with 'fields' array (for form mode)
+     * @param {Object} settings - Optional settings (temperature, max_tokens)
+     * @param {string} schemaMode - 'form' or 'code'
+     * @param {string} schemaCode - Pydantic model code (for code mode)
+     * @returns {Promise} Response with structured data and sources
+     */
+    async generateWebSearchJson(prompt, provider, model, schema, settings = {}, schemaMode = 'form', schemaCode = null) {
+        return this.request('/websearch-json/generate', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                provider,
+                model,
+                schema,
+                settings,
+                schema_mode: schemaMode,
+                schema_code: schemaCode
+            })
+        });
+    }
+
+    /**
+     * Get Python code example for the current configuration.
+     *
+     * @param {string} prompt - The search query/prompt
+     * @param {string} provider - LLM provider
+     * @param {string} model - Model name
+     * @param {Object} schema - Schema definition
+     * @returns {Promise} Response with code string
+     */
+    async getWebSearchCodeExample(prompt, provider, model, schema) {
+        return this.request('/websearch-json/code-example', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                provider,
+                model,
+                schema
+            })
+        });
+    }
 }
 
 // Global API client instance

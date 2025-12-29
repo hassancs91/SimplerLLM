@@ -1,0 +1,281 @@
+/**
+ * Sketch View Styles - Canvas and sketch UI specific styles
+ */
+
+/* ============================================
+   SKETCH VIEW LAYOUT
+   ============================================ */
+
+.sketch-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   SKETCH CANVAS PANE (Left)
+   ============================================ */
+
+.sketch-canvas-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.sketch-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.sketch-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   CANVAS SECTION
+   ============================================ */
+
+.canvas-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-lg);
+    overflow: hidden;
+}
+
+.sketch-canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    min-height: 300px;
+}
+
+.sketch-canvas {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: crosshair;
+    touch-action: none;
+    max-width: 100%;
+    max-height: 100%;
+    box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   BRUSH CONTROLS
+   ============================================ */
+
+.brush-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.brush-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.brush-control__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+.brush-size-control {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.brush-size-slider {
+    width: 120px;
+    height: 8px;
+    appearance: none;
+    background: var(--memphis-gray-light);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+}
+
+.brush-size-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--memphis-pink);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    cursor: grab;
+    transition: transform var(--transition-fast);
+}
+
+.brush-size-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.brush-size-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+.brush-size-display {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    min-width: 40px;
+}
+
+/* ============================================
+   COLOR CONTROLS
+   ============================================ */
+
+.color-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.color-picker {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    background: none;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+.color-presets {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.color-preset {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.color-preset:hover {
+    transform: scale(1.15);
+}
+
+.color-preset.active {
+    box-shadow: 0 0 0 3px var(--memphis-teal);
+}
+
+/* ============================================
+   PREVIEW COMPARISON
+   ============================================ */
+
+.preview-comparison {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.preview-comparison__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.preview-comparison__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.preview-comparison__arrow {
+    color: var(--memphis-teal);
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: var(--border-radius-md);
+    border: 2px solid var(--border-color);
+    object-fit: contain;
+}
+
+.preview-image--sketch {
+    border: 2px dashed var(--memphis-gray);
+}
+
+/* ============================================
+   SKETCH BADGE IN GALLERY
+   ============================================ */
+
+.image-card__badge--sketch {
+    background: var(--memphis-teal);
+    color: var(--memphis-black);
+}
+
+.image-badge--sketch {
+    background: var(--memphis-teal);
+    color: var(--memphis-black);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .sketch-view .main-container {
+        flex-direction: column;
+    }
+
+    .sketch-canvas-pane {
+        height: 50%;
+    }
+
+    .sketch-view .control-pane {
+        width: 100%;
+        height: 50%;
+        border-left: none;
+        border-top: var(--border-width) solid var(--border-color);
+    }
+
+    .brush-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

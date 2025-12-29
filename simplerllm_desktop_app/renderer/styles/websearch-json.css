@@ -1,0 +1,470 @@
+/**
+ * Web Search + JSON Tool Styles
+ * Combines web search with Pydantic structured output generation
+ */
+
+/* Main View Layout */
+.websearch-json-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.websearch-json-view .main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Left Pane - Results Display */
+.websearch-results-pane {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border-right: var(--border-width) solid var(--border-color);
+    overflow: hidden;
+}
+
+.websearch-results-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.websearch-results-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin: 0;
+}
+
+.websearch-results-container {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+}
+
+.websearch-sources-container {
+    padding: var(--spacing-lg);
+    border-top: var(--border-width) solid var(--border-color);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Right Pane - Controls */
+.websearch-control-pane {
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    gap: var(--spacing-lg);
+    background: var(--bg-primary);
+}
+
+/* Empty State */
+.websearch-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--text-secondary);
+    height: 100%;
+}
+
+.websearch-empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.6;
+}
+
+.websearch-empty-state h3 {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Section Titles */
+.websearch-json-view .section-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.section-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Schema Mode Toggle */
+.schema-mode-toggle {
+    display: flex;
+    background: var(--memphis-gray-light);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    margin-bottom: var(--spacing-md);
+}
+
+.schema-mode-toggle .mode-btn {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.schema-mode-toggle .mode-btn:hover {
+    background: var(--bg-secondary);
+}
+
+.schema-mode-toggle .mode-btn.active {
+    background: var(--memphis-teal);
+    color: var(--memphis-black);
+}
+
+/* Schema Code Input */
+.schema-code-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 200px;
+    background: #1A1A2E;
+    color: #E0E0E0;
+    border-color: var(--border-color);
+}
+
+.schema-code-input::placeholder {
+    color: #666;
+}
+
+/* Schema Builder */
+.schema-builder {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+}
+
+#schema-fields {
+    margin-bottom: var(--spacing-md);
+}
+
+.schema-field {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.schema-field__row {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.schema-field__name {
+    flex: 2;
+}
+
+.schema-field__type {
+    flex: 1;
+    min-width: 100px;
+}
+
+.schema-field__remove {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    color: var(--memphis-pink);
+}
+
+.schema-field__remove:hover {
+    background: var(--memphis-pink);
+    color: white;
+}
+
+.schema-field__list-type {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-xs) 0;
+}
+
+.schema-field__list-type .input-label {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    min-width: 70px;
+}
+
+.schema-field__list-type .select {
+    flex: 1;
+}
+
+.schema-field__description {
+    width: 100%;
+    font-size: var(--font-size-sm);
+}
+
+/* Actions */
+.websearch-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.websearch-actions .btn--primary {
+    flex: 1;
+}
+
+/* Status Section */
+.websearch-status {
+    padding: var(--spacing-md);
+    background: var(--memphis-yellow);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+/* Results Display */
+.websearch-result-card {
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.websearch-result-card .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--memphis-teal);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.websearch-result-card .result-header h3 {
+    margin: 0;
+    color: var(--memphis-black);
+    font-size: var(--font-size-md);
+}
+
+.json-output {
+    background: #1A1A2E;
+    color: #E0E0E0;
+    padding: var(--spacing-md);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    overflow: auto;
+    max-height: 400px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+    color: #82AAFF;
+}
+
+.json-string {
+    color: #C3E88D;
+}
+
+.json-number {
+    color: #F78C6C;
+}
+
+.json-boolean {
+    color: #FF5370;
+}
+
+.json-null {
+    color: #89DDFF;
+}
+
+.result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-top: var(--border-width) solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+
+.meta-item {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.meta-label {
+    color: var(--text-secondary);
+}
+
+/* Sources Section */
+.websearch-sources-card {
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+}
+
+.websearch-sources-card h4 {
+    font-size: var(--font-size-md);
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-primary);
+}
+
+.websearch-sources-card--empty {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.no-sources {
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+.sources-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.source-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--memphis-teal);
+    margin-bottom: var(--spacing-xs);
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.source-item a {
+    color: var(--memphis-purple);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold);
+    display: block;
+}
+
+.source-item a:hover {
+    text-decoration: underline;
+}
+
+.source-url {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    word-break: break-all;
+}
+
+/* Error State */
+.websearch-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-2xl);
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--memphis-pink);
+    border-radius: var(--border-radius-md);
+}
+
+.websearch-error .error-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--memphis-pink);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: var(--spacing-md);
+}
+
+.websearch-error h3 {
+    color: var(--memphis-pink);
+    margin-bottom: var(--spacing-sm);
+}
+
+.websearch-error p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Code Section */
+.websearch-code-section {
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.websearch-code-section .code-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    cursor: pointer;
+}
+
+.websearch-code-section .code-section-header:hover {
+    background: var(--memphis-gray-light);
+}
+
+.websearch-code-section .section-title {
+    margin: 0;
+}
+
+.websearch-code-section .toggle-icon {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+}
+
+.websearch-code-section .code-section-content {
+    padding: var(--spacing-md);
+    background: var(--bg-primary);
+    border-top: var(--border-width) solid var(--border-color);
+}
+
+.websearch-code-section .code-block {
+    background: #1A1A2E;
+    color: #E0E0E0;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    overflow: auto;
+    max-height: 300px;
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+/* Provider Section */
+.websearch-provider-section .input-group {
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Input Section */
+.websearch-input-section .websearch-prompt {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Hidden utility */
+.hidden {
+    display: none !important;
+}

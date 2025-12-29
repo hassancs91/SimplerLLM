@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const { PythonManager } = require('./python-manager');
 
@@ -98,6 +98,18 @@ ipcMain.handle('shell:showItemInFolder', (event, filePath) => {
         return true;
     }
     return false;
+});
+
+// File dialog for image selection
+ipcMain.handle('dialog:openFile', async (event, options = {}) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        filters: [
+            { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] }
+        ],
+        ...options
+    });
+    return result.canceled ? null : result.filePaths[0];
 });
 
 // App lifecycle

@@ -30,6 +30,24 @@ class SettingsManager {
             }
         });
 
+        // Event delegation for API key buttons
+        const container = document.getElementById('api-keys-container');
+        if (container) {
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+
+                const action = btn.dataset.action;
+                const providerId = btn.dataset.provider;
+
+                if (action === 'save' && providerId) {
+                    this.saveApiKey(providerId);
+                } else if (action === 'remove' && providerId) {
+                    this.removeApiKey(providerId);
+                }
+            });
+        }
+
         // Load providers
         this.loadProviders();
     }
@@ -61,11 +79,11 @@ class SettingsManager {
                     >
                 </div>
                 <div style="display: flex; gap: var(--spacing-sm);">
-                    <button class="btn btn--tertiary btn--sm" onclick="settingsManager.saveApiKey('${provider.id}')">
+                    <button class="btn btn--tertiary btn--sm" data-action="save" data-provider="${provider.id}">
                         Save
                     </button>
                     ${provider.configured ? `
-                        <button class="btn btn--ghost btn--sm" onclick="settingsManager.removeApiKey('${provider.id}')">
+                        <button class="btn btn--ghost btn--sm" data-action="remove" data-provider="${provider.id}">
                             Remove
                         </button>
                     ` : ''}

@@ -18,6 +18,9 @@
     <link rel="stylesheet" href="styles/brainstorm.css">
     <link rel="stylesheet" href="styles/judge.css">
     <link rel="stylesheet" href="styles/feedback.css">
+    <link rel="stylesheet" href="styles/retrieval.css">
+    <link rel="stylesheet" href="styles/compare.css">
+    <link rel="stylesheet" href="styles/websearch-json.css">
 
     <style>
         /* Layout styles */
@@ -912,6 +915,444 @@
             </div>
         </div> <!-- End Feedback View -->
 
+        <!-- Retrieval View -->
+        <div class="retrieval-view hidden" id="retrieval-view">
+            <div class="main-container">
+                <!-- Left Pane: Tree Visualization -->
+                <div class="retrieval-tree-pane">
+                    <div class="retrieval-tree-header">
+                        <button class="btn btn--ghost btn--sm" id="btn-back-from-retrieval">← Back</button>
+                        <h2 class="retrieval-tree-title">Cluster Tree</h2>
+                        <div class="retrieval-tree-controls">
+                            <button class="btn btn--ghost btn--sm" id="btn-retrieval-zoom-in" title="Zoom In">+</button>
+                            <button class="btn btn--ghost btn--sm" id="btn-retrieval-zoom-out" title="Zoom Out">-</button>
+                            <button class="btn btn--ghost btn--sm" id="btn-retrieval-zoom-reset" title="Reset View">Reset</button>
+                        </div>
+                    </div>
+                    <div class="retrieval-tree-container" id="retrieval-tree-container">
+                        <svg id="retrieval-svg" width="100%" height="100%"></svg>
+                        <!-- Empty state shown when no tree -->
+                        <div class="retrieval-empty-state" id="retrieval-empty-state">
+                            <div class="retrieval-empty-icon">🔍</div>
+                            <h3>No Index Built</h3>
+                            <p>Build an index from text or a sample dataset to visualize the cluster tree.</p>
+                        </div>
+                    </div>
+                    <div class="retrieval-tree-legend">
+                        <span class="legend-item"><span class="legend-dot legend-dot--root"></span> Root</span>
+                        <span class="legend-item"><span class="legend-dot legend-dot--branch"></span> Branch</span>
+                        <span class="legend-item"><span class="legend-dot legend-dot--leaf"></span> Leaf</span>
+                    </div>
+
+                    <!-- Results Section (shown after query) -->
+                    <div class="retrieval-results-section hidden" id="retrieval-results-section">
+                        <h3 class="section-title">Query Results</h3>
+                        <div class="retrieval-navigation-path" id="retrieval-navigation-path">
+                            <!-- Navigation path shown here -->
+                        </div>
+                        <div class="retrieval-results-container" id="retrieval-results-container">
+                            <!-- Result cards shown here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Controls -->
+                <div class="retrieval-control-pane">
+                    <!-- Input Source Section -->
+                    <div class="retrieval-input-section">
+                        <h3 class="section-title">1. Build Index</h3>
+
+                        <div class="source-options">
+                            <div class="source-option">
+                                <input type="radio" id="source-sample" name="retrieval-source" value="sample" checked>
+                                <label for="source-sample">Use Sample Dataset</label>
+                            </div>
+                            <div class="source-option">
+                                <input type="radio" id="source-text" name="retrieval-source" value="text">
+                                <label for="source-text">Paste Text</label>
+                            </div>
+                        </div>
+
+                        <!-- Sample Selection -->
+                        <div id="retrieval-sample-section">
+                            <div class="input-group">
+                                <label class="input-label">Sample Dataset</label>
+                                <select class="select" id="retrieval-sample-select">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Text Input -->
+                        <div id="retrieval-text-section" class="hidden">
+                            <div class="input-group">
+                                <label class="input-label">Your Text</label>
+                                <textarea class="input textarea retrieval-text-input" id="retrieval-text-input"
+                                    placeholder="Paste your text here. Each paragraph will become a chunk..."
+                                    rows="6"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Provider/Model Section -->
+                    <div class="retrieval-provider-section">
+                        <h3 class="section-title">LLM Configuration</h3>
+                        <div class="input-group">
+                            <label class="input-label">Provider</label>
+                            <select class="select" id="retrieval-provider">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="retrieval-model" placeholder="e.g., gpt-4o">
+                        </div>
+                    </div>
+
+                    <!-- Build Actions -->
+                    <div class="retrieval-actions">
+                        <button class="btn btn--primary" id="btn-build-index">
+                            <span id="build-btn-text">Build Index</span>
+                        </button>
+                        <button class="btn btn--ghost hidden" id="btn-cancel-build">Cancel</button>
+                        <button class="btn btn--ghost" id="btn-clear-index">Clear</button>
+                    </div>
+
+                    <!-- Build Status -->
+                    <div class="retrieval-build-status hidden" id="retrieval-build-status">
+                        <div class="status-header">
+                            <span class="badge badge--warning" id="retrieval-build-status-badge">Building...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" id="retrieval-build-progress"></div>
+                        </div>
+                        <div class="status-info">
+                            <span id="build-stage">Starting...</span>
+                            <span>Time: <strong id="build-elapsed-time">0s</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="retrieval-stats hidden" id="retrieval-stats">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-chunks">0</div>
+                                <div class="stat-label">Chunks</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-clusters">0</div>
+                                <div class="stat-label">Clusters</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-llm-calls">0</div>
+                                <div class="stat-label">LLM Calls</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-time">-</div>
+                                <div class="stat-label">Time</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Query Section (shown after index built) -->
+                    <div class="retrieval-query-section hidden" id="retrieval-query-section">
+                        <h3 class="section-title">2. Query</h3>
+
+                        <div class="input-group">
+                            <label class="input-label">Search Query</label>
+                            <textarea class="input textarea retrieval-query-input" id="retrieval-query-input"
+                                placeholder="Enter your search query..."
+                                rows="2"></textarea>
+                        </div>
+
+                        <div class="top-k-container">
+                            <label class="input-label">Results (top-k):</label>
+                            <input type="range" class="slider" id="retrieval-top-k" min="1" max="5" value="3">
+                            <span class="top-k-value" id="retrieval-top-k-value">3</span>
+                        </div>
+
+                        <div class="retrieval-actions">
+                            <button class="btn btn--primary" id="btn-search">
+                                <span id="search-btn-text">Search</span>
+                            </button>
+                            <button class="btn btn--ghost hidden" id="btn-cancel-search">Cancel</button>
+                        </div>
+
+                        <!-- Query Status -->
+                        <div class="retrieval-query-status hidden" id="retrieval-query-status">
+                            <div class="status-header">
+                                <span class="badge badge--warning" id="retrieval-query-status-badge">Searching...</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar__fill" id="retrieval-query-progress"></div>
+                            </div>
+                            <div class="status-info">
+                                <span>Time: <strong id="query-elapsed-time">0s</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Node Detail (shown when node clicked) -->
+                    <div class="retrieval-node-detail hidden" id="retrieval-node-detail">
+                        <h3 class="section-title">Cluster Detail</h3>
+                        <div class="node-detail-content">
+                            <div class="node-detail-row">
+                                <span class="node-detail-label">Name:</span>
+                                <span class="node-detail-value" id="detail-name">-</span>
+                            </div>
+                            <div class="node-detail-row">
+                                <span class="node-detail-label">Description:</span>
+                                <span class="node-detail-value" id="detail-description">-</span>
+                            </div>
+                            <div class="node-detail-row">
+                                <span class="node-detail-label">Keywords:</span>
+                                <span class="node-detail-value" id="detail-keywords">-</span>
+                            </div>
+                            <div class="node-detail-row">
+                                <span class="node-detail-label">Chunks:</span>
+                                <span class="node-detail-value" id="detail-chunk-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Section -->
+                    <div class="retrieval-code-section" id="retrieval-code-section">
+                        <div class="code-section-header" id="toggle-retrieval-code">
+                            <h3 class="section-title">Code Example</h3>
+                            <span class="toggle-icon" id="retrieval-code-toggle-icon">▼</span>
+                        </div>
+                        <div class="code-section-content hidden" id="retrieval-code-content">
+                            <pre class="code-block"><code id="retrieval-code-snippet"></code></pre>
+                            <button class="btn btn--ghost btn--sm" id="btn-copy-retrieval-code">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Retrieval View -->
+
+        <!-- Compare View -->
+        <div class="compare-view hidden" id="compare-view">
+            <div class="compare-header">
+                <button class="btn btn--ghost btn--sm" id="btn-back-from-compare">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+                <h2 class="compare-title">Compare Models</h2>
+                <span class="badge badge--success compare-status-badge" id="compare-status-badge">Ready</span>
+                <button class="btn btn--ghost btn--sm" id="btn-clear-compare">Clear</button>
+            </div>
+
+            <div class="compare-main">
+                <div class="compare-columns">
+                    <!-- Left Column (Model A) -->
+                    <div class="compare-column compare-column--left" id="compare-column-left">
+                        <div class="compare-column__header">
+                            <div class="compare-column__label">
+                                <span class="model-indicator"></span>
+                                Model A
+                            </div>
+                            <div class="compare-column__config">
+                                <select class="select" id="compare-provider-left">
+                                    <option value="">Provider...</option>
+                                </select>
+                                <input type="text" class="input" id="compare-model-left" placeholder="Model name">
+                            </div>
+                        </div>
+                        <div class="compare-column__messages" id="compare-messages-left">
+                            <div class="compare-empty-state" id="compare-empty-left">
+                                <div class="compare-empty-state__icon">🤖</div>
+                                <h4>Model A</h4>
+                                <p>Select a provider and model to start comparing</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Model B) -->
+                    <div class="compare-column compare-column--right" id="compare-column-right">
+                        <div class="compare-column__header">
+                            <div class="compare-column__label">
+                                <span class="model-indicator"></span>
+                                Model B
+                            </div>
+                            <div class="compare-column__config">
+                                <select class="select" id="compare-provider-right">
+                                    <option value="">Provider...</option>
+                                </select>
+                                <input type="text" class="input" id="compare-model-right" placeholder="Model name">
+                            </div>
+                        </div>
+                        <div class="compare-column__messages" id="compare-messages-right">
+                            <div class="compare-empty-state" id="compare-empty-right">
+                                <div class="compare-empty-state__icon">🤖</div>
+                                <h4>Model B</h4>
+                                <p>Select a provider and model to start comparing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Sidebar -->
+                <div class="compare-settings-pane">
+                    <div class="compare-settings-section">
+                        <h3 class="section-title">Settings</h3>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Temperature</span>
+                                <span id="compare-temperature-value">0.7</span>
+                            </div>
+                            <input type="range" class="slider" id="compare-temperature" min="0" max="2" step="0.1" value="0.7">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Max Tokens</span>
+                                <span id="compare-max-tokens-value">1000</span>
+                            </div>
+                            <input type="range" class="slider" id="compare-max-tokens" min="100" max="4000" step="100" value="1000">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">System Prompt</label>
+                            <textarea class="input textarea" id="compare-system-prompt" rows="3">You are a helpful assistant.</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shared Input -->
+            <div class="compare-input-container">
+                <textarea class="input compare-input" id="compare-input"
+                    placeholder="Type your message... (sent to both models)"
+                    rows="2"></textarea>
+                <button class="btn btn--primary" id="btn-send-compare">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Send to Both
+                </button>
+            </div>
+        </div> <!-- End Compare View -->
+
+        <!-- Web Search + JSON View -->
+        <div class="websearch-json-view hidden" id="websearch-json-view">
+            <div class="main-container">
+                <!-- Left Pane: Results Display -->
+                <div class="websearch-results-pane">
+                    <div class="websearch-results-header">
+                        <button class="btn btn--ghost btn--sm" id="btn-back-from-websearch">← Back</button>
+                        <h2 class="websearch-results-title">Web Search + JSON</h2>
+                    </div>
+
+                    <!-- Results Container -->
+                    <div class="websearch-results-container" id="websearch-results">
+                        <div class="websearch-empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <h3>No Results Yet</h3>
+                            <p>Define your schema and run a search to get structured data</p>
+                        </div>
+                    </div>
+
+                    <!-- Sources Section -->
+                    <div class="websearch-sources-container" id="websearch-sources">
+                        <!-- Sources populated here -->
+                    </div>
+                </div>
+
+                <!-- Right Pane: Controls -->
+                <div class="websearch-control-pane">
+                    <!-- Query Input -->
+                    <div class="websearch-input-section">
+                        <h3 class="section-title">Search Query</h3>
+                        <textarea class="input textarea websearch-prompt" id="websearch-prompt"
+                            placeholder="Enter your search query (e.g., 'Find the latest revenue and CEO for Tesla')"
+                            rows="3"></textarea>
+                    </div>
+
+                    <!-- Provider Selection -->
+                    <div class="websearch-provider-section">
+                        <h3 class="section-title">Provider</h3>
+                        <div class="input-group">
+                            <select class="select" id="websearch-provider">
+                                <option value="">Select provider...</option>
+                                <option value="openai">OpenAI (Web Search)</option>
+                                <option value="perplexity">Perplexity (Native Search)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Model</label>
+                            <input type="text" class="input" id="websearch-model"
+                                   placeholder="e.g., gpt-4o or sonar-pro">
+                        </div>
+                    </div>
+
+                    <!-- Schema Builder -->
+                    <div class="websearch-schema-section">
+                        <h3 class="section-title">Output Schema</h3>
+
+                        <!-- Schema Mode Toggle -->
+                        <div class="schema-mode-toggle" id="schema-mode-toggle">
+                            <button class="mode-btn active" data-mode="form">Form Builder</button>
+                            <button class="mode-btn" data-mode="code">Paste Code</button>
+                        </div>
+
+                        <!-- Form Builder Section -->
+                        <div id="schema-form-section">
+                            <p class="section-description">Define the fields you want in the JSON output</p>
+                            <div class="schema-builder" id="schema-builder">
+                                <div id="schema-fields">
+                                    <!-- Dynamic fields added here -->
+                                </div>
+                                <button class="btn btn--secondary btn--sm" id="btn-add-field">
+                                    + Add Field
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paste Code Section -->
+                        <div id="schema-code-section" class="hidden">
+                            <p class="section-description">Paste your Pydantic model definition</p>
+                            <textarea class="input textarea schema-code-input" id="schema-code-input"
+                                placeholder="class NewsItem(BaseModel):
+    title: str = Field(description='The headline')
+    text: str = Field(description='Article content')
+
+class Output(BaseModel):
+    news: List[NewsItem] = Field(description='Top 5 AI news')"
+                                rows="10"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="websearch-actions">
+                        <button class="btn btn--primary" id="btn-generate-websearch">
+                            <span id="websearch-btn-text">Generate</span>
+                        </button>
+                        <button class="btn btn--ghost" id="btn-clear-websearch">Clear</button>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="websearch-status hidden" id="websearch-status">
+                        <div class="status-header">
+                            <span class="badge badge--warning" id="websearch-status-badge">Searching...</span>
+                        </div>
+                    </div>
+
+                    <!-- Code Example -->
+                    <div class="websearch-code-section">
+                        <div class="code-section-header" id="toggle-websearch-code">
+                            <h3 class="section-title">Code Example</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="code-section-content hidden" id="websearch-code-content">
+                            <pre class="code-block"><code id="websearch-code-snippet"></code></pre>
+                            <button class="btn btn--ghost btn--sm" id="btn-copy-websearch-code">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Web Search + JSON View -->
+
         <!-- Settings Panel (Slide-in) -->
         <div class="settings-panel" id="settings-panel">
             <div class="settings-panel__header">
@@ -942,6 +1383,10 @@
     <script src="js/judge.js"></script>
     <script src="js/line-chart.js"></script>
     <script src="js/feedback.js"></script>
+    <script src="js/cluster-tree-visualizer.js"></script>
+    <script src="js/retrieval.js"></script>
+    <script src="js/compare.js"></script>
+    <script src="js/websearch-json.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

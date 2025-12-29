@@ -8,6 +8,9 @@ from api.settings import settings_bp
 from api.brainstorm import brainstorm_bp
 from api.judge import judge_bp
 from api.feedback import feedback_bp
+from api.retrieval import retrieval_bp
+from api.compare import compare_bp
+from api.websearch_json import websearch_json_bp
 
 def register_routes(app):
     """Register all API blueprints."""
@@ -35,6 +38,9 @@ def register_routes(app):
     app.register_blueprint(brainstorm_bp, url_prefix='/api')
     app.register_blueprint(judge_bp, url_prefix='/api')
     app.register_blueprint(feedback_bp, url_prefix='/api')
+    app.register_blueprint(retrieval_bp, url_prefix='/api')
+    app.register_blueprint(compare_bp, url_prefix='/api')
+    app.register_blueprint(websearch_json_bp, url_prefix='/api')
 
     # Error handlers
     @app.errorhandler(404)
