@@ -25,6 +25,9 @@ class DeepSeekLLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Generate a response using the DeepSeek language model.
@@ -107,6 +110,9 @@ class DeepSeekLLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Asynchronously generates a response using the DeepSeek API.

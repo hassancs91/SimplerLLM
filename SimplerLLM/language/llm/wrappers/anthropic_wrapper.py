@@ -29,6 +29,7 @@ class AnthropicLLM(LLM):
         cached_input: str = "",
         json_mode=False,
         images: list = None,
+        detail: str = "auto",
         web_search: bool = False,
     ):
         """
@@ -169,6 +170,7 @@ class AnthropicLLM(LLM):
         cached_input: str = "",
         json_mode=False,
         images: list = None,
+        detail: str = "auto",
         web_search: bool = False,
     ):
         """

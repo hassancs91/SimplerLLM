@@ -68,6 +68,9 @@ class GeminiLLM(LLM):
         prompt_caching: bool = False,
         cache_id: str = None,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Generate a response using the Gemini model.
@@ -159,6 +162,9 @@ class GeminiLLM(LLM):
         prompt_caching: bool = False,
         cache_id: str = None,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
     ):
         """
         Asynchronously generate a response from the Gemini model.
