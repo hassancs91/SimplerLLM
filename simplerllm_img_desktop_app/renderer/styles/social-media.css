@@ -1,0 +1,358 @@
+/**
+ * Social Media Post Generator View Styles
+ */
+
+/* ============================================
+   SOCIAL VIEW LAYOUT
+   ============================================ */
+
+.social-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   SOCIAL SOURCE PANE (Left)
+   ============================================ */
+
+.social-source-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.social-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.social-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   BRAND REFERENCE SECTION
+   ============================================ */
+
+.social-reference-section {
+    padding: var(--spacing-lg);
+    border-bottom: 2px dashed var(--memphis-gray-light);
+}
+
+.social-reference-preview {
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-reference-preview__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.social-reference-preview__empty svg {
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.social-reference-preview__empty p {
+    font-size: var(--font-size-sm);
+}
+
+.social-reference-preview__image-container {
+    position: relative;
+    width: 100%;
+}
+
+.social-reference-preview__image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    display: block;
+}
+
+.social-reference-preview__clear {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--memphis-white);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    opacity: 0.8;
+}
+
+.social-reference-preview__clear:hover {
+    background: var(--memphis-pink);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.social-reference-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.social-reference-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+/* Reference optional label */
+.social-reference-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-style: italic;
+    margin-left: var(--spacing-sm);
+}
+
+/* ============================================
+   PLATFORM PRESETS GRID
+   ============================================ */
+
+.platform-presets-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.platform-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.platform-group__header {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-secondary);
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.platform-group__header-icon {
+    font-size: var(--font-size-base);
+}
+
+.platform-group__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--spacing-xs);
+}
+
+.platform-preset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.platform-preset-card:hover {
+    border-color: var(--memphis-blue);
+    transform: translateY(-2px);
+}
+
+.platform-preset-card--active {
+    border-color: var(--memphis-blue);
+    background: var(--memphis-blue-light, rgba(0, 119, 255, 0.1));
+    box-shadow: 0 0 0 2px var(--memphis-blue);
+}
+
+.platform-preset-card__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: 2px;
+}
+
+.platform-preset-card__ratio {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+/* ============================================
+   CONTENT TYPE PRESETS GRID
+   ============================================ */
+
+.content-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+@media (min-width: 1400px) {
+    .content-presets-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.content-preset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+    min-height: 70px;
+}
+
+.content-preset-card:hover {
+    border-color: var(--memphis-teal);
+    transform: translateY(-2px);
+}
+
+.content-preset-card--active {
+    border-color: var(--memphis-teal);
+    background: rgba(0, 206, 201, 0.1);
+    box-shadow: 0 0 0 2px var(--memphis-teal);
+}
+
+.content-preset-card__icon {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-xs);
+}
+
+.content-preset-card__name {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ============================================
+   SOCIAL RESULT
+   ============================================ */
+
+.social-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+}
+
+.social-result__image {
+    width: 100%;
+    max-width: 400px;
+    object-fit: contain;
+    border-radius: var(--border-radius-md);
+    border: 3px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.social-result__info {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.social-result__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+}
+
+.social-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-md);
+}
+
+/* ============================================
+   RESULT PREVIEW SECTION
+   ============================================ */
+
+.social-source-pane .preview-section {
+    padding: var(--spacing-lg);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============================================
+   SOCIAL BADGE IN GALLERY
+   ============================================ */
+
+.image-badge--social_media {
+    background: var(--memphis-blue);
+    color: var(--memphis-white);
+}
+
+.image-card__badge--social_media {
+    background: var(--memphis-blue);
+    color: var(--memphis-white);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .social-view .main-container {
+        flex-direction: column;
+    }
+
+    .social-source-pane {
+        height: 40%;
+    }
+
+    .social-view .control-pane {
+        width: 100%;
+        height: 60%;
+        border-left: none;
+        border-top: var(--border-width) solid var(--border-color);
+    }
+
+    .platform-group__options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .content-presets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

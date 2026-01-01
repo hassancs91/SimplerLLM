@@ -66,6 +66,7 @@ def register_routes(app):
     from api.portrait_studio import portrait_studio_bp
     from api.character_generator import character_generator_bp
     from api.image_fusion import image_fusion_bp
+    from api.social_media import social_media_bp
 
     # Register blueprints
     app.register_blueprint(main_bp, url_prefix='/api')
@@ -80,6 +81,7 @@ def register_routes(app):
     app.register_blueprint(portrait_studio_bp, url_prefix='/api')
     app.register_blueprint(character_generator_bp, url_prefix='/api')
     app.register_blueprint(image_fusion_bp, url_prefix='/api')
+    app.register_blueprint(social_media_bp, url_prefix='/api')
 
     # Error handlers
     @app.errorhandler(404)

@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="styles/portrait-studio.css">
     <link rel="stylesheet" href="styles/character-generator.css">
     <link rel="stylesheet" href="styles/image-fusion.css">
+    <link rel="stylesheet" href="styles/social-media.css">
 
     <style>
         /* App Layout */
@@ -145,10 +146,11 @@
                     <div class="tool-card__description">Combine up to 5 images into one with AI</div>
                 </div>
 
-                <div class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
-                    <div class="tool-card__icon" style="background: var(--memphis-gray-light);">🔍</div>
-                    <div class="tool-card__name">Upscale</div>
-                    <div class="tool-card__description">Coming soon - Enhance image resolution</div>
+                <!-- Social Media Tool Card -->
+                <div class="tool-card" data-tool="social">
+                    <div class="tool-card__icon" style="background: var(--memphis-blue);">📱</div>
+                    <div class="tool-card__name">Social Media</div>
+                    <div class="tool-card__description">Create platform-optimized social media post images</div>
                 </div>
             </div>
         </div>
@@ -230,18 +232,6 @@ Example: A serene Japanese garden with cherry blossoms, a small pond with koi fi
                     <!-- Preview Section -->
                     <div class="control-section preview-section hidden" id="preview-section">
                         <!-- Preview will be rendered by JS -->
-                    </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to generate images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key">
-                                Configure API Key
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -341,18 +331,6 @@ Example: Change the background to a sunset sky, or Make it look like a watercolo
                     <!-- Edit Result Preview -->
                     <div class="control-section preview-section hidden" id="edit-preview-section">
                         <!-- Preview will be rendered by JS -->
-                    </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to edit images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-edit">
-                                Configure API Key
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -477,18 +455,6 @@ Example: Change the background to a sunset sky, or Make it look like a watercolo
                     <div class="control-section preview-section hidden" id="sketch-preview-section">
                         <!-- Preview will be rendered by JS -->
                     </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to generate images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-sketch">
-                                Configure API Key
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -585,18 +551,6 @@ Example: Make the colors more vibrant, or Add a subtle reflection"
                         <!-- Enhancement Status -->
                         <div class="generation-status hidden" id="enhance-status">
                             <!-- Status content will be rendered by JS -->
-                        </div>
-                    </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to enhance images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-enhance">
-                                Configure API Key
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -719,18 +673,6 @@ Example: Me looking shocked while pointing at a laptop screen showing amazing re
                         <!-- Generation Status -->
                         <div class="generation-status hidden" id="thumbnail-status">
                             <!-- Status content will be rendered by JS -->
-                        </div>
-                    </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to generate thumbnails.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-thumbnail">
-                                Configure API Key
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -857,18 +799,6 @@ Example: Wearing a red scarf, winter background with snow"
                         <!-- Generation Status -->
                         <div class="generation-status hidden" id="portrait-status">
                             <!-- Status content will be rendered by JS -->
-                        </div>
-                    </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to generate images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-portrait">
-                                Configure API Key
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -1046,18 +976,6 @@ Example: Smiling, holding a flower, in a garden background"
                             </div>
                         </div>
                     </div>
-
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to generate characters.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-character">
-                                Configure API Key
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1165,18 +1083,130 @@ Example: Combine all these reference images into a single cohesive scene, keepin
                             <!-- Status content will be rendered by JS -->
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- API Key Reminder -->
-                    <div class="control-section" style="margin-top: auto;">
-                        <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--border-radius-md); border: 2px dashed var(--memphis-gray);">
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                                <strong>Note:</strong> You need a Google AI API key to fuse images.
-                            </p>
-                            <button class="btn btn--ghost btn--sm" id="btn-configure-api-key-fusion">
-                                Configure API Key
+        <!-- Social Media View -->
+        <div class="social-view hidden" id="social-view">
+            <div class="main-container">
+                <!-- Left: Brand Reference & Result Preview -->
+                <div class="social-source-pane">
+                    <div class="social-header">
+                        <button class="btn btn--ghost btn--sm" data-action="back">← Back</button>
+                        <h2 class="social-header__title">Social Media Post Generator</h2>
+                    </div>
+
+                    <!-- Brand Reference Section -->
+                    <div class="social-reference-section">
+                        <h3 class="section-title">
+                            Brand Reference
+                            <span class="social-reference-label">(Optional - for style consistency)</span>
+                        </h3>
+                        <div class="social-reference-preview" id="social-reference-preview">
+                            <div class="social-reference-preview__empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p>Select a reference image for brand consistency</p>
+                            </div>
+                        </div>
+                        <div class="social-reference-actions">
+                            <button class="btn btn--secondary btn--sm" id="btn-select-social-gallery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                From Gallery
                             </button>
                         </div>
                     </div>
+
+                    <!-- Result Preview Section -->
+                    <div class="control-section preview-section hidden" id="social-result-preview">
+                        <!-- Result will be rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Controls -->
+                <div class="control-pane">
+                    <!-- Platform Selection -->
+                    <div class="control-section">
+                        <h3 class="section-title">Platform & Size</h3>
+                        <div class="platform-presets-container" id="social-platform-presets">
+                            <!-- Platforms grouped by network, rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Content Type Selection -->
+                    <div class="control-section">
+                        <h3 class="section-title">
+                            Content Type
+                            <span style="font-weight: normal; color: var(--text-muted); font-size: var(--font-size-sm);">(Optional)</span>
+                        </h3>
+                        <div class="content-presets-grid" id="social-content-presets">
+                            <!-- Content types rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Prompt Section -->
+                    <div class="control-section">
+                        <h3 class="section-title">Post Description</h3>
+                        <textarea
+                            class="prompt-textarea"
+                            id="social-prompt-input"
+                            placeholder="Describe your social media post...
+
+Example: A modern tech startup announcing their new mobile app, featuring a smartphone with the app interface, bold blue and white colors"
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="control-section">
+                        <h3 class="section-title">Model</h3>
+                        <select class="select" id="social-model-select">
+                            <option value="gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Image Preview)</option>
+                        </select>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="control-section">
+                        <button class="btn btn--primary btn--lg" id="btn-generate-social" style="width: 100%;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                            Generate Post
+                        </button>
+
+                        <!-- Generation Status -->
+                        <div class="generation-status hidden" id="social-status">
+                            <!-- Status content will be rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media Gallery Picker Modal -->
+        <div class="gallery-picker-modal hidden" id="social-gallery-picker-modal">
+            <div class="gallery-picker">
+                <div class="gallery-picker__header">
+                    <h3>Select Brand Reference Image</h3>
+                    <button class="btn btn--icon btn--ghost" id="btn-close-social-gallery-picker">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="gallery-picker__grid" id="social-gallery-picker-grid">
+                    <!-- Gallery images will be rendered here -->
                 </div>
             </div>
         </div>
@@ -1328,6 +1358,20 @@ Example: Combine all these reference images into a single cohesive scene, keepin
             </div>
         </div>
 
+        <!-- Status Bar -->
+        <footer class="status-bar" id="status-bar">
+            <div class="status-bar__left">
+                <span class="status-bar__app-name" id="status-bar-app-name"></span>
+                <span class="status-bar__version" id="status-bar-version"></span>
+            </div>
+            <div class="status-bar__center">
+                <span class="status-bar__copyright" id="status-bar-copyright"></span>
+            </div>
+            <div class="status-bar__right">
+                <div class="status-bar__links" id="status-bar-links"></div>
+            </div>
+        </footer>
+
         <!-- Toast container -->
         <div id="toast-container"></div>
     </div>
@@ -1344,6 +1388,7 @@ Example: Combine all these reference images into a single cohesive scene, keepin
     <script src="js/portrait-studio.js"></script>
     <script src="js/character-generator.js"></script>
     <script src="js/image-fusion.js"></script>
+    <script src="js/social-media.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -348,6 +348,35 @@ class API {
             model
         });
     }
+
+    // ============================================
+    // Social Media Post Generator
+    // ============================================
+
+    /**
+     * Get available platform and content type presets
+     */
+    async getSocialMediaPresets() {
+        return this.get('/social-media/presets');
+    }
+
+    /**
+     * Generate a social media post image
+     * @param {string} prompt - Description of desired image
+     * @param {string} platformPreset - Platform preset ID (e.g., 'instagram_feed', 'twitter_landscape')
+     * @param {string} contentType - Content type ID (e.g., 'promotional', 'quote') - optional
+     * @param {string} referenceImageId - Gallery image ID for brand/style reference - optional
+     * @param {string} model - Model to use
+     */
+    async generateSocialMediaPost(prompt, platformPreset, contentType = null, referenceImageId = null, model = 'gemini-2.5-flash-image-preview') {
+        return this.post('/social-media/generate', {
+            prompt,
+            platform_preset: platformPreset,
+            content_type: contentType,
+            reference_image_id: referenceImageId,
+            model
+        });
+    }
 }
 
 // Global API instance

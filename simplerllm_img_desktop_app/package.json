@@ -1,10 +1,15 @@
 {
   "name": "simplerllm-image-tools",
   "version": "1.0.0",
-  "description": "Desktop app for AI image tools - Generate, Edit, and Transform images",
+  "description": "AI-powered desktop app for image generation, editing, and creative transformations",
   "main": "electron/main.js",
-  "author": "SimplerLLM",
+  "author": "SimplerLLM <https://simplerllm.com>",
   "license": "MIT",
+  "homepage": "https://simplerllm.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hassancs91/SimplerLLM"
+  },
   "scripts": {
     "start": "electron .",
     "start:dev": "concurrently \"cd backend && python app.py\" \"electron .\"",
