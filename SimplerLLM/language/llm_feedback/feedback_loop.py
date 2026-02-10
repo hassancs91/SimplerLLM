@@ -283,11 +283,14 @@ Provide a better, more refined answer."""
         # Step 3: Build final result
         total_time = time.time() - start_time
 
+        # Find the best iteration (highest quality score)
+        best_iteration = max(iterations, key=lambda it: it.critique.quality_score)
+
         result = FeedbackResult(
-            final_answer=iterations[-1].answer,
+            final_answer=best_iteration.answer,
             all_iterations=iterations,
             initial_score=iterations[0].critique.quality_score,
-            final_score=iterations[-1].critique.quality_score,
+            final_score=best_iteration.critique.quality_score,
             improvement_trajectory=[it.critique.quality_score for it in iterations],
             total_iterations=len(iterations),
             stopped_reason=stop_reason if should_stop else "max_iterations",

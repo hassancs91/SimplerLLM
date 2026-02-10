@@ -3,6 +3,7 @@
  *
  * This script downloads and sets up an embedded Python distribution
  * with all required dependencies for the SimplerLLM Playground.
+ * Supports Windows, macOS, and Linux.
  */
 
 const https = require('https');
@@ -12,12 +13,49 @@ const { execSync } = require('child_process');
 
 // Configuration
 const PYTHON_VERSION = '3.11.7';
-const PYTHON_URL = `https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-embed-amd64.zip`;
+const STANDALONE_VERSION = '20240107';
+
+// Platform-specific Python URLs (using python-build-standalone for cross-platform)
+const PYTHON_URLS = {
+    win32: `https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-embed-amd64.zip`,
+    darwin: `https://github.com/indygreg/python-build-standalone/releases/download/${STANDALONE_VERSION}/cpython-${PYTHON_VERSION}+${STANDALONE_VERSION}-aarch64-apple-darwin-install_only.tar.gz`,
+    darwinX64: `https://github.com/indygreg/python-build-standalone/releases/download/${STANDALONE_VERSION}/cpython-${PYTHON_VERSION}+${STANDALONE_VERSION}-x86_64-apple-darwin-install_only.tar.gz`,
+    linux: `https://github.com/indygreg/python-build-standalone/releases/download/${STANDALONE_VERSION}/cpython-${PYTHON_VERSION}+${STANDALONE_VERSION}-x86_64-unknown-linux-gnu-install_only.tar.gz`
+};
+
 const GET_PIP_URL = 'https://bootstrap.pypa.io/get-pip.py';
 
 const ROOT_DIR = path.join(__dirname, '..');
 const PYTHON_DIR = path.join(ROOT_DIR, 'python');
 const BACKEND_DIR = path.join(ROOT_DIR, 'backend');
+
+// Platform detection
+const PLATFORM = process.platform;
+const ARCH = process.arch;
+const IS_WINDOWS = PLATFORM === 'win32';
+const IS_MAC = PLATFORM === 'darwin';
+const IS_LINUX = PLATFORM === 'linux';
+
+// Get Python executable path based on platform
+function getPythonExe() {
+    if (IS_WINDOWS) {
+        return path.join(PYTHON_DIR, 'python.exe');
+    } else {
+        // python-build-standalone extracts to python/bin/python3
+        return path.join(PYTHON_DIR, 'bin', 'python3');
+    }
+}
+
+// Get the correct download URL for current platform
+function getPythonUrl() {
+    if (IS_WINDOWS) {
+        return PYTHON_URLS.win32;
+    } else if (IS_MAC) {
+        return ARCH === 'arm64' ? PYTHON_URLS.darwin : PYTHON_URLS.darwinX64;
+    } else {
+        return PYTHON_URLS.linux;
+    }
+}
 
 /**
  * Download a file from URL
@@ -68,22 +106,35 @@ function downloadFile(url, dest) {
 }
 
 /**
- * Extract ZIP file (requires adm-zip)
+ * Extract archive (ZIP for Windows, tar.gz for macOS/Linux)
  */
-function extractZip(zipPath, destDir) {
+function extractArchive(archivePath, destDir) {
     console.log(`Extracting to: ${destDir}`);
 
-    const AdmZip = require('adm-zip');
-    const zip = new AdmZip(zipPath);
-    zip.extractAllTo(destDir, true);
+    if (IS_WINDOWS) {
+        const AdmZip = require('adm-zip');
+        const zip = new AdmZip(archivePath);
+        zip.extractAllTo(destDir, true);
+    } else {
+        // Use tar for macOS/Linux
+        // python-build-standalone extracts to a 'python' subfolder, so we extract to parent
+        execSync(`tar -xzf "${archivePath}" -C "${path.dirname(destDir)}"`, {
+            stdio: 'inherit'
+        });
+    }
 
     console.log('Extraction complete!');
 }
 
 /**
- * Enable pip in embedded Python
+ * Enable pip in embedded Python (Windows only)
  */
 function enablePip() {
+    if (!IS_WINDOWS) {
+        console.log('Skipping pip enable (not needed for standalone Python)');
+        return;
+    }
+
     console.log('Enabling pip...');
 
     // Find the ._pth file (e.g., python311._pth)
@@ -110,15 +161,24 @@ function enablePip() {
 }
 
 /**
- * Install pip
+ * Install pip (Windows embedded Python only - standalone already has pip)
  */
 async function installPip() {
+    const pythonExe = getPythonExe();
+
+    // Check if pip already exists (standalone Python has it)
+    try {
+        execSync(`"${pythonExe}" -m pip --version`, { stdio: 'pipe' });
+        console.log('pip already available, skipping installation');
+        return;
+    } catch (e) {
+        // pip not found, need to install
+    }
+
     console.log('Installing pip...');
 
     const getPipPath = path.join(PYTHON_DIR, 'get-pip.py');
     await downloadFile(GET_PIP_URL, getPipPath);
-
-    const pythonExe = path.join(PYTHON_DIR, 'python.exe');
 
     execSync(`"${pythonExe}" "${getPipPath}"`, {
         cwd: PYTHON_DIR,
@@ -136,8 +196,7 @@ async function installPip() {
 function installDependencies() {
     console.log('Installing dependencies...');
 
-    const pythonExe = path.join(PYTHON_DIR, 'python.exe');
-    const pipExe = path.join(PYTHON_DIR, 'Scripts', 'pip.exe');
+    const pythonExe = getPythonExe();
     const requirementsPath = path.join(BACKEND_DIR, 'requirements.txt');
 
     // Upgrade pip first
@@ -161,11 +220,14 @@ function installDependencies() {
 async function setup() {
     console.log('========================================');
     console.log('SimplerLLM Playground - Python Setup');
+    console.log(`Platform: ${PLATFORM} (${ARCH})`);
     console.log('========================================\n');
 
     try {
+        const pythonExe = getPythonExe();
+
         // Check if already set up
-        if (fs.existsSync(path.join(PYTHON_DIR, 'python.exe'))) {
+        if (fs.existsSync(pythonExe)) {
             console.log('Python already set up. Skipping download.');
             console.log('To reinstall, delete the python/ folder and run again.\n');
 
@@ -180,16 +242,17 @@ async function setup() {
         }
 
         // Download Python
-        const zipPath = path.join(ROOT_DIR, 'python-embed.zip');
-        await downloadFile(PYTHON_URL, zipPath);
+        const archiveExt = IS_WINDOWS ? 'zip' : 'tar.gz';
+        const archivePath = path.join(ROOT_DIR, `python-embed.${archiveExt}`);
+        await downloadFile(getPythonUrl(), archivePath);
 
         // Extract Python
-        extractZip(zipPath, PYTHON_DIR);
+        extractArchive(archivePath, PYTHON_DIR);
 
-        // Clean up zip
-        fs.unlinkSync(zipPath);
+        // Clean up archive
+        fs.unlinkSync(archivePath);
 
-        // Enable pip
+        // Enable pip (Windows only)
         enablePip();
 
         // Install pip
@@ -201,7 +264,8 @@ async function setup() {
         console.log('\n========================================');
         console.log('Setup complete!');
         console.log('========================================');
-        console.log('\nYou can now run: npm run build:win');
+        const buildCmd = IS_WINDOWS ? 'npm run build:win' : (IS_MAC ? 'npm run build:mac' : 'npm run build:linux');
+        console.log(`\nYou can now run: ${buildCmd}`);
 
     } catch (error) {
         console.error('\nSetup failed:', error.message);

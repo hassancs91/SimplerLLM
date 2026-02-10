@@ -46,6 +46,38 @@
     flex: 1;
 }
 
+/* Collapsible Section Headers */
+.feedback-viz-pane .section-header.collapsible {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: var(--spacing-sm) 0;
+    user-select: none;
+}
+
+.feedback-viz-pane .section-header.collapsible:hover {
+    opacity: 0.8;
+}
+
+.feedback-viz-pane .section-header.collapsible .section-title {
+    margin-bottom: 0;
+}
+
+.feedback-viz-pane .collapse-icon {
+    font-size: var(--font-size-sm);
+    transition: transform 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.feedback-viz-pane .collapse-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.feedback-viz-pane .section-content.collapsed {
+    display: none;
+}
+
 /* Chart Section */
 .feedback-chart-section {
     padding: var(--spacing-md) var(--spacing-lg);

@@ -33,9 +33,17 @@ class FeedbackManager {
 
         // Architecture
         this.architectureToggle = document.getElementById('feedback-architecture-toggle');
+        this.architectureDescription = document.getElementById('architecture-description');
         this.singleConfig = document.getElementById('feedback-single-config');
         this.dualConfig = document.getElementById('feedback-dual-config');
         this.multiConfig = document.getElementById('feedback-multi-config');
+
+        // Architecture descriptions
+        this.architectureDescriptions = {
+            single: 'Same LLM generates, critiques, and improves its own answers.',
+            dual: 'Separate generator and critic LLMs work together for specialized feedback.',
+            multi: 'Multiple providers rotate to generate and evaluate answers.'
+        };
 
         // Provider selects
         this.singleProvider = document.getElementById('feedback-single-provider');
@@ -82,6 +90,14 @@ class FeedbackManager {
         this.statFinalScore = document.getElementById('stat-final-score');
         this.statImprovement = document.getElementById('stat-improvement');
         this.statStoppedReason = document.getElementById('stat-stopped-reason');
+
+        // Collapsible sections
+        this.chartSectionHeader = document.getElementById('chart-section-header');
+        this.chartSectionContent = document.getElementById('chart-section-content');
+        this.iterationsSectionHeader = document.getElementById('iterations-section-header');
+        this.iterationsSectionContent = document.getElementById('iterations-section-content');
+        this.finalAnswerHeader = document.getElementById('final-answer-header');
+        this.finalAnswerContentWrapper = document.getElementById('final-answer-content-wrapper');
 
         // Code section
         this.codeSection = document.getElementById('feedback-code-section');
@@ -242,6 +258,11 @@ class FeedbackManager {
             this.copyCodeBtn.addEventListener('click', () => this._copyCode());
         }
 
+        // Collapsible sections
+        this._setupCollapsibleSection(this.chartSectionHeader, this.chartSectionContent);
+        this._setupCollapsibleSection(this.iterationsSectionHeader, this.iterationsSectionContent);
+        this._setupCollapsibleSection(this.finalAnswerHeader, this.finalAnswerContentWrapper);
+
         // Provider/model change handlers
         this._setupProviderChangeHandlers();
     }
@@ -294,6 +315,23 @@ class FeedbackManager {
         });
     }
 
+    _refreshMultiProviderDropdowns() {
+        if (!this.multiProvidersList) return;
+        const providers = typeof app !== 'undefined' ? app.providers : [];
+
+        this.multiProvidersList.querySelectorAll('.multi-provider-select').forEach(select => {
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">Provider...</option>';
+            providers.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.name;
+                select.appendChild(option);
+            });
+            select.value = currentValue;
+        });
+    }
+
     _selectArchitecture(arch) {
         this.architecture = arch;
 
@@ -308,6 +346,16 @@ class FeedbackManager {
         if (this.singleConfig) this.singleConfig.classList.toggle('hidden', arch !== 'single');
         if (this.dualConfig) this.dualConfig.classList.toggle('hidden', arch !== 'dual');
         if (this.multiConfig) this.multiConfig.classList.toggle('hidden', arch !== 'multi');
+
+        // Update description text
+        if (this.architectureDescription && this.architectureDescriptions[arch]) {
+            this.architectureDescription.textContent = this.architectureDescriptions[arch];
+        }
+
+        // Refresh multi-provider dropdowns when switching to multi
+        if (arch === 'multi') {
+            this._refreshMultiProviderDropdowns();
+        }
 
         this._updateCodeSnippet();
     }
@@ -388,6 +436,14 @@ class FeedbackManager {
 
     refresh() {
         this._populateProviderDropdowns();
+        this._refreshMultiProviderDropdowns();
+        // Restore slider values from internal state
+        if (this.iterationsSlider) {
+            this.iterationsSlider.value = this.maxIterations;
+        }
+        if (this.iterationsValue) {
+            this.iterationsValue.textContent = this.maxIterations;
+        }
     }
 
     async startFeedback() {
@@ -929,6 +985,15 @@ for iteration in result.all_iterations:
                 app.showToast('Failed to copy code', 'error');
             }
         }
+    }
+
+    _setupCollapsibleSection(header, content) {
+        if (!header || !content) return;
+        header.addEventListener('click', () => {
+            const icon = header.querySelector('.collapse-icon');
+            content.classList.toggle('collapsed');
+            if (icon) icon.classList.toggle('collapsed');
+        });
     }
 }
 

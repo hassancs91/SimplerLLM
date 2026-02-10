@@ -33,6 +33,27 @@ def _get_image_mime_type(image_source):
     return 'image/jpeg'
 
 
+def _is_gemini_3_model(model_name: str) -> bool:
+    """
+    Check if the model is a Gemini 3+ model that supports advanced features.
+
+    Gemini 3+ models support:
+    - 4K resolution output
+    - Advanced reasoning/thinking mode
+    - Up to 14 reference images (6 object + 5 human)
+
+    Args:
+        model_name: The model name string
+
+    Returns:
+        bool: True if model is Gemini 3+
+    """
+    if not model_name:
+        return False
+    model_lower = model_name.lower()
+    return "gemini-3" in model_lower or "nano-banana-pro" in model_lower
+
+
 def _load_image_data(image_source):
     """
     Load image data from various source types.
@@ -130,9 +151,6 @@ def generate_image(
     if verbose:
         print(f"[Google Gemini] Generating image with model={model_name}, aspect_ratio={aspect_ratio}, resolution={resolution}")
 
-    # Always print which model is being used for verification
-    print(f"[Google Gemini API] Using model: {model_name}")
-
     retry_delay = RETRY_DELAY
 
     for attempt in range(MAX_RETRIES):
@@ -174,9 +192,9 @@ def generate_image(
             ]
 
             # Configure generation with both IMAGE and TEXT modalities
-            # image_size only supported by Gemini 3+ models
+            # image_size (4K resolution) only supported by Gemini 3+ models
             image_config_params = {"aspect_ratio": aspect_ratio}
-            if "gemini-3" in model_name.lower():
+            if _is_gemini_3_model(model_name):
                 image_config_params["image_size"] = resolution
 
             generate_content_config = types.GenerateContentConfig(
@@ -408,9 +426,6 @@ def edit_image(
         print(f"[Google Gemini] Editing image with model={model_name}, aspect_ratio={aspect_ratio}, resolution={resolution}")
         print(f"[Google Gemini] Edit prompt: {edit_prompt}")
 
-    # Always print which model is being used for verification
-    print(f"[Google Gemini API] Using model: {model_name}")
-
     retry_delay = RETRY_DELAY
 
     for attempt in range(MAX_RETRIES):
@@ -439,9 +454,9 @@ def edit_image(
             ]
 
             # Configure generation with lower temperature for consistency
-            # image_size only supported by Gemini 3+ models
+            # image_size (4K resolution) only supported by Gemini 3+ models
             image_config_params = {"aspect_ratio": aspect_ratio}
-            if "gemini-3" in model_name.lower():
+            if _is_gemini_3_model(model_name):
                 image_config_params["image_size"] = resolution
 
             generate_content_config = types.GenerateContentConfig(

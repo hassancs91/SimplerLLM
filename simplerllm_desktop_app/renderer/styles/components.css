@@ -394,9 +394,10 @@
 }
 
 .titlebar__title {
-    color: var(--memphis-yellow);
-    font-family: var(--font-display);
+    color: white;
+    font-family: var(--font-primary);
     font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     letter-spacing: 2px;
     text-transform: uppercase;
 }
@@ -781,13 +782,13 @@
 }
 
 .tools-view__title {
-    font-family: var(--font-display);
+    font-family: var(--font-primary);
     font-size: 2.5rem;
-    color: var(--memphis-yellow);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 4px;
     margin-bottom: var(--spacing-xl);
-    text-shadow: 3px 3px 0 var(--memphis-black);
 }
 
 .tools-grid {
@@ -842,3 +843,75 @@
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
 }
+
+/* ============================================
+   STATUS BAR
+   ============================================ */
+
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: var(--bg-secondary);
+    border-top: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    font-family: var(--font-primary);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    z-index: 100;
+}
+
+.status-bar__left,
+.status-bar__center,
+.status-bar__right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.status-bar__left { flex: 1; }
+.status-bar__center { flex: 1; justify-content: center; }
+.status-bar__right { flex: 1; justify-content: flex-end; }
+
+.status-bar__app-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.status-bar__beta-badge {
+    background: var(--memphis-pink);
+    color: var(--memphis-white);
+    font-size: 9px;
+    font-weight: var(--font-weight-bold);
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: var(--spacing-xs);
+}
+
+.status-bar__version { color: var(--text-muted); }
+.status-bar__copyright { color: var(--text-muted); }
+
+.status-bar__links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.status-bar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.status-bar__link:hover { color: var(--memphis-teal); }
+.status-bar__link svg { width: 14px; height: 14px; }

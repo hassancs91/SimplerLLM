@@ -1,6 +1,10 @@
 import SimplerLLM.language.llm_providers.ollama_llm as ollama_llm
 from ..base import LLM
 from SimplerLLM.utils.custom_verbose import verbose_print
+from SimplerLLM.tools.image_helpers import (
+    is_ollama_vision_model,
+    prepare_vision_message_ollama,
+)
 
 class OllamaLLM(LLM):
     def __init__(self, provider, model_name, temperature, top_p, verbose=False):
@@ -23,6 +27,10 @@ class OllamaLLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
+        **kwargs,  # Accept and ignore unsupported provider-specific params
     ):
         """
         Generate a response using the Ollama LLM.
@@ -44,6 +52,7 @@ class OllamaLLM(LLM):
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
         params = self.prepare_params(model_name, temperature, top_p)
+        effective_model = params.get("model_name") or self.model_name
 
         # Validate inputs
         if prompt and messages:
@@ -55,20 +64,61 @@ class OllamaLLM(LLM):
                 verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
+        # Warn about unsupported features
+        if web_search:
+            if self.verbose:
+                verbose_print(
+                    "Warning: web_search is not supported by Ollama. "
+                    "Parameter will be ignored. Consider using OpenAI or Anthropic for web search.",
+                    "warning"
+                )
+
+        # Check vision model compatibility
+        if images:
+            if not is_ollama_vision_model(effective_model):
+                if self.verbose:
+                    verbose_print(
+                        f"Warning: Model '{effective_model}' may not support vision. "
+                        "Vision-capable models include: llava, llama3.2-vision, moondream, bakllava, minicpm-v",
+                        "warning"
+                    )
+            if detail != "auto" and self.verbose:
+                verbose_print(
+                    f"Note: 'detail' parameter ('{detail}') is not used by Ollama. "
+                    "Ollama processes images at their native resolution.",
+                    "debug"
+                )
+
         # Prepare messages based on input type
         if prompt:
             if self.verbose:
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"System prompt: {system_prompt}", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
-            model_messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
+
+            if images:
+                # Use vision format with images in message
+                if self.verbose:
+                    verbose_print(f"Preparing vision request with {len(images)} image(s)", "info")
+                model_messages = [
+                    {"role": "system", "content": system_prompt},
+                    prepare_vision_message_ollama(prompt, images),
+                ]
+            else:
+                model_messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+            if images:
+                verbose_print(
+                    "Warning: Images with messages format may not work as expected. "
+                    "Consider using 'prompt' parameter for vision requests.",
+                    "warning"
+                )
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -76,13 +126,13 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
-                "json_mode" : json_mode     
+                "json_mode": json_mode,
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with Ollama...", "info")
-            
+
         try:
             response = ollama_llm.generate_response(**params)
             if self.verbose:
@@ -104,6 +154,10 @@ class OllamaLLM(LLM):
         top_p: float = 1.0,
         full_response: bool = False,
         json_mode=False,
+        images: list = None,
+        detail: str = "auto",
+        web_search: bool = False,
+        **kwargs,  # Accept and ignore unsupported provider-specific params
     ):
         """
         Asynchronously generate a response using the Ollama LLM.
@@ -125,6 +179,7 @@ class OllamaLLM(LLM):
             ValueError: If both prompt and messages are provided, or if neither is provided.
         """
         params = self.prepare_params(model_name, temperature, top_p)
+        effective_model = params.get("model_name") or self.model_name
 
         # Validate inputs
         if prompt and messages:
@@ -136,20 +191,61 @@ class OllamaLLM(LLM):
                 verbose_print("Error: Neither prompt nor messages provided", "error")
             raise ValueError("Either 'prompt' or 'messages' must be provided.")
 
+        # Warn about unsupported features
+        if web_search:
+            if self.verbose:
+                verbose_print(
+                    "Warning: web_search is not supported by Ollama. "
+                    "Parameter will be ignored. Consider using OpenAI or Anthropic for web search.",
+                    "warning"
+                )
+
+        # Check vision model compatibility
+        if images:
+            if not is_ollama_vision_model(effective_model):
+                if self.verbose:
+                    verbose_print(
+                        f"Warning: Model '{effective_model}' may not support vision. "
+                        "Vision-capable models include: llava, llama3.2-vision, moondream, bakllava, minicpm-v",
+                        "warning"
+                    )
+            if detail != "auto" and self.verbose:
+                verbose_print(
+                    f"Note: 'detail' parameter ('{detail}') is not used by Ollama. "
+                    "Ollama processes images at their native resolution.",
+                    "debug"
+                )
+
         # Prepare messages based on input type
         if prompt:
             if self.verbose:
                 verbose_print("Preparing single prompt message", "debug")
                 verbose_print(f"System prompt: {system_prompt}", "debug")
                 verbose_print(f"User prompt: {prompt}", "debug")
-            model_messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
+
+            if images:
+                # Use vision format with images in message
+                if self.verbose:
+                    verbose_print(f"Preparing vision request with {len(images)} image(s)", "info")
+                model_messages = [
+                    {"role": "system", "content": system_prompt},
+                    prepare_vision_message_ollama(prompt, images),
+                ]
+            else:
+                model_messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ]
 
         if messages:
             if self.verbose:
                 verbose_print("Preparing chat messages", "debug")
+            if images:
+                verbose_print(
+                    "Warning: Images with messages format may not work as expected. "
+                    "Consider using 'prompt' parameter for vision requests.",
+                    "warning"
+                )
             model_messages = self.append_messages(system_prompt, messages)
 
         params.update(
@@ -157,13 +253,13 @@ class OllamaLLM(LLM):
                 "messages": model_messages,
                 "max_tokens": max_tokens,
                 "full_response": full_response,
-                "json_mode" : json_mode     
+                "json_mode": json_mode,
             }
         )
-        
+
         if self.verbose:
             verbose_print("Generating response with Ollama (async)...", "info")
-            
+
         try:
             response = await ollama_llm.generate_response_async(**params)
             if self.verbose:

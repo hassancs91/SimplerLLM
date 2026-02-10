@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Desktop playground for testing SimplerLLM library functionalities",
   "main": "electron/main.js",
-  "author": "SimplerLLM",
+  "author": "LearnWithHasan",
   "license": "MIT",
   "scripts": {
     "start": "electron .",

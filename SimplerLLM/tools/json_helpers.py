@@ -1,10 +1,18 @@
 import re
 import json
-from pydantic import BaseModel, ValidationError
-from typing import Type, get_type_hints, List, get_origin, get_args, Union, Dict, Any, Literal
+from decimal import Decimal
+from typing import Type, get_type_hints, List, get_origin, get_args, Union, Dict, Any, Literal, Set, FrozenSet, Tuple
 from enum import Enum
 from datetime import datetime, date, time
 from uuid import UUID
+
+try:
+    from pydantic import BaseModel, ValidationError, RootModel
+    HAS_ROOT_MODEL = True
+except ImportError:
+    from pydantic import BaseModel, ValidationError
+    HAS_ROOT_MODEL = False
+    RootModel = None
 
 
 
@@ -105,10 +113,22 @@ def validate_json_with_pydantic_model(model_class, json_data):
     validated_data = []
     validation_errors = []
 
+    # Check if this is a RootModel
+    is_root_model = False
+    if HAS_ROOT_MODEL and RootModel is not None:
+        try:
+            is_root_model = issubclass(model_class, RootModel)
+        except TypeError:
+            pass
+
     if isinstance(json_data, list):
         for item in json_data:
             try:
-                model_instance = model_class(**item)
+                # RootModel takes value directly, not as kwargs
+                if is_root_model:
+                    model_instance = model_class(item)
+                else:
+                    model_instance = model_class(**item)
                 validated_data.append(model_instance.model_dump())
             except ValidationError as e:
                 validation_errors.append({"error": str(e), "data": item})
@@ -126,6 +146,15 @@ def validate_json_with_pydantic_model(model_class, json_data):
 
 def convert_json_to_pydantic_model(model_class, json_data):
     try:
+        # Handle RootModel - it takes the value directly, not as kwargs
+        if HAS_ROOT_MODEL and RootModel is not None:
+            try:
+                if issubclass(model_class, RootModel):
+                    model_instance = model_class(json_data)
+                    return model_instance
+            except TypeError:
+                pass  # Not a class that can be checked with issubclass
+
         model_instance = model_class(**json_data)
         return model_instance
     except ValidationError as e:
@@ -188,6 +217,109 @@ def get_field_constraints(field_info):
     return constraints
 
 
+def generate_string_from_pattern(pattern: str) -> str:
+    """
+    Generate a string that matches a regex pattern.
+
+    Handles common patterns directly; for complex patterns,
+    returns a best-effort example.
+    """
+    # Common pattern mappings (pattern -> example)
+    common_patterns = {
+        r'^\d{3}-\d{3}-\d{4}$': '555-123-4567',
+        r'^\d{5}$': '90210',
+        r'^[A-Z]{2}-\d{4}$': 'AB-1234',
+        r'^\d{4}-\d{2}-\d{2}$': '2025-01-15',
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$': 'user@example.com',
+        r'^\d{3}-\d{2}-\d{4}$': '123-45-6789',
+        r'^https?://': 'https://example.com',
+    }
+
+    # Check for exact matches first
+    if pattern in common_patterns:
+        return common_patterns[pattern]
+
+    # Simple pattern parsing fallback
+    result = []
+    clean = pattern.strip('^$')
+    i = 0
+    while i < len(clean):
+        if clean[i:i+2] == '\\d':
+            result.append('5')
+            i += 2
+        elif clean[i] == '-':
+            result.append('-')
+            i += 1
+        elif clean[i] == '{':
+            end = clean.find('}', i)
+            if end != -1 and result:
+                count = int(clean[i+1:end].split(',')[0]) - 1
+                result.extend([result[-1]] * count)
+            i = end + 1 if end != -1 else i + 1
+        elif clean[i] == '[':
+            end = clean.find(']', i)
+            if end != -1:
+                cls = clean[i+1:end]
+                if 'A-Z' in cls:
+                    result.append('A')
+                elif 'a-z' in cls:
+                    result.append('a')
+                elif '0-9' in cls:
+                    result.append('5')
+                else:
+                    result.append(cls[0] if cls else 'x')
+            i = end + 1 if end != -1 else i + 1
+        elif clean[i] not in '().*+?|':
+            result.append(clean[i])
+            i += 1
+        else:
+            i += 1
+
+    return ''.join(result) if result else 'example_value'
+
+
+def get_smart_example_for_field(field_name: str, field_type: Type, constraints: dict) -> Any:
+    """
+    Generate context-aware examples based on field name.
+
+    This helps generate values that are more likely to pass custom validators.
+    """
+    name = field_name.lower()
+
+    if field_type == str:
+        # Password fields - include uppercase, lowercase, digit
+        if 'password' in name or 'pwd' in name:
+            min_len = constraints.get('min_length', 8)
+            return f"Secure1{'x' * max(0, min_len - 7)}!"
+
+        # Username fields - alphanumeric with underscores
+        if 'username' in name or 'user_name' in name:
+            return 'john_doe123'
+
+        # Email fields
+        if 'email' in name:
+            return 'user@example.com'
+
+        # URL/website fields
+        if 'url' in name or 'website' in name:
+            return 'https://example.com'
+
+        # Phone fields
+        if 'phone' in name or 'tel' in name:
+            return '555-123-4567'
+
+        # Name fields
+        if 'name' in name:
+            if 'first' in name:
+                return 'John'
+            elif 'last' in name:
+                return 'Doe'
+            else:
+                return 'Example Name'
+
+    return None  # No smart example, use default
+
+
 # Define a function to provide example values based on type
 def example_value_for_type(field_type: Type, constraints: dict = None, _recursion_depth: int = 0, _seen_types: set = None):
     """
@@ -228,6 +360,18 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
     # Handle UUID
     if field_type == UUID:
         return "12345678-1234-5678-1234-567812345678"
+
+    # Handle Decimal type
+    if field_type == Decimal:
+        if 'ge' in constraints:
+            return str(constraints['ge'])
+        elif 'gt' in constraints:
+            return str(float(constraints['gt']) + 0.01)
+        elif 'le' in constraints:
+            return str(constraints['le'])
+        elif 'lt' in constraints:
+            return str(float(constraints['lt']) - 0.01)
+        return "123.45"
 
     origin = get_origin(field_type)
 
@@ -279,6 +423,10 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
                     )
             return field_type(**example_data)
         elif field_type == str:
+            # Check for pattern constraint first
+            if 'pattern' in constraints and constraints['pattern']:
+                return generate_string_from_pattern(constraints['pattern'])
+
             min_len = constraints.get('min_length', 0)
             max_len = constraints.get('max_length', None)
             # Generate string of appropriate length
@@ -369,9 +517,9 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
                 items.append(value)
 
         # If no valid items could be generated (all were None due to circular refs),
-        # return None to signal this to parent Optional field
+        # return empty list instead of None to maintain list type consistency
         if len(items) == 0 and num_items > 0:
-            return None
+            return []
 
         return items
     elif origin == dict:  # It's a Dict
@@ -384,6 +532,34 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
         for i in range(1, 3):  # Create 2 example key-value pairs
             example_dict[f"example_key_{i}"] = example_value_for_type(value_type, {}, _recursion_depth + 1, _seen_types)
         return example_dict
+    elif origin == set or origin == frozenset:  # Handle Set and FrozenSet
+        args = get_args(field_type)
+        if not args:
+            return []  # No type specified, return empty list
+        element_type = args[0]
+        min_items = constraints.get('min_length') or constraints.get('min_items', 2)
+
+        items = []
+        for i in range(max(min_items, 2)):
+            value = example_value_for_type(element_type, {}, _recursion_depth + 1, _seen_types)
+            if value is not None:
+                # For strings, append index to ensure uniqueness
+                if element_type == str and value in items:
+                    value = f"{value}_{i}"
+                items.append(value)
+        return items  # Return as list since JSON doesn't support sets
+    elif origin == tuple:  # Handle Tuple types
+        args = get_args(field_type)
+        if not args:
+            return []  # No type args, return empty list
+
+        # Handle Tuple[T, ...] (variable length homogeneous tuple)
+        if len(args) == 2 and args[1] is Ellipsis:
+            element_type = args[0]
+            return [example_value_for_type(element_type, {}, _recursion_depth + 1, _seen_types) for _ in range(2)]
+
+        # Handle Tuple[T1, T2, T3] (fixed length heterogeneous tuple)
+        return [example_value_for_type(arg, {}, _recursion_depth + 1, _seen_types) for arg in args]
     elif origin == Union:  # Handle Optional (Union[Type, None])
         args = get_args(field_type)
         # If one of the args is NoneType, it's an Optional
@@ -408,6 +584,17 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
     Returns:
         str: JSON string representation of a valid example
     """
+    # Handle RootModel specially
+    if HAS_ROOT_MODEL and RootModel is not None:
+        try:
+            if issubclass(model_class, RootModel):
+                root_type = get_type_hints(model_class).get('root')
+                if root_type:
+                    example_value = example_value_for_type(root_type, {})
+                    return json.dumps(example_value, default=str)
+        except TypeError:
+            pass  # Not a class that can be checked with issubclass
+
     # First, check if the model has json_schema_extra with example data
     if hasattr(model_class, 'model_config'):
         model_config = model_class.model_config
@@ -415,14 +602,12 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
             schema_extra = model_config['json_schema_extra']
             if isinstance(schema_extra, dict) and 'example' in schema_extra:
                 # Use the provided example directly (it's already validated)
-                import json
                 return json.dumps(schema_extra['example'])
 
     # Fallback: check old-style Config class for Pydantic v1 compatibility
     if hasattr(model_class, 'Config') and hasattr(model_class.Config, 'json_schema_extra'):
         schema_extra = model_class.Config.json_schema_extra
         if isinstance(schema_extra, dict) and 'example' in schema_extra:
-            import json
             return json.dumps(schema_extra['example'])
 
     # Generate example data using field constraints
@@ -433,12 +618,20 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
             field_constraints = get_field_constraints(field_info)
             field_type = get_type_hints(model_class).get(field_name)
             if field_type:
-                # Always use field_name for model construction (not alias)
-                example_data[field_name] = example_value_for_type(field_type, field_constraints)
+                # Try smart example first (handles field validators)
+                smart = get_smart_example_for_field(field_name, field_type, field_constraints)
+                if smart is not None:
+                    example_data[field_name] = smart
+                else:
+                    example_data[field_name] = example_value_for_type(field_type, field_constraints)
     else:
         # Pydantic v1 or fallback
         for field_name, field_type in get_type_hints(model_class).items():
-            example_data[field_name] = example_value_for_type(field_type)
+            smart = get_smart_example_for_field(field_name, field_type, {})
+            if smart is not None:
+                example_data[field_name] = smart
+            else:
+                example_data[field_name] = example_value_for_type(field_type)
 
     model_instance = model_class(**example_data)
     # Use model_dump_json with by_alias=True to:
@@ -446,3 +639,129 @@ def generate_json_example_from_pydantic(model_class: Type[BaseModel]) -> str:
     # 2. Convert datetime/UUID objects to JSON-serializable strings
     # model_dump_json handles serialization directly and respects aliases better
     return model_instance.model_dump_json(by_alias=True)
+
+
+def extract_schema_constraints(model_class: Type[BaseModel], prefix: str = "", _seen_types: set = None) -> list:
+    """
+    Recursively extract Literal/Enum constraints from a Pydantic model.
+
+    Args:
+        model_class: The Pydantic model class to extract constraints from.
+        prefix: Prefix for nested field paths (e.g., "shipping." for nested fields).
+        _seen_types: Internal set to track visited types and prevent infinite recursion.
+
+    Returns:
+        list: A list of constraint strings describing allowed values for Literal/Enum fields.
+
+    Example:
+        >>> class Task(BaseModel):
+        ...     status: Literal["todo", "in_progress", "done"]
+        >>> constraints = extract_schema_constraints(Task)
+        >>> print(constraints)
+        ['- "status": MUST be exactly one of: [\'todo\', \'in_progress\', \'done\']']
+    """
+    if _seen_types is None:
+        _seen_types = set()
+
+    # Prevent infinite recursion for self-referencing models
+    type_id = id(model_class)
+    if type_id in _seen_types:
+        return []
+    _seen_types = _seen_types.copy()
+    _seen_types.add(type_id)
+
+    constraints = []
+
+    if not hasattr(model_class, 'model_fields'):
+        return constraints
+
+    for field_name, field_info in model_class.model_fields.items():
+        field_type = get_type_hints(model_class).get(field_name)
+        if field_type is None:
+            continue
+
+        full_path = f"{prefix}{field_name}" if prefix else field_name
+        origin = get_origin(field_type)
+
+        # Extract field constraints for length/numeric limits
+        field_constraints = get_field_constraints(field_info)
+
+        # Add string length constraints
+        if field_constraints.get('min_length') or field_constraints.get('max_length'):
+            min_len = field_constraints.get('min_length')
+            max_len = field_constraints.get('max_length')
+            if min_len and max_len:
+                constraints.append(f'- "{full_path}": MUST be between {min_len} and {max_len} characters')
+            elif max_len:
+                constraints.append(f'- "{full_path}": MUST be at most {max_len} characters')
+            elif min_len:
+                constraints.append(f'- "{full_path}": MUST be at least {min_len} characters')
+
+        # Add numeric constraints
+        if field_constraints.get('ge') is not None or field_constraints.get('le') is not None:
+            ge = field_constraints.get('ge')
+            le = field_constraints.get('le')
+            if ge is not None and le is not None:
+                constraints.append(f'- "{full_path}": MUST be between {ge} and {le}')
+            elif le is not None:
+                constraints.append(f'- "{full_path}": MUST be at most {le}')
+            elif ge is not None:
+                constraints.append(f'- "{full_path}": MUST be at least {ge}')
+
+        # Handle Literal types directly
+        if origin == Literal:
+            values = get_args(field_type)
+            constraints.append(f'- "{full_path}": MUST be exactly one of: {list(values)}')
+
+        # Handle Enum types and nested BaseModel
+        elif origin is None and isinstance(field_type, type):
+            try:
+                if issubclass(field_type, Enum):
+                    values = [e.value for e in field_type]
+                    constraints.append(f'- "{full_path}": MUST be exactly one of: {values}')
+                elif issubclass(field_type, BaseModel):
+                    # Recurse into nested models
+                    nested = extract_schema_constraints(field_type, f"{full_path}.", _seen_types)
+                    constraints.extend(nested)
+            except TypeError:
+                pass
+
+        # Handle Optional[T] which is Union[T, None]
+        elif origin == Union:
+            args = get_args(field_type)
+            for arg in args:
+                if arg is type(None):
+                    continue
+                arg_origin = get_origin(arg)
+                if arg_origin == Literal:
+                    values = get_args(arg)
+                    constraints.append(f'- "{full_path}": MUST be exactly one of: {list(values)}')
+                elif isinstance(arg, type):
+                    try:
+                        if issubclass(arg, Enum):
+                            values = [e.value for e in arg]
+                            constraints.append(f'- "{full_path}": MUST be exactly one of: {values}')
+                        elif issubclass(arg, BaseModel):
+                            nested = extract_schema_constraints(arg, f"{full_path}.", _seen_types)
+                            constraints.extend(nested)
+                    except TypeError:
+                        pass
+
+        # Handle List[BaseModel] to extract constraints from list element types
+        elif origin == list:
+            args = get_args(field_type)
+            if args:
+                element_type = args[0]
+                if isinstance(element_type, type):
+                    try:
+                        if issubclass(element_type, BaseModel):
+                            nested = extract_schema_constraints(element_type, f"{full_path}[].", _seen_types)
+                            constraints.extend(nested)
+                    except TypeError:
+                        pass
+
+        # Handle Dict types to clarify they must be objects, not arrays
+        elif origin == dict:
+            constraints.append(f'- "{full_path}": MUST be an object/dictionary {{}}, NOT an array []')
+
+    return constraints

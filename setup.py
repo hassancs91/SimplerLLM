@@ -10,9 +10,11 @@ with open("requirements.txt") as f:
 
 # Optional dependencies for specific features
 extras_require = {
-    'voice': ['pygame>=2.5.0', 'sounddevice>=0.4.6', 'pynput>=1.7.6'],  # Full voice support
-    'live_voice': ['sounddevice>=0.4.6', 'pynput>=1.7.6'],  # LiveVoiceChat (requires PortAudio)
-    'all': ['pygame>=2.5.0', 'sounddevice>=0.4.6', 'pynput>=1.7.6']  # Install all optional dependencies
+    "transformers": [
+        "transformers>=4.36.0",
+        "torch>=2.0.0",
+        "accelerate>=0.25.0",
+    ],
 }
 
 # Read the long description from the README file
@@ -21,7 +23,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="SimplerLLM",
-    version="0.3.3.4",
+    version="0.3.3.5",
     author="Hasan Aboul Hasan",
     author_email="hasan@learnwithhasan.com",
     description="An easy-to-use Library for interacting with language models.",

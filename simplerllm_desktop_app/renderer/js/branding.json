@@ -1,0 +1,23 @@
+{
+  "appName": "SimplerLLM Playground",
+  "version": "1.0.0",
+  "copyright": "© 2025 SimplerLLM",
+  "website": {
+    "url": "https://simplerllm.com",
+    "label": "Website"
+  },
+  "social": {
+    "twitter": {
+      "url": "https://x.com/simplerllm",
+      "label": "Twitter/X"
+    },
+    "github": {
+      "url": "https://github.com/hassancs91",
+      "label": "GitHub"
+    },
+    "youtube": {
+      "url": "https://youtube.com/@yourlearn",
+      "label": "YouTube"
+    }
+  }
+}

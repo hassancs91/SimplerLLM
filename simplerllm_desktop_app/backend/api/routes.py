@@ -19,7 +19,11 @@ def register_routes(app):
     @app.route('/api/health')
     def health_check():
         try:
-            import simplerllm
+            # Package may be installed as SimplerLLM (uppercase) or simplerllm (lowercase)
+            try:
+                import SimplerLLM as simplerllm
+            except ImportError:
+                import simplerllm
             simplerllm_version = getattr(simplerllm, '__version__', 'unknown')
         except ImportError:
             simplerllm_version = 'not installed'

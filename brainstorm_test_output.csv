@@ -1,0 +1,4 @@
+id,text,quality_score,depth,parent_id,iteration,reasoning,feasibility_score,impact_score,novelty_score
+idea_1_0,AIHealthNavigator.com,8.5,0,,1,"This domain focuses on an AI-driven platform that helps users navigate the complexities of healthcare, from finding the right specialists to managing health records, leveraging AI to provide personalized recommendations.",8.0,9.0,8.0
+idea_1_1,SmartSupplyChainAI.com,8.5,0,,1,"This domain emphasizes the use of AI to enhance supply chain management through predictive analytics, optimizing logistics, inventory management, and reducing costs while improving efficiency.",8.0,9.0,8.0
+idea_1_2,CreativeContentBot.com,8.5,0,,1,"This domain targets content creators and marketers, offering an AI tool that generates creative content ideas, optimizes SEO, and enhances engagement through data-driven insights.",8.0,9.0,7.5

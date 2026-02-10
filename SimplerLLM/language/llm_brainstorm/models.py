@@ -8,6 +8,14 @@ sessions, individual ideas, and results in a structured format.
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
+from enum import Enum
+
+
+class BrainstormMode(str, Enum):
+    """Mode for brainstorm generation strategy."""
+    TREE = "tree"        # Exponential expansion of all ideas
+    LINEAR = "linear"    # Focus on best idea refinement
+    HYBRID = "hybrid"    # Selective expansion of top-N ideas
 
 
 class BrainstormIdea(BaseModel):
@@ -25,15 +33,15 @@ class BrainstormIdea(BaseModel):
         criteria_scores: Scores for specific evaluation criteria
         metadata: Additional custom metadata
     """
-    id: str
-    text: str
-    reasoning: str = ""
-    quality_score: float = Field(default=0.0, ge=0.0, le=10.0)
-    depth: int = Field(default=0, ge=0)
-    parent_id: Optional[str] = None
-    iteration: int = 0
-    criteria_scores: Dict[str, float] = Field(default_factory=dict)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    id: str = Field(description="Unique identifier for the idea (e.g., 'idea_1_0')")
+    text: str = Field(description="The idea content")
+    reasoning: str = Field(default="", description="Explanation of why this idea was generated")
+    quality_score: float = Field(default=0.0, ge=0.0, le=10.0, description="Quality score from 0-10")
+    depth: int = Field(default=0, ge=0, description="Depth level in the brainstorm tree (0 = root level)")
+    parent_id: Optional[str] = Field(default=None, description="ID of the parent idea (None for root-level ideas)")
+    iteration: int = Field(default=0, description="Iteration number when this idea was generated")
+    criteria_scores: Dict[str, float] = Field(default_factory=dict, description="Scores for specific evaluation criteria")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional custom metadata")
 
     class Config:
         json_schema_extra = {
@@ -61,10 +69,8 @@ class IdeaGeneration(BaseModel):
     This model is used with generate_pydantic_json_model to ensure
     the LLM returns properly structured brainstorming output.
     """
-    ideas: List[str] = Field(description="List of generated ideas")
-    reasoning_per_idea: List[str] = Field(
-        description="Reasoning for each idea in the same order"
-    )
+    ideas: List[str] = Field(description="List of generated idea texts")
+    reasoning_per_idea: List[str] = Field(description="Reasoning for each idea, matching the order of ideas list")
 
     class Config:
         json_schema_extra = {
@@ -90,23 +96,23 @@ class IdeaEvaluation(BaseModel):
     Used to score and critique ideas against specific criteria.
     """
     quality_score: float = Field(
-        description="Overall quality score from 1-10",
         ge=1.0,
-        le=10.0
+        le=10.0,
+        description="Overall quality score from 1-10"
     )
     strengths: List[str] = Field(description="Key strengths of the idea")
     weaknesses: List[str] = Field(description="Potential weaknesses or challenges")
     criteria_scores: Dict[str, float] = Field(
-        description="Scores for specific evaluation criteria",
-        default_factory=dict
+        default_factory=dict,
+        description="Scores for specific evaluation criteria (e.g., {'feasibility': 8.0, 'impact': 9.0})"
     )
     should_expand: bool = Field(
-        description="Whether this idea is worth expanding further",
-        default=True
+        default=True,
+        description="Whether this idea is worth expanding further"
     )
     reasoning: str = Field(
-        description="Overall reasoning for the evaluation",
-        default=""
+        default="",
+        description="Overall reasoning for the evaluation"
     )
 
     class Config:
@@ -145,12 +151,12 @@ class BrainstormLevel(BaseModel):
         best_idea: The highest-scoring idea at this level
         execution_time: Time taken to generate this level (seconds)
     """
-    depth: int
-    ideas: List[BrainstormIdea]
-    total_ideas: int
-    average_score: float = 0.0
-    best_idea: Optional[BrainstormIdea] = None
-    execution_time: float = 0.0
+    depth: int = Field(description="The depth level (0 = initial prompt level)")
+    ideas: List[BrainstormIdea] = Field(description="All ideas generated at this depth")
+    total_ideas: int = Field(description="Number of ideas at this level")
+    average_score: float = Field(default=0.0, description="Average quality score of all ideas at this level")
+    best_idea: Optional[BrainstormIdea] = Field(default=None, description="The highest-scoring idea at this level")
+    execution_time: float = Field(default=0.0, description="Time taken to generate this level in seconds")
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -167,15 +173,15 @@ class BrainstormIteration(BaseModel):
 
     Tracks what happened during one step of idea generation and evaluation.
     """
-    iteration_number: int
-    depth: int
-    parent_idea: Optional[BrainstormIdea] = None
-    generated_ideas: List[BrainstormIdea]
-    prompt_used: str
-    mode_used: str  # "tree", "linear", or "hybrid"
-    execution_time: float
-    provider_used: str = ""
-    model_used: str = ""
+    iteration_number: int = Field(description="Sequential number of this iteration")
+    depth: int = Field(description="Depth level at which this iteration occurred")
+    parent_idea: Optional[BrainstormIdea] = Field(default=None, description="The parent idea being expanded (None for root level)")
+    generated_ideas: List[BrainstormIdea] = Field(description="Ideas generated in this iteration")
+    prompt_used: str = Field(description="The prompt used for generation")
+    mode_used: str = Field(description="Generation mode used: 'tree', 'linear', or 'hybrid'")
+    execution_time: float = Field(description="Time taken for this iteration in seconds")
+    provider_used: str = Field(default="", description="LLM provider used (e.g., 'OPENAI')")
+    model_used: str = Field(default="", description="Specific model used (e.g., 'gpt-4o')")
 
     class Config:
         json_schema_extra = {
@@ -202,7 +208,7 @@ class BrainstormResult(BaseModel):
 
     Attributes:
         initial_prompt: The original prompt that started the brainstorm
-        mode: The generation mode used ("tree", "linear", or "hybrid")
+        mode: The generation mode used (BrainstormMode enum)
         total_ideas: Total number of ideas generated
         total_iterations: Total number of LLM calls made
         max_depth_reached: Maximum depth level achieved
@@ -217,24 +223,24 @@ class BrainstormResult(BaseModel):
         config_used: Configuration parameters used
         timestamp: When the brainstorming session occurred
     """
-    initial_prompt: str
-    mode: str  # "tree", "linear", or "hybrid"
-    total_ideas: int
-    total_iterations: int
-    max_depth_reached: int
-    levels: List[BrainstormLevel] = Field(default_factory=list)
-    all_ideas: List[BrainstormIdea] = Field(default_factory=list)
-    best_ideas_per_level: List[BrainstormIdea] = Field(default_factory=list)
-    overall_best_idea: Optional[BrainstormIdea] = None
-    all_iterations: List[BrainstormIteration] = Field(default_factory=list)
-    execution_time: float
-    stopped_reason: str
+    initial_prompt: str = Field(description="The original prompt that started the brainstorm")
+    mode: BrainstormMode = Field(description="The generation mode used")
+    total_ideas: int = Field(description="Total number of ideas generated")
+    total_iterations: int = Field(description="Total number of LLM calls made")
+    max_depth_reached: int = Field(description="Maximum depth level achieved")
+    levels: List[BrainstormLevel] = Field(default_factory=list, description="Ideas organized by depth level")
+    all_ideas: List[BrainstormIdea] = Field(default_factory=list, description="Flat list of all ideas for easy access")
+    best_ideas_per_level: List[BrainstormIdea] = Field(default_factory=list, description="Best idea from each depth level")
+    overall_best_idea: Optional[BrainstormIdea] = Field(default=None, description="Highest-scoring idea across all levels")
+    all_iterations: List[BrainstormIteration] = Field(default_factory=list, description="Detailed log of each iteration")
+    execution_time: float = Field(description="Total time taken in seconds")
+    stopped_reason: str = Field(description="Why the brainstorming stopped (e.g., 'max_depth_reached', 'quality_threshold_not_met')")
     tree_structure: Dict[str, List[str]] = Field(
         default_factory=dict,
         description="Parent ID -> List of child IDs mapping"
     )
-    config_used: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=datetime.now)
+    config_used: Dict[str, Any] = Field(default_factory=dict, description="Configuration parameters used for this session")
+    timestamp: datetime = Field(default_factory=datetime.now, description="When the brainstorming session occurred")
 
     def get_children(self, idea_id: str) -> List[BrainstormIdea]:
         """Get all child ideas of a given idea."""
@@ -385,6 +391,7 @@ class BrainstormResult(BaseModel):
                 "total_iterations": 3,
                 "max_depth_reached": 2,
                 "execution_time": 12.5,
-                "stopped_reason": "max_depth_reached"
+                "stopped_reason": "max_depth_reached",
+                "timestamp": "2025-01-15T10:30:00"
             }
         }

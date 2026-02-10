@@ -5,6 +5,7 @@ from .ollama_wrapper import OllamaLLM
 from .deepseek_wrapper import DeepSeekLLM
 from .cohere_wrapper import CohereLLM
 from .perplexity_wrapper import PerplexityLLM
+from .hf_local_wrapper import HuggingFaceLocalLLM
 
 __all__ = [
     'OpenAILLM',
@@ -14,4 +15,5 @@ __all__ = [
     'DeepSeekLLM',
     'CohereLLM',
     'PerplexityLLM',
+    'HuggingFaceLocalLLM',
 ]

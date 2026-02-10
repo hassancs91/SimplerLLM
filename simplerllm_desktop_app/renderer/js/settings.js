@@ -144,8 +144,8 @@ class SettingsManager {
                 provider.configured = true;
             }
 
-            // Refresh provider cards
-            app.renderProviderCards();
+            // Refresh provider dropdown
+            app.renderProviderDropdown();
 
         } catch (error) {
             console.error('Save API key error:', error);

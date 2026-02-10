@@ -1,6 +1,7 @@
 {
   "appId": "com.simplerllm.playground",
   "productName": "SimplerLLM Playground",
+  "copyright": "© 2026 LearnWithHasan",
   "directories": {
     "output": "dist"
   },
@@ -9,6 +10,9 @@
     "renderer/**/*",
     "backend/**/*",
     "package.json"
+  ],
+  "asarUnpack": [
+    "backend/**/*"
   ],
   "extraResources": [
     {

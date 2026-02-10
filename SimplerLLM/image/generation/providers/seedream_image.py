@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import os
 import time
 import requests
-import base64
 from .image_response_models import ImageGenerationResponse
 
 # Load environment variables
@@ -18,7 +17,7 @@ SEEDREAM_API_ENDPOINT = "https://ark.ap-southeast.bytepluses.com/api/v3/images/g
 def generate_image(
     prompt,
     model_name="seedream-4-5-251128",
-    size="2K",
+    size="1024x1024",
     watermark=False,
     response_format="url",
     output_path=None,
@@ -26,6 +25,10 @@ def generate_image(
     api_key=None,
     verbose=False,
     image=None,
+    quality=None,
+    seed=None,
+    negative_prompt=None,
+    n=1,
 ):
     """
     Generate image from text prompt using BytePlus Seedream API.
@@ -33,7 +36,10 @@ def generate_image(
     Args:
         prompt: Text description of the desired image
         model_name: Model to use (default: seedream-4-5-251128)
-        size: Image size - "2K", "4K", or custom dimensions (e.g., "2048x2048")
+        size: Image size as dimensions (e.g., "1024x1024", "1536x1024", "2048x2048")
+              Supported sizes: 1024x1024, 1536x1536, 2048x2048 (square)
+                              1024x1536, 1024x2048 (portrait)
+                              1536x1024, 2048x1024 (landscape)
         watermark: If True, adds "AI generated" watermark to bottom-right corner
         response_format: "url" for image URL, "b64_json" for base64 encoded data
         output_path: Optional file path to save image
@@ -41,6 +47,10 @@ def generate_image(
         api_key: BytePlus ARK API key (uses ARK_API_KEY env var if not provided)
         verbose: If True, prints progress information
         image: Optional URL of reference image for image-to-image generation
+        quality: Image quality - "standard" or "high" (default: None = API default)
+        seed: Random seed for reproducibility (integer)
+        negative_prompt: Elements to exclude from the generated image
+        n: Number of images to generate (default: 1)
 
     Returns:
         If full_response=True: ImageGenerationResponse object
@@ -74,7 +84,16 @@ def generate_image(
                 "prompt": prompt,
                 "size": size,
                 "watermark": watermark,
+                "n": n,
             }
+
+            # Add optional parameters if provided
+            if quality:
+                data["quality"] = quality
+            if seed is not None:
+                data["seed"] = seed
+            if negative_prompt:
+                data["negative_prompt"] = negative_prompt
 
             # Add reference image for image-to-image generation
             if image:
@@ -148,16 +167,13 @@ def generate_image(
                 end_time = time.time()
                 process_time = end_time - start_time
 
-                # Extract usage info
-                usage = response_data.get("usage", {})
-
                 return ImageGenerationResponse(
                     image_data=image_data,
                     model=model_name,
                     prompt=prompt,
                     revised_prompt=None,
                     size=image_size_str,
-                    quality=None,
+                    quality=quality,
                     style=None,
                     process_time=process_time,
                     provider="SEEDREAM",
@@ -181,7 +197,7 @@ def generate_image(
 async def generate_image_async(
     prompt,
     model_name="seedream-4-5-251128",
-    size="2K",
+    size="1024x1024",
     watermark=False,
     response_format="url",
     output_path=None,
@@ -189,6 +205,10 @@ async def generate_image_async(
     api_key=None,
     verbose=False,
     image=None,
+    quality=None,
+    seed=None,
+    negative_prompt=None,
+    n=1,
 ):
     """
     Async version: Generate image from text prompt using BytePlus Seedream API.
@@ -196,7 +216,7 @@ async def generate_image_async(
     Args:
         prompt: Text description of the desired image
         model_name: Model to use (default: seedream-4-5-251128)
-        size: Image size - "2K", "4K", or custom dimensions (e.g., "2048x2048")
+        size: Image size as dimensions (e.g., "1024x1024", "1536x1024", "2048x2048")
         watermark: If True, adds "AI generated" watermark to bottom-right corner
         response_format: "url" for image URL, "b64_json" for base64 encoded data
         output_path: Optional file path to save image
@@ -204,6 +224,10 @@ async def generate_image_async(
         api_key: BytePlus ARK API key (uses ARK_API_KEY env var if not provided)
         verbose: If True, prints progress information
         image: Optional URL of reference image for image-to-image generation
+        quality: Image quality - "standard" or "high" (default: None = API default)
+        seed: Random seed for reproducibility (integer)
+        negative_prompt: Elements to exclude from the generated image
+        n: Number of images to generate (default: 1)
 
     Returns:
         If full_response=True: ImageGenerationResponse object
@@ -227,6 +251,10 @@ async def generate_image_async(
             api_key=api_key,
             verbose=verbose,
             image=image,
+            quality=quality,
+            seed=seed,
+            negative_prompt=negative_prompt,
+            n=n,
         )
     )
 
@@ -235,13 +263,16 @@ def edit_image(
     image_source,
     edit_prompt,
     model_name="seedream-4-5-251128",
-    size="2K",
+    size="1024x1024",
     watermark=False,
     response_format="url",
     output_path=None,
     full_response=False,
     api_key=None,
     verbose=False,
+    quality=None,
+    seed=None,
+    negative_prompt=None,
 ):
     """
     Edit an existing image using text instructions with BytePlus Seedream API.
@@ -250,13 +281,16 @@ def edit_image(
         image_source: URL of the source image to edit
         edit_prompt: Text instructions for how to edit the image
         model_name: Model to use (default: seedream-4-5-251128)
-        size: Image size - "2K", "4K", or custom dimensions (e.g., "2048x2048")
+        size: Image size as dimensions (e.g., "1024x1024", "1536x1024", "2048x2048")
         watermark: If True, adds "AI generated" watermark to bottom-right corner
         response_format: "url" for image URL, "b64_json" for base64 encoded data
         output_path: Optional file path to save edited image
         full_response: If True, returns ImageGenerationResponse with metadata
         api_key: BytePlus ARK API key (uses ARK_API_KEY env var if not provided)
         verbose: If True, prints progress information
+        quality: Image quality - "standard" or "high" (default: None = API default)
+        seed: Random seed for reproducibility (integer)
+        negative_prompt: Elements to exclude from the generated image
 
     Returns:
         If full_response=True: ImageGenerationResponse object
@@ -268,7 +302,7 @@ def edit_image(
         >>> edited_url = edit_image(
         ...     image_source="https://example.com/original.jpg",
         ...     edit_prompt="Change the background to a sunset sky",
-        ...     size="2K"
+        ...     size="1024x1024"
         ... )
     """
     if verbose:
@@ -286,6 +320,10 @@ def edit_image(
         api_key=api_key,
         verbose=verbose,
         image=image_source,
+        quality=quality,
+        seed=seed,
+        negative_prompt=negative_prompt,
+        n=1,  # Edit always produces single image
     )
 
 
@@ -293,13 +331,16 @@ async def edit_image_async(
     image_source,
     edit_prompt,
     model_name="seedream-4-5-251128",
-    size="2K",
+    size="1024x1024",
     watermark=False,
     response_format="url",
     output_path=None,
     full_response=False,
     api_key=None,
     verbose=False,
+    quality=None,
+    seed=None,
+    negative_prompt=None,
 ):
     """
     Async version: Edit an existing image using text instructions with BytePlus Seedream API.
@@ -308,13 +349,16 @@ async def edit_image_async(
         image_source: URL of the source image to edit
         edit_prompt: Text instructions for how to edit the image
         model_name: Model to use (default: seedream-4-5-251128)
-        size: Image size - "2K", "4K", or custom dimensions (e.g., "2048x2048")
+        size: Image size as dimensions (e.g., "1024x1024", "1536x1024", "2048x2048")
         watermark: If True, adds "AI generated" watermark to bottom-right corner
         response_format: "url" for image URL, "b64_json" for base64 encoded data
         output_path: Optional file path to save edited image
         full_response: If True, returns ImageGenerationResponse with metadata
         api_key: BytePlus ARK API key (uses ARK_API_KEY env var if not provided)
         verbose: If True, prints progress information
+        quality: Image quality - "standard" or "high" (default: None = API default)
+        seed: Random seed for reproducibility (integer)
+        negative_prompt: Elements to exclude from the generated image
 
     Returns:
         If full_response=True: ImageGenerationResponse object
@@ -338,5 +382,8 @@ async def edit_image_async(
             full_response=full_response,
             api_key=api_key,
             verbose=verbose,
+            quality=quality,
+            seed=seed,
+            negative_prompt=negative_prompt,
         )
     )

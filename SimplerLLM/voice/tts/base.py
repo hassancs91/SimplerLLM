@@ -1,125 +1,167 @@
-from enum import Enum
+"""
+TTS Base Class
+
+Abstract base class for all TTS providers.
+"""
+
+from abc import ABC, abstractmethod
+from typing import List, Optional
 import os
-from SimplerLLM.utils.custom_verbose import verbose_print
+
+from .models import Voice, TTSResponse, TTSProvider
 
 
-class TTSProvider(Enum):
-    """Enumeration of supported TTS providers."""
-    OPENAI = 1
-    ELEVENLABS = 2
-    # Future providers can be added here:
-    # GOOGLE = 3
-    # AZURE = 4
-
-
-class TTS:
+class TTSBase(ABC):
     """
-    Base class for Text-to-Speech functionality.
-    Provides a unified interface across different TTS providers.
+    Abstract base class for Text-to-Speech providers.
+
+    All TTS providers must implement this interface to ensure
+    a unified API across different providers.
     """
 
     def __init__(
         self,
-        provider=TTSProvider.OPENAI,
-        model_name="tts-1",
-        voice="alloy",
-        api_key=None,
-        verbose=False,
+        api_key: Optional[str] = None,
+        default_model: Optional[str] = None,
+        default_voice: Optional[str] = None,
     ):
         """
-        Initialize TTS instance.
+        Initialize TTS provider.
 
         Args:
-            provider: TTS provider to use (TTSProvider enum)
-            model_name: Model to use (e.g., "tts-1", "tts-1-hd")
-            voice: Default voice to use (e.g., "alloy", "nova", "shimmer")
             api_key: API key for the provider (uses env var if not provided)
-            verbose: Enable verbose logging
+            default_model: Default model to use for generation
+            default_voice: Default voice to use for generation
         """
-        self.provider = provider
-        self.model_name = model_name
-        self.voice = voice
         self.api_key = api_key
-        self.verbose = verbose
+        self.default_model = default_model
+        self.default_voice = default_voice
 
-        if self.verbose:
-            verbose_print(
-                f"Initializing {provider.name} TTS with model: {model_name}, voice: {voice}",
-                "info"
-            )
+    @property
+    @abstractmethod
+    def provider(self) -> TTSProvider:
+        """Return the provider type"""
+        pass
 
-    @staticmethod
-    def create(
-        provider=None,
-        model_name=None,
-        voice=None,
-        api_key=None,
-        verbose=False,
-    ):
+    @abstractmethod
+    def generate_speech(
+        self,
+        text: str,
+        *,
+        voice: Optional[str] = None,
+        model: Optional[str] = None,
+        speed: float = 1.0,
+        output_format: str = "mp3",
+        output_path: Optional[str] = None,
+        language_code: Optional[str] = None,
+        instructions: Optional[str] = None,
+        stability: Optional[float] = None,
+        similarity_boost: Optional[float] = None,
+        style: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> TTSResponse:
         """
-        Factory method to create TTS instances for different providers.
+        Generate speech from text.
 
         Args:
-            provider: TTS provider (TTSProvider enum)
-            model_name: Model to use (provider-specific)
-            voice: Default voice to use
-            api_key: API key for the provider
-            verbose: Enable verbose logging
+            text: Text to convert to speech
+            voice: Voice to use (provider-specific)
+            model: Model to use (provider-specific)
+            speed: Speech speed (provider-specific range)
+            output_format: Audio format (mp3, wav, etc.)
+            output_path: Path to save the audio file
+            language_code: ISO 639-1 language code (ElevenLabs only)
+            instructions: Voice instructions (OpenAI gpt-4o-mini-tts only)
+            stability: Voice stability 0-1 (ElevenLabs only)
+            similarity_boost: Similarity boost 0-1 (ElevenLabs only)
+            style: Style exaggeration 0-1 (ElevenLabs only)
+            seed: Seed for reproducibility (ElevenLabs only)
 
         Returns:
-            Provider-specific TTS instance (e.g., OpenAITTS)
+            TTSResponse with audio data and metadata
         """
-        if provider == TTSProvider.OPENAI:
-            from .wrappers.openai_wrapper import OpenAITTS
-            return OpenAITTS(
-                provider=provider,
-                model_name=model_name or "tts-1",
-                voice=voice or "alloy",
-                api_key=api_key,
-                verbose=verbose,
-            )
-        elif provider == TTSProvider.ELEVENLABS:
-            from .wrappers.elevenlabs_wrapper import ElevenLabsTTS
-            return ElevenLabsTTS(
-                provider=provider,
-                model_name=model_name or "eleven_turbo_v2",
-                voice=voice or "21m00Tcm4TlvDq8ikWAM",  # Rachel voice
-                api_key=api_key,
-                verbose=verbose,
-            )
-        # Future providers can be added here
-        # if provider == TTSProvider.GOOGLE:
-        #     from .wrappers.google_wrapper import GoogleTTS
-        #     return GoogleTTS(...)
-        else:
-            return None
+        pass
 
-    def prepare_params(self, voice=None, model=None, speed=None):
+    @abstractmethod
+    async def generate_speech_async(
+        self,
+        text: str,
+        *,
+        voice: Optional[str] = None,
+        model: Optional[str] = None,
+        speed: float = 1.0,
+        output_format: str = "mp3",
+        output_path: Optional[str] = None,
+        language_code: Optional[str] = None,
+        instructions: Optional[str] = None,
+        stability: Optional[float] = None,
+        similarity_boost: Optional[float] = None,
+        style: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> TTSResponse:
         """
-        Prepare parameters for TTS generation, using instance defaults
-        if parameters are not provided.
+        Generate speech from text asynchronously.
 
         Args:
-            voice: Voice to use (None = use instance default)
-            model: Model to use (None = use instance default)
-            speed: Speed to use (None = use default 1.0)
+            Same as generate_speech()
 
         Returns:
-            Dictionary of parameters
+            TTSResponse with audio data and metadata
         """
-        return {
-            "voice": voice if voice is not None else self.voice,
-            "model_name": model if model is not None else self.model_name,
-            "speed": speed if speed is not None else 1.0,
-        }
+        pass
 
-    def set_provider(self, provider):
+    @abstractmethod
+    def list_voices(self) -> List[Voice]:
         """
-        Set the TTS provider.
+        List all available voices for this provider.
+
+        Returns:
+            List of Voice objects
+        """
+        pass
+
+    @abstractmethod
+    def get_voice(self, voice_id: str) -> Voice:
+        """
+        Get details for a specific voice.
 
         Args:
-            provider: TTSProvider enum value
+            voice_id: Voice ID to look up
+
+        Returns:
+            Voice object with details
+
+        Raises:
+            TTSVoiceNotFoundError: If voice is not found
         """
-        if not isinstance(provider, TTSProvider):
-            raise ValueError("Provider must be an instance of TTSProvider Enum")
-        self.provider = provider
+        pass
+
+    def _get_voice(self, voice: Optional[str]) -> str:
+        """Get voice to use, falling back to default"""
+        return voice if voice is not None else self.default_voice
+
+    def _get_model(self, model: Optional[str]) -> str:
+        """Get model to use, falling back to default"""
+        return model if model is not None else self.default_model
+
+    def _save_audio(self, audio_data: bytes, output_path: str) -> str:
+        """
+        Save audio data to a file.
+
+        Args:
+            audio_data: Audio bytes to save
+            output_path: Path to save to
+
+        Returns:
+            Absolute path to saved file
+        """
+        # Ensure directory exists (handle case where file is in current directory)
+        abs_path = os.path.abspath(output_path)
+        dir_path = os.path.dirname(abs_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+
+        with open(abs_path, "wb") as f:
+            f.write(audio_data)
+
+        return abs_path

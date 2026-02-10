@@ -3,11 +3,16 @@ SimplerLLM Playground - Flask Backend
 """
 import os
 import sys
-from flask import Flask
-from flask_cors import CORS
+
+# Add backend directory to path for local imports (api, services)
+# This is required for packaged builds where PYTHONPATH is ignored by embedded Python
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Add parent directory to path for SimplerLLM imports (development mode)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from flask import Flask
+from flask_cors import CORS
 
 from api.routes import register_routes
 

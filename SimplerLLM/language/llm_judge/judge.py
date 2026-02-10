@@ -34,6 +34,17 @@ class LLMJudge:
     - synthesize: Combine all answers into an improved response
     - compare: Provide detailed comparative analysis
 
+    Template Customization:
+        Templates can be customized at two levels:
+        1. Instance level: Pass templates to __init__() for default behavior
+        2. Per-call level: Pass templates to generate() to override for specific calls
+
+        Available placeholders:
+        - {original_prompt}: The user's question
+        - {responses_text}: Formatted provider responses
+        - {criteria_text}: Comma-separated evaluation criteria
+        - {mode_instructions}: Mode-specific task instructions
+
     Example:
         ```python
         from SimplerLLM.language import LLM, LLMProvider, LLMJudge
@@ -47,8 +58,65 @@ class LLMJudge:
         judge = LLMJudge(providers=providers, judge_llm=judge_llm)
         result = judge.generate("Explain quantum computing", mode="synthesize")
         print(result.final_answer)
+
+        # With custom template
+        custom_instructions = '''YOUR TASK:
+        1. Evaluate responses focusing on technical accuracy
+        2. Score each 1-10
+        3. Provide the best response as final_answer'''
+
+        result = judge.generate(
+            "Explain quantum computing",
+            mode="select_best",
+            mode_instructions=custom_instructions
+        )
         ```
     """
+
+    # ==================== Default Templates ====================
+
+    DEFAULT_JUDGE_SYSTEM_PROMPT = "You are an expert AI evaluator. Provide detailed, structured evaluation in JSON format."
+
+    DEFAULT_EVALUATION_TEMPLATE = """You are an expert AI evaluator. Evaluate the following AI responses.
+
+ORIGINAL QUESTION:
+{original_prompt}
+
+RESPONSES TO EVALUATE:
+{responses_text}
+
+EVALUATION CRITERIA:
+{criteria_text}
+
+{mode_instructions}
+"""
+
+    DEFAULT_SELECT_BEST_INSTRUCTIONS = """YOUR TASK:
+1. Score each response 1-10 for each criterion
+2. Calculate overall score (1-10) for each response
+3. Rank responses (1 = best, 2 = second best, etc.)
+4. Select THE BEST response as your final answer
+5. Provide clear reasoning for your evaluation and selection
+
+Your final_answer must be the COMPLETE text of the winning response (the one you ranked #1)."""
+
+    DEFAULT_SYNTHESIZE_INSTRUCTIONS = """YOUR TASK:
+1. Score each response 1-10 for each criterion
+2. Calculate overall score (1-10) for each response
+3. Rank responses (1 = best, 2 = second best, etc.)
+4. SYNTHESIZE a NEW, IMPROVED response by combining the best elements from all responses
+5. Provide clear reasoning for your evaluation and synthesis process
+
+Your final_answer must be a NEW response that combines the strengths of all responses (not a copy of any existing response)."""
+
+    DEFAULT_COMPARE_INSTRUCTIONS = """YOUR TASK:
+1. Score each response 1-10 for each criterion
+2. Calculate overall score (1-10) for each response
+3. Rank responses (1 = best, 2 = second best, etc.)
+4. Provide detailed comparative analysis of strengths and weaknesses
+5. Provide clear reasoning
+
+Your final_answer must be a comprehensive comparison summary explaining what each response did well and poorly."""
 
     def __init__(
         self,
@@ -57,6 +125,11 @@ class LLMJudge:
         parallel: bool = True,
         default_criteria: Optional[List[str]] = None,
         verbose: bool = False,
+        evaluation_template: Optional[str] = None,
+        select_best_instructions: Optional[str] = None,
+        synthesize_instructions: Optional[str] = None,
+        compare_instructions: Optional[str] = None,
+        judge_system_prompt: Optional[str] = None,
     ):
         """
         Initialize the LLM Judge.
@@ -67,6 +140,11 @@ class LLMJudge:
             parallel: If True, execute providers in parallel; if False, sequential
             default_criteria: Default evaluation criteria (e.g., ["accuracy", "clarity"])
             verbose: Enable verbose logging
+            evaluation_template: Custom evaluation template (uses DEFAULT_EVALUATION_TEMPLATE if None)
+            select_best_instructions: Custom instructions for select_best mode
+            synthesize_instructions: Custom instructions for synthesize mode
+            compare_instructions: Custom instructions for compare mode
+            judge_system_prompt: Custom system prompt for the judge LLM
         """
         if not providers or len(providers) < 1:
             raise ValueError("At least one provider must be specified")
@@ -79,6 +157,13 @@ class LLMJudge:
         self.parallel = parallel
         self.default_criteria = default_criteria or ["accuracy", "clarity", "completeness"]
         self.verbose = verbose
+
+        # Template customization (instance-level defaults)
+        self.evaluation_template = evaluation_template
+        self.select_best_instructions = select_best_instructions
+        self.synthesize_instructions = synthesize_instructions
+        self.compare_instructions = compare_instructions
+        self.judge_system_prompt = judge_system_prompt
 
         if self.verbose:
             verbose_print(
@@ -94,6 +179,9 @@ class LLMJudge:
         criteria: Optional[List[str]] = None,
         system_prompt: Optional[str] = None,
         generate_summary: bool = False,
+        evaluation_template: Optional[str] = None,
+        mode_instructions: Optional[str] = None,
+        judge_system_prompt: Optional[str] = None,
     ) -> JudgeResult:
         """
         Generate responses from all providers and evaluate them using the judge.
@@ -104,6 +192,9 @@ class LLMJudge:
             criteria: Custom evaluation criteria (uses default_criteria if not provided)
             system_prompt: Optional system prompt for providers
             generate_summary: If True, generate router training summary
+            evaluation_template: Custom evaluation template (overrides instance default)
+            mode_instructions: Custom mode instructions (overrides mode-specific default)
+            judge_system_prompt: Custom system prompt for judge (overrides instance default)
 
         Returns:
             JudgeResult containing final answer, all responses, evaluations, and metadata
@@ -134,10 +225,12 @@ class LLMJudge:
             provider_responses=provider_responses,
             mode=judge_mode,
             criteria=eval_criteria,
+            evaluation_template=evaluation_template,
+            mode_instructions=mode_instructions,
         )
 
         # Step 3: Judge evaluates responses
-        judge_evaluation = self._evaluate_responses(judge_prompt)
+        judge_evaluation = self._evaluate_responses(judge_prompt, judge_system_prompt)
 
         # Step 4: Calculate confidence scores (normalize overall_scores to 0-1)
         confidence_scores = self._calculate_confidence_scores(judge_evaluation.evaluations)
@@ -176,6 +269,9 @@ class LLMJudge:
         criteria: Optional[List[str]] = None,
         system_prompt: Optional[str] = None,
         generate_summary: bool = False,
+        evaluation_template: Optional[str] = None,
+        mode_instructions: Optional[str] = None,
+        judge_system_prompt: Optional[str] = None,
     ) -> JudgeResult:
         """
         Async version of generate().
@@ -184,7 +280,10 @@ class LLMJudge:
         async support in all LLM wrappers.
         """
         # TODO: Implement true async execution when LLM wrappers support it
-        return self.generate(prompt, mode, criteria, system_prompt, generate_summary)
+        return self.generate(
+            prompt, mode, criteria, system_prompt, generate_summary,
+            evaluation_template, mode_instructions, judge_system_prompt
+        )
 
     def evaluate_batch(
         self,
@@ -396,80 +495,74 @@ class LLMJudge:
         provider_responses: List[ProviderResponse],
         mode: JudgeMode,
         criteria: List[str],
+        evaluation_template: Optional[str] = None,
+        mode_instructions: Optional[str] = None,
     ) -> str:
-        """Build the judge prompt based on mode and responses."""
+        """
+        Build the judge prompt based on mode and responses.
+
+        Template resolution (fallback chain):
+        1. Per-call parameter (evaluation_template, mode_instructions)
+        2. Instance attribute (self.evaluation_template, self.*_instructions)
+        3. Class constant default (DEFAULT_*)
+        """
         # Filter out failed responses
         valid_responses = [r for r in provider_responses if not r.error]
 
         if not valid_responses:
             raise RuntimeError("All providers failed to generate responses")
 
-        # Build responses section
-        responses_text = ""
-        for idx, response in enumerate(valid_responses, 1):
-            responses_text += f"\n--- Response {idx} ({response.provider_name} - {response.model_name}) ---\n"
-            responses_text += response.response_text
-            responses_text += "\n"
+        # Build responses text
+        responses_text = self._format_responses(valid_responses)
 
         # Build criteria text
         criteria_text = ", ".join(criteria)
 
-        # Base prompt parts
-        base_instruction = f"""You are an expert AI evaluator. You will evaluate multiple AI responses to the following question:
-
-ORIGINAL QUESTION:
-{original_prompt}
-
-RESPONSES TO EVALUATE:
-{responses_text}
-
-EVALUATION CRITERIA:
-{criteria_text}
-"""
-
-        # Mode-specific instructions
-        if mode == JudgeMode.SELECT_BEST:
-            mode_instruction = """
-YOUR TASK:
-1. Evaluate each response on the given criteria (score 1-10 for each criterion)
-2. Calculate an overall score (1-10) for each response
-3. Rank the responses (1 = best, 2 = second best, etc.)
-4. Select the BEST response as your final answer
-5. Provide clear reasoning for your evaluation and selection
-
-Your final answer should be the complete text of the winning response (the one you ranked #1).
-"""
-
+        # Resolve mode instructions (per-call > instance > default)
+        if mode_instructions:
+            instructions = mode_instructions
+        elif mode == JudgeMode.SELECT_BEST:
+            instructions = self.select_best_instructions or self.DEFAULT_SELECT_BEST_INSTRUCTIONS
         elif mode == JudgeMode.SYNTHESIZE:
-            mode_instruction = """
-YOUR TASK:
-1. Evaluate each response on the given criteria (score 1-10 for each criterion)
-2. Calculate an overall score (1-10) for each response
-3. Rank the responses (1 = best, 2 = second best, etc.)
-4. SYNTHESIZE a NEW, IMPROVED response by combining the best elements from all responses
-5. Provide clear reasoning for your evaluation and synthesis process
-
-Your final answer should be a NEW response that combines the strengths of all responses into the best possible answer.
-"""
-
+            instructions = self.synthesize_instructions or self.DEFAULT_SYNTHESIZE_INSTRUCTIONS
         else:  # JudgeMode.COMPARE
-            mode_instruction = """
-YOUR TASK:
-1. Evaluate each response on the given criteria (score 1-10 for each criterion)
-2. Calculate an overall score (1-10) for each response
-3. Rank the responses (1 = best, 2 = second best, etc.)
-4. Provide detailed comparative analysis of strengths and weaknesses
-5. For the final answer, provide a comprehensive summary of your comparative analysis
+            instructions = self.compare_instructions or self.DEFAULT_COMPARE_INSTRUCTIONS
 
-Your final answer should be a detailed comparison explaining what each response did well and poorly.
-"""
+        # Resolve evaluation template (per-call > instance > default)
+        template = evaluation_template or self.evaluation_template or self.DEFAULT_EVALUATION_TEMPLATE
 
-        return base_instruction + mode_instruction
+        # Format the template with all placeholders
+        return template.format(
+            original_prompt=original_prompt,
+            responses_text=responses_text,
+            criteria_text=criteria_text,
+            mode_instructions=instructions,
+        )
 
-    def _evaluate_responses(self, judge_prompt: str) -> JudgeEvaluation:
+    def _format_responses(self, responses: List[ProviderResponse]) -> str:
+        """Format provider responses for template insertion."""
+        parts = []
+        for idx, response in enumerate(responses, 1):
+            parts.append(f"--- Response {idx} ({response.provider_name} - {response.model_name}) ---")
+            parts.append(response.response_text)
+            parts.append("")
+        return "\n".join(parts)
+
+    def _evaluate_responses(
+        self,
+        judge_prompt: str,
+        judge_system_prompt: Optional[str] = None,
+    ) -> JudgeEvaluation:
         """Use the judge LLM to evaluate responses with structured output."""
         if self.verbose:
             verbose_print("Judge is evaluating responses...", "info")
+
+        # Resolve system prompt (per-call > instance > default)
+        system_prompt = (
+            judge_system_prompt
+            or self.judge_system_prompt
+            or self.DEFAULT_JUDGE_SYSTEM_PROMPT
+        )
 
         try:
             judge_result = generate_pydantic_json_model(
@@ -477,7 +570,7 @@ Your final answer should be a detailed comparison explaining what each response 
                 prompt=judge_prompt,
                 llm_instance=self.judge_llm,
                 max_retries=3,
-                system_prompt="You are an expert AI evaluator. Provide detailed, structured evaluation in JSON format.",
+                system_prompt=system_prompt,
             )
 
             if isinstance(judge_result, str):

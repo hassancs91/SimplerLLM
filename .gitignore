@@ -81,3 +81,8 @@ simplerllm_img_desktop_app/.env
 simplerllm_img_desktop_app/__pycache__/
 simplerllm_img_desktop_app/**/__pycache__/
 simplerllm_img_desktop_app/*.log
+
+
+ImageLabs-Web/*
+ImageLabs-Web/
+ImageLabs-Web

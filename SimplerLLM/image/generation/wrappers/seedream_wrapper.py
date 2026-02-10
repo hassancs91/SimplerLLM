@@ -28,12 +28,17 @@ class SeedreamImageGenerator(ImageGenerator):
         self,
         prompt: str,
         size=ImageSize.SQUARE,
+        resolution: str = "1K",
         watermark: bool = False,
         model: str = None,
         output_format: str = "url",
         output_path: str = None,
         full_response: bool = False,
         image: str = None,
+        quality: str = None,
+        seed: int = None,
+        negative_prompt: str = None,
+        n: int = 1,
         **kwargs,
     ):
         """
@@ -41,9 +46,12 @@ class SeedreamImageGenerator(ImageGenerator):
 
         Args:
             prompt: Text description of the desired image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or size string ("2K", "4K", or custom like "2048x2048")
-                  Default: ImageSize.SQUARE (maps to "2K")
+            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL, etc.)
+                  or dimension string (e.g., "1024x1024", "1536x1024")
+                  Default: ImageSize.SQUARE
+            resolution: Resolution tier - "1K" (1024 base), "2K" (1536 base), "4K" (2048 base)
+                       Combined with size to determine final dimensions.
+                       Default: "1K"
             watermark: If True, adds "AI generated" watermark to bottom-right corner
                       Default: False
             model: Model to use (None = use instance default)
@@ -55,6 +63,10 @@ class SeedreamImageGenerator(ImageGenerator):
             output_path: File path to save image (required if output_format="file")
             full_response: If True, returns ImageGenerationResponse with metadata
             image: Optional URL of reference image for image-to-image generation
+            quality: Image quality - "standard" or "high" (default: None = API default)
+            seed: Random seed for reproducibility (integer)
+            negative_prompt: Elements to exclude from the generated image
+            n: Number of images to generate (default: 1)
             **kwargs: Additional provider-specific parameters
 
         Returns:
@@ -67,8 +79,11 @@ class SeedreamImageGenerator(ImageGenerator):
             >>> img_gen = ImageGenerator.create(provider=ImageProvider.SEEDREAM)
             >>> # Get image URL
             >>> image_url = img_gen.generate_image("A serene landscape")
-            >>> # Save to file
-            >>> path = img_gen.generate_image("A city", output_format="file", output_path="city.png")
+            >>> # High resolution square image
+            >>> image_url = img_gen.generate_image("A city", resolution="2K")
+            >>> # Save to file with quality setting
+            >>> path = img_gen.generate_image("A city", output_format="file",
+            ...                                output_path="city.png", quality="high")
             >>> # Image-to-image generation
             >>> edited_url = img_gen.generate_image(
             ...     "Transform this into a watercolor painting",
@@ -84,15 +99,19 @@ class SeedreamImageGenerator(ImageGenerator):
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
 
-        # Map size to Seedream size format
-        seedream_size = self._map_size_to_seedream_size(size)
+        # Map size to Seedream size format with resolution
+        seedream_size = self._map_size_to_seedream_size(size, resolution)
 
         if self.verbose:
             verbose_print(
-                f"Generating image - Model: {model_to_use}, Size: {seedream_size}",
+                f"Generating image - Model: {model_to_use}, Size: {seedream_size}, Resolution: {resolution}",
                 "info"
             )
             verbose_print(f"Prompt: {prompt[:100]}...", "debug") if len(prompt) > 100 else verbose_print(f"Prompt: {prompt}", "debug")
+            if quality:
+                verbose_print(f"Quality: {quality}", "debug")
+            if negative_prompt:
+                verbose_print(f"Negative prompt: {negative_prompt[:50]}...", "debug") if len(negative_prompt) > 50 else verbose_print(f"Negative prompt: {negative_prompt}", "debug")
             if image:
                 verbose_print(f"Reference image: {image}", "debug")
             if output_path:
@@ -121,6 +140,10 @@ class SeedreamImageGenerator(ImageGenerator):
             "api_key": self.api_key,
             "verbose": self.verbose,
             "image": image,
+            "quality": quality,
+            "seed": seed,
+            "negative_prompt": negative_prompt,
+            "n": n,
         }
 
         # Add any additional kwargs
@@ -146,12 +169,17 @@ class SeedreamImageGenerator(ImageGenerator):
         self,
         prompt: str,
         size=ImageSize.SQUARE,
+        resolution: str = "1K",
         watermark: bool = False,
         model: str = None,
         output_format: str = "url",
         output_path: str = None,
         full_response: bool = False,
         image: str = None,
+        quality: str = None,
+        seed: int = None,
+        negative_prompt: str = None,
+        n: int = 1,
         **kwargs,
     ):
         """
@@ -159,15 +187,20 @@ class SeedreamImageGenerator(ImageGenerator):
 
         Args:
             prompt: Text description of the desired image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or size string ("2K", "4K", or custom like "2048x2048")
-                  Default: ImageSize.SQUARE (maps to "2K")
+            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL, etc.)
+                  or dimension string (e.g., "1024x1024")
+                  Default: ImageSize.SQUARE
+            resolution: Resolution tier - "1K", "2K", or "4K" (default: "1K")
             watermark: If True, adds "AI generated" watermark to bottom-right corner
             model: Model to use (None = use instance default)
             output_format: How to return the image (default: "url")
             output_path: File path to save image (required if output_format="file")
             full_response: If True, returns ImageGenerationResponse with metadata
             image: Optional URL of reference image for image-to-image generation
+            quality: Image quality - "standard" or "high"
+            seed: Random seed for reproducibility
+            negative_prompt: Elements to exclude from the generated image
+            n: Number of images to generate (default: 1)
             **kwargs: Additional provider-specific parameters
 
         Returns:
@@ -189,15 +222,19 @@ class SeedreamImageGenerator(ImageGenerator):
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
 
-        # Map size to Seedream size format
-        seedream_size = self._map_size_to_seedream_size(size)
+        # Map size to Seedream size format with resolution
+        seedream_size = self._map_size_to_seedream_size(size, resolution)
 
         if self.verbose:
             verbose_print(
-                f"Generating image (async) - Model: {model_to_use}, Size: {seedream_size}",
+                f"Generating image (async) - Model: {model_to_use}, Size: {seedream_size}, Resolution: {resolution}",
                 "info"
             )
             verbose_print(f"Prompt: {prompt[:100]}...", "debug") if len(prompt) > 100 else verbose_print(f"Prompt: {prompt}", "debug")
+            if quality:
+                verbose_print(f"Quality: {quality}", "debug")
+            if negative_prompt:
+                verbose_print(f"Negative prompt: {negative_prompt[:50]}...", "debug") if len(negative_prompt) > 50 else verbose_print(f"Negative prompt: {negative_prompt}", "debug")
             if image:
                 verbose_print(f"Reference image: {image}", "debug")
             if output_path:
@@ -226,6 +263,10 @@ class SeedreamImageGenerator(ImageGenerator):
             "api_key": self.api_key,
             "verbose": self.verbose,
             "image": image,
+            "quality": quality,
+            "seed": seed,
+            "negative_prompt": negative_prompt,
+            "n": n,
         }
 
         # Add any additional kwargs
@@ -252,11 +293,15 @@ class SeedreamImageGenerator(ImageGenerator):
         image_source: str,
         edit_prompt: str,
         size=ImageSize.SQUARE,
+        resolution: str = "1K",
         watermark: bool = False,
         model: str = None,
         output_format: str = "url",
         output_path: str = None,
         full_response: bool = False,
+        quality: str = None,
+        seed: int = None,
+        negative_prompt: str = None,
         **kwargs,
     ):
         """
@@ -265,9 +310,10 @@ class SeedreamImageGenerator(ImageGenerator):
         Args:
             image_source: URL of the source image to edit (required)
             edit_prompt: Text instructions for how to edit the image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or size string ("2K", "4K", or custom like "2048x2048")
-                  Default: ImageSize.SQUARE (maps to "2K")
+            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL, etc.)
+                  or dimension string (e.g., "1024x1024")
+                  Default: ImageSize.SQUARE
+            resolution: Resolution tier - "1K", "2K", or "4K" (default: "1K")
             watermark: If True, adds "AI generated" watermark to bottom-right corner
             model: Model to use (None = use instance default)
             output_format: How to return the image (default: "url")
@@ -276,6 +322,9 @@ class SeedreamImageGenerator(ImageGenerator):
                                    "file" (saves to file, requires output_path)
             output_path: File path to save edited image (required if output_format="file")
             full_response: If True, returns ImageGenerationResponse with metadata
+            quality: Image quality - "standard" or "high"
+            seed: Random seed for reproducibility
+            negative_prompt: Elements to exclude from the generated image
             **kwargs: Additional provider-specific parameters
 
         Returns:
@@ -291,12 +340,13 @@ class SeedreamImageGenerator(ImageGenerator):
             ...     image_source="https://example.com/original.jpg",
             ...     edit_prompt="Change the background to a sunset sky"
             ... )
-            >>> # Edit and save to file
+            >>> # Edit and save to file with high quality
             >>> path = img_gen.edit_image(
             ...     image_source="https://example.com/photo.jpg",
             ...     edit_prompt="Make it black and white",
             ...     output_format="file",
-            ...     output_path="output/edited.png"
+            ...     output_path="output/edited.png",
+            ...     quality="high"
             ... )
         """
         # Validate input
@@ -313,16 +363,20 @@ class SeedreamImageGenerator(ImageGenerator):
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
 
-        # Map size to Seedream size format
-        seedream_size = self._map_size_to_seedream_size(size)
+        # Map size to Seedream size format with resolution
+        seedream_size = self._map_size_to_seedream_size(size, resolution)
 
         if self.verbose:
             verbose_print(
-                f"Editing image - Model: {model_to_use}, Size: {seedream_size}",
+                f"Editing image - Model: {model_to_use}, Size: {seedream_size}, Resolution: {resolution}",
                 "info"
             )
             verbose_print(f"Edit prompt: {edit_prompt[:100]}...", "debug") if len(edit_prompt) > 100 else verbose_print(f"Edit prompt: {edit_prompt}", "debug")
             verbose_print(f"Source image: {image_source}", "debug")
+            if quality:
+                verbose_print(f"Quality: {quality}", "debug")
+            if negative_prompt:
+                verbose_print(f"Negative prompt: {negative_prompt[:50]}...", "debug") if len(negative_prompt) > 50 else verbose_print(f"Negative prompt: {negative_prompt}", "debug")
             if output_path:
                 verbose_print(f"Output will be saved to: {output_path}", "debug")
 
@@ -349,6 +403,9 @@ class SeedreamImageGenerator(ImageGenerator):
             "full_response": full_response,
             "api_key": self.api_key,
             "verbose": self.verbose,
+            "quality": quality,
+            "seed": seed,
+            "negative_prompt": negative_prompt,
         }
 
         # Add any additional kwargs
@@ -375,11 +432,15 @@ class SeedreamImageGenerator(ImageGenerator):
         image_source: str,
         edit_prompt: str,
         size=ImageSize.SQUARE,
+        resolution: str = "1K",
         watermark: bool = False,
         model: str = None,
         output_format: str = "url",
         output_path: str = None,
         full_response: bool = False,
+        quality: str = None,
+        seed: int = None,
+        negative_prompt: str = None,
         **kwargs,
     ):
         """
@@ -388,14 +449,18 @@ class SeedreamImageGenerator(ImageGenerator):
         Args:
             image_source: URL of the source image to edit (required)
             edit_prompt: Text instructions for how to edit the image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or size string ("2K", "4K", or custom like "2048x2048")
-                  Default: ImageSize.SQUARE (maps to "2K")
+            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL, etc.)
+                  or dimension string (e.g., "1024x1024")
+                  Default: ImageSize.SQUARE
+            resolution: Resolution tier - "1K", "2K", or "4K" (default: "1K")
             watermark: If True, adds "AI generated" watermark to bottom-right corner
             model: Model to use (None = use instance default)
             output_format: How to return the image (default: "url")
             output_path: File path to save edited image (required if output_format="file")
             full_response: If True, returns ImageGenerationResponse with metadata
+            quality: Image quality - "standard" or "high"
+            seed: Random seed for reproducibility
+            negative_prompt: Elements to exclude from the generated image
             **kwargs: Additional provider-specific parameters
 
         Returns:
@@ -425,16 +490,20 @@ class SeedreamImageGenerator(ImageGenerator):
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
 
-        # Map size to Seedream size format
-        seedream_size = self._map_size_to_seedream_size(size)
+        # Map size to Seedream size format with resolution
+        seedream_size = self._map_size_to_seedream_size(size, resolution)
 
         if self.verbose:
             verbose_print(
-                f"Editing image (async) - Model: {model_to_use}, Size: {seedream_size}",
+                f"Editing image (async) - Model: {model_to_use}, Size: {seedream_size}, Resolution: {resolution}",
                 "info"
             )
             verbose_print(f"Edit prompt: {edit_prompt[:100]}...", "debug") if len(edit_prompt) > 100 else verbose_print(f"Edit prompt: {edit_prompt}", "debug")
             verbose_print(f"Source image: {image_source}", "debug")
+            if quality:
+                verbose_print(f"Quality: {quality}", "debug")
+            if negative_prompt:
+                verbose_print(f"Negative prompt: {negative_prompt[:50]}...", "debug") if len(negative_prompt) > 50 else verbose_print(f"Negative prompt: {negative_prompt}", "debug")
             if output_path:
                 verbose_print(f"Output will be saved to: {output_path}", "debug")
 
@@ -461,6 +530,9 @@ class SeedreamImageGenerator(ImageGenerator):
             "full_response": full_response,
             "api_key": self.api_key,
             "verbose": self.verbose,
+            "quality": quality,
+            "seed": seed,
+            "negative_prompt": negative_prompt,
         }
 
         # Add any additional kwargs
@@ -482,36 +554,79 @@ class SeedreamImageGenerator(ImageGenerator):
                 verbose_print(f"Error editing image: {str(e)}", "error")
             raise
 
-    def _map_size_to_seedream_size(self, size):
+    def _map_size_to_seedream_size(self, size, resolution="1K"):
         """
-        Map ImageSize enum or custom size to Seedream size format.
+        Map ImageSize enum to Seedream dimension format with resolution scaling.
 
         Args:
-            size: ImageSize enum or string (size preset or dimensions)
+            size: ImageSize enum or string (custom dimensions like "1024x1024")
+            resolution: Resolution tier - "1K" (1024 base), "2K" (1536 base), "4K" (2048 base)
 
         Returns:
-            str: Size string (e.g., "2K", "4K", or custom dimensions)
+            str: Size string in "WxH" format (e.g., "1024x1024", "1536x1024", "2048x2048")
         """
-        # If size is already a string, return as-is
-        if isinstance(size, str):
+        # If size is already a dimension string (e.g., "1024x1024"), return as-is
+        if isinstance(size, str) and "x" in size:
             return size
 
         # If size is not an ImageSize enum, try to convert it
         if not isinstance(size, ImageSize):
             try:
                 size = ImageSize(size)
-            except ValueError:
-                # If conversion fails, return default
-                return "2K"
+            except (ValueError, TypeError):
+                # If conversion fails, return default square at requested resolution
+                return self._get_resolution_size("1024x1024", resolution)
 
-        # Map ImageSize enum to Seedream sizes
-        # Seedream uses resolution presets rather than aspect ratios
-        # All ImageSize values map to 2K by default (user can override with string)
-        size_map = {
-            ImageSize.SQUARE: "2K",
-            ImageSize.HORIZONTAL: "2K",
-            ImageSize.VERTICAL: "2K",
-            ImageSize.PORTRAIT_3_4: "2K",
+        # Base sizes at 1K resolution (1024 base)
+        # Seedream supports: 1024x1024, 1536x1536, 2048x2048 (square)
+        #                   1024x1536, 1024x2048 (portrait)
+        #                   1536x1024, 2048x1024 (landscape)
+        size_map_1k = {
+            ImageSize.SQUARE: "1024x1024",
+            ImageSize.HORIZONTAL: "1536x1024",
+            ImageSize.VERTICAL: "1024x1536",
+            ImageSize.PORTRAIT_3_4: "1024x1536",
+            ImageSize.PORTRAIT_2_3: "1024x1536",
+            ImageSize.PORTRAIT_4_5: "1024x1536",
+            ImageSize.LANDSCAPE_3_2: "1536x1024",
+            ImageSize.LANDSCAPE_4_3: "1536x1024",
+            ImageSize.LANDSCAPE_5_4: "1536x1024",
+            ImageSize.ULTRAWIDE: "2048x1024",
         }
 
-        return size_map.get(size, "2K")
+        base_size = size_map_1k.get(size, "1024x1024")
+        return self._get_resolution_size(base_size, resolution)
+
+    def _get_resolution_size(self, base_size, resolution):
+        """
+        Scale base size to the requested resolution tier.
+
+        Args:
+            base_size: Base dimension string (e.g., "1024x1024")
+            resolution: "1K", "2K", or "4K"
+
+        Returns:
+            str: Scaled dimension string
+        """
+        if resolution == "1K":
+            return base_size
+
+        width, height = map(int, base_size.split("x"))
+
+        if resolution == "2K":
+            # Scale up to 1.5x (1024 -> 1536)
+            scale = 1.5
+        elif resolution == "4K":
+            # Scale up to 2x (1024 -> 2048)
+            scale = 2.0
+        else:
+            return base_size
+
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+
+        # Cap at max supported dimensions (2048)
+        new_width = min(new_width, 2048)
+        new_height = min(new_height, 2048)
+
+        return f"{new_width}x{new_height}"

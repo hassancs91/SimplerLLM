@@ -23,6 +23,8 @@ class LLMProvider(Enum):
     OPENROUTER = 7
     COHERE = 8
     PERPLEXITY = 9
+    MOONSHOT = 10
+    HUGGING_FACE_LOCAL = 11
 
 class LLM:
     def __init__(
@@ -81,6 +83,12 @@ class LLM:
         if provider == LLMProvider.PERPLEXITY:
             from .wrappers.perplexity_wrapper import PerplexityLLM
             return PerplexityLLM(provider, model_name, temperature, top_p, api_key, verbose=verbose)
+        if provider == LLMProvider.MOONSHOT:
+            from .wrappers.moonshot_wrapper import MoonshotLLM
+            return MoonshotLLM(provider, model_name, temperature, top_p, api_key, verbose=verbose)
+        if provider == LLMProvider.HUGGING_FACE_LOCAL:
+            from .wrappers.hf_local_wrapper import HuggingFaceLocalLLM
+            return HuggingFaceLocalLLM(provider, model_name, temperature, top_p, verbose=verbose)
         else:
             return None
 

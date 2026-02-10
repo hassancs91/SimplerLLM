@@ -1,18 +1,24 @@
-from .tts_response_models import TTSFullResponse
-from . import openai_tts
+"""
+TTS Providers
+
+Provider implementations for different TTS services.
+"""
+
+from .openai_tts import OpenAITTS
+from .lahajati_tts import LahajatiTTS
 
 # Optional provider - only import if elevenlabs package is installed
 try:
-    from . import elevenlabs_tts
+    from .elevenlabs_tts import ElevenLabsTTS
     _has_elevenlabs = True
 except ImportError:
     _has_elevenlabs = False
-    elevenlabs_tts = None
+    ElevenLabsTTS = None
 
 __all__ = [
-    'TTSFullResponse',
-    'openai_tts',
+    'OpenAITTS',
+    'LahajatiTTS',
 ]
 
 if _has_elevenlabs:
-    __all__.append('elevenlabs_tts')
+    __all__.append('ElevenLabsTTS')

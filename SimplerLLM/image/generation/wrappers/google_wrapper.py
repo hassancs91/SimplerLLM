@@ -8,6 +8,16 @@ class GoogleImageGenerator(ImageGenerator):
     """
     Google Gemini Image Generation wrapper.
     Provides a unified interface for Google Gemini image generation models.
+
+    Supported Models:
+        - gemini-2.5-flash-image (Nano Banana): Fast, high-volume tasks
+        - gemini-3-pro-image-preview (Nano Banana Pro): Professional assets, 4K support
+
+    Supported Aspect Ratios:
+        1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
+    Supported Resolutions:
+        1K, 2K, 4K (4K only on Gemini 3+ models)
     """
 
     def __init__(self, provider, model_name, api_key, verbose=False):
@@ -16,12 +26,22 @@ class GoogleImageGenerator(ImageGenerator):
 
         Args:
             provider: ImageProvider.GOOGLE_GEMINI
-            model_name: Model to use (default: gemini-2.5-flash-image-preview)
+            model_name: Model to use. Options:
+                       - "gemini-2.5-flash-image" (default): Fast generation
+                       - "gemini-3-pro-image-preview": Professional quality, 4K support
             api_key: Google API key (uses GEMINI_API_KEY env var if not provided)
             verbose: Enable verbose logging
         """
         super().__init__(provider, model_name, api_key, verbose=verbose)
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
+
+    def _is_gemini_3_model(self, model_name=None):
+        """Check if the model is a Gemini 3+ model that supports 4K and advanced features."""
+        model = model_name or self.model_name
+        if not model:
+            return False
+        model_lower = model.lower()
+        return "gemini-3" in model_lower or "nano-banana-pro" in model_lower
 
     def generate_image(
         self,
@@ -40,12 +60,18 @@ class GoogleImageGenerator(ImageGenerator):
 
         Args:
             prompt: Text description of the desired image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or aspect ratio string (e.g., "16:9", "1:1", "21:9")
+            size: Image size - can be ImageSize enum or aspect ratio string.
+                  Supported ImageSize enums: SQUARE, HORIZONTAL, VERTICAL,
+                  PORTRAIT_3_4, PORTRAIT_2_3, PORTRAIT_4_5, LANDSCAPE_3_2,
+                  LANDSCAPE_4_3, LANDSCAPE_5_4, ULTRAWIDE
+                  Supported aspect ratio strings: "1:1", "2:3", "3:2", "3:4",
+                  "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"
                   Default: ImageSize.SQUARE
             resolution: Image resolution - "1K", "2K", or "4K" (default: "1K")
-            model: Model to use (None = use instance default)
-                   Default: gemini-2.5-flash-image
+                       Note: 4K resolution only supported by Gemini 3+ models
+            model: Model to use (None = use instance default). Options:
+                   - "gemini-2.5-flash-image": Fast, high-volume (default)
+                   - "gemini-3-pro-image-preview": Professional, 4K support
             output_format: How to return the image (default: "bytes")
                           Options: "bytes" (returns image bytes),
                                    "file" (saves to file, requires output_path)
@@ -55,6 +81,7 @@ class GoogleImageGenerator(ImageGenerator):
             full_response: If True, returns ImageGenerationResponse with metadata
                           Includes text description in revised_prompt field
             reference_images: Optional list of reference images for character consistency.
+                             Gemini 3 Pro supports up to 14 images (6 object + 5 human).
                              Each item can be:
                              - str: File path to image
                              - bytes: Raw image data
@@ -70,11 +97,19 @@ class GoogleImageGenerator(ImageGenerator):
             >>> img_gen = ImageGenerator.create(provider=ImageProvider.GOOGLE_GEMINI)
             >>> # Get bytes
             >>> image_bytes = img_gen.generate_image("A serene landscape")
-            >>> # Save to file
-            >>> path = img_gen.generate_image("A city", output_format="file", output_path="city.png")
+            >>> # Save to file with ultrawide aspect ratio
+            >>> path = img_gen.generate_image("A city", size=ImageSize.ULTRAWIDE,
+            ...     output_format="file", output_path="city.png")
             >>> # Get full response with text description
             >>> response = img_gen.generate_image("Abstract art", full_response=True)
             >>> print(response.revised_prompt)  # Text description from Gemini
+            >>> # Use Gemini 3 Pro for 4K output
+            >>> response = img_gen.generate_image(
+            ...     "Professional photo",
+            ...     model="gemini-3-pro-image-preview",
+            ...     resolution="4K",
+            ...     full_response=True
+            ... )
             >>> # Generate with reference images for character consistency
             >>> image_bytes = img_gen.generate_image(
             ...     "The same character in a different pose",
@@ -89,6 +124,15 @@ class GoogleImageGenerator(ImageGenerator):
 
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
+
+        # Warn if using 4K with non-Gemini-3 model
+        if resolution == "4K" and not self._is_gemini_3_model(model_to_use):
+            if self.verbose:
+                verbose_print(
+                    f"Warning: 4K resolution only supported by Gemini 3+ models. "
+                    f"Model '{model_to_use}' may not support 4K output.",
+                    "warning"
+                )
 
         # Map size to aspect ratio
         aspect_ratio = self._map_size_to_aspect_ratio(size)
@@ -166,19 +210,20 @@ class GoogleImageGenerator(ImageGenerator):
 
         Args:
             prompt: Text description of the desired image (required)
-            size: Image size - can be ImageSize enum (SQUARE, HORIZONTAL, VERTICAL)
-                  or aspect ratio string (e.g., "16:9", "1:1", "21:9")
+            size: Image size - can be ImageSize enum or aspect ratio string.
+                  Supported: SQUARE, HORIZONTAL, VERTICAL, PORTRAIT_3_4,
+                  PORTRAIT_2_3, PORTRAIT_4_5, LANDSCAPE_3_2, LANDSCAPE_4_3,
+                  LANDSCAPE_5_4, ULTRAWIDE or "1:1", "16:9", "21:9", etc.
                   Default: ImageSize.SQUARE
             resolution: Image resolution - "1K", "2K", or "4K" (default: "1K")
+                       Note: 4K only supported by Gemini 3+ models
             model: Model to use (None = use instance default)
             output_format: How to return the image (default: "bytes")
             output_path: File path to save image (required if output_format="file")
             full_response: If True, returns ImageGenerationResponse with metadata
             reference_images: Optional list of reference images for character consistency.
-                             Each item can be:
-                             - str: File path to image
-                             - bytes: Raw image data
-                             - dict: {'data': bytes, 'mime_type': str}
+                             Gemini 3 Pro supports up to 14 images.
+                             Each item can be: str (path), bytes, or dict
             **kwargs: Additional provider-specific parameters
 
         Returns:
@@ -189,10 +234,12 @@ class GoogleImageGenerator(ImageGenerator):
         Example:
             >>> img_gen = ImageGenerator.create(provider=ImageProvider.GOOGLE_GEMINI)
             >>> image_bytes = await img_gen.generate_image_async("A serene landscape")
-            >>> # With reference images
-            >>> image_bytes = await img_gen.generate_image_async(
-            ...     "Character in new scene",
-            ...     reference_images=["ref.jpg"]
+            >>> # With 4K and Gemini 3 Pro
+            >>> response = await img_gen.generate_image_async(
+            ...     "Professional photo",
+            ...     model="gemini-3-pro-image-preview",
+            ...     resolution="4K",
+            ...     full_response=True
             ... )
         """
         # Validate input
@@ -203,6 +250,15 @@ class GoogleImageGenerator(ImageGenerator):
 
         # Get model (use parameter or instance default)
         model_to_use = model if model is not None else self.model_name
+
+        # Warn if using 4K with non-Gemini-3 model
+        if resolution == "4K" and not self._is_gemini_3_model(model_to_use):
+            if self.verbose:
+                verbose_print(
+                    f"Warning: 4K resolution only supported by Gemini 3+ models. "
+                    f"Model '{model_to_use}' may not support 4K output.",
+                    "warning"
+                )
 
         # Map size to aspect ratio
         aspect_ratio = self._map_size_to_aspect_ratio(size)
@@ -504,6 +560,8 @@ class GoogleImageGenerator(ImageGenerator):
         """
         Map ImageSize enum or custom size to Google Gemini aspect ratio format.
 
+        Supported aspect ratios: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
         Args:
             size: ImageSize enum or string (aspect ratio or dimensions)
 
@@ -531,10 +589,20 @@ class GoogleImageGenerator(ImageGenerator):
 
         # Map ImageSize enum to Gemini's aspect ratios
         size_map = {
+            # Standard sizes
             ImageSize.SQUARE: "1:1",
             ImageSize.HORIZONTAL: "16:9",
             ImageSize.VERTICAL: "9:16",
+            # Portrait ratios
             ImageSize.PORTRAIT_3_4: "3:4",
+            ImageSize.PORTRAIT_2_3: "2:3",
+            ImageSize.PORTRAIT_4_5: "4:5",
+            # Landscape ratios
+            ImageSize.LANDSCAPE_3_2: "3:2",
+            ImageSize.LANDSCAPE_4_3: "4:3",
+            ImageSize.LANDSCAPE_5_4: "5:4",
+            # Ultrawide
+            ImageSize.ULTRAWIDE: "21:9",
         }
 
         return size_map.get(size, "1:1")

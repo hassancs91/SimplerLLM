@@ -27,7 +27,8 @@ class PythonManager {
 
     getBackendPath() {
         if (app.isPackaged) {
-            return path.join(process.resourcesPath, 'app', 'backend', 'app.py');
+            // Backend is unpacked from asar to app.asar.unpacked
+            return path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'app.py');
         } else {
             return path.join(__dirname, '..', 'backend', 'app.py');
         }
@@ -42,10 +43,12 @@ class PythonManager {
             console.log(`Python path: ${pythonPath}`);
             console.log(`Backend path: ${backendPath}`);
 
+            const backendDir = path.dirname(backendPath);
             const env = {
                 ...process.env,
                 FLASK_PORT: this.port.toString(),
-                PYTHONUNBUFFERED: '1'
+                PYTHONUNBUFFERED: '1',
+                PYTHONPATH: backendDir
             };
 
             this.process = spawn(pythonPath, [backendPath], {

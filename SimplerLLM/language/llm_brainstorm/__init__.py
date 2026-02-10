@@ -7,24 +7,27 @@ This module provides flexible brainstorming capabilities with three generation m
 - Hybrid mode: Selective expansion of top-N ideas
 
 Example:
-    >>> from SimplerLLM.language import LLM, LLMProvider
-    >>> from SimplerLLM.language.llm_brainstorm import RecursiveBrainstorm
-    >>>
-    >>> llm = LLM.create(LLMProvider.OPENAI, model_name="gpt-4o")
-    >>> brainstorm = RecursiveBrainstorm(
-    ...     llm=llm,
-    ...     max_depth=3,
-    ...     ideas_per_level=5,
-    ...     mode="tree"
-    ... )
-    >>>
-    >>> result = brainstorm.brainstorm("Ways to reduce carbon emissions")
-    >>> print(f"Generated {result.total_ideas} ideas")
-    >>> print(f"Best idea: {result.overall_best_idea.text}")
+    ```python
+    from SimplerLLM.language import LLM, LLMProvider
+    from SimplerLLM.language import RecursiveBrainstorm, BrainstormMode
+
+    llm = LLM.create(LLMProvider.OPENAI, model_name="gpt-4o")
+    brainstorm = RecursiveBrainstorm(
+        llm=llm,
+        max_depth=3,
+        ideas_per_level=5,
+        mode=BrainstormMode.TREE
+    )
+
+    result = brainstorm.brainstorm("Ways to reduce carbon emissions")
+    print(f"Generated {result.total_ideas} ideas")
+    print(f"Best idea: {result.overall_best_idea.text}")
+    ```
 """
 
 from .recursive_brainstorm import RecursiveBrainstorm
 from .models import (
+    BrainstormMode,
     BrainstormIdea,
     BrainstormLevel,
     BrainstormIteration,
@@ -35,6 +38,7 @@ from .models import (
 
 __all__ = [
     "RecursiveBrainstorm",
+    "BrainstormMode",
     "BrainstormIdea",
     "BrainstormLevel",
     "BrainstormIteration",

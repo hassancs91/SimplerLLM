@@ -29,6 +29,7 @@
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            padding-bottom: 32px; /* Space for status bar */
         }
 
         .main-container {
@@ -723,24 +724,39 @@
 
                     <!-- Line Chart Container -->
                     <div class="feedback-chart-section">
-                        <h3 class="section-title">Score Trajectory</h3>
-                        <div class="feedback-chart-container" id="feedback-chart-container">
-                            <!-- SVG chart rendered by JS -->
+                        <div class="section-header collapsible" id="chart-section-header">
+                            <h3 class="section-title">Score Trajectory</h3>
+                            <span class="collapse-icon">▼</span>
+                        </div>
+                        <div class="section-content" id="chart-section-content">
+                            <div class="feedback-chart-container" id="feedback-chart-container">
+                                <!-- SVG chart rendered by JS -->
+                            </div>
                         </div>
                     </div>
 
                     <!-- Iterations Container -->
                     <div class="feedback-iterations-section">
-                        <h3 class="section-title">Iterations</h3>
-                        <div class="feedback-iterations-container" id="feedback-iterations-container">
-                            <!-- Iteration cards populated by JS -->
+                        <div class="section-header collapsible" id="iterations-section-header">
+                            <h3 class="section-title">Iterations</h3>
+                            <span class="collapse-icon">▼</span>
+                        </div>
+                        <div class="section-content" id="iterations-section-content">
+                            <div class="feedback-iterations-container" id="feedback-iterations-container">
+                                <!-- Iteration cards populated by JS -->
+                            </div>
                         </div>
                     </div>
 
                     <!-- Final Answer Section -->
                     <div class="feedback-final-answer hidden" id="feedback-final-answer">
-                        <h3 class="section-title">Final Answer</h3>
-                        <div class="final-answer-card" id="feedback-final-answer-content"></div>
+                        <div class="section-header collapsible" id="final-answer-header">
+                            <h3 class="section-title">Final Answer</h3>
+                            <span class="collapse-icon">▼</span>
+                        </div>
+                        <div class="section-content" id="final-answer-content-wrapper">
+                            <div class="final-answer-card" id="feedback-final-answer-content"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1368,6 +1384,21 @@ class Output(BaseModel):
                 <!-- API key inputs will be dynamically inserted here -->
             </div>
         </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar" id="status-bar">
+            <div class="status-bar__left">
+                <span class="status-bar__app-name" id="status-bar-app-name"></span>
+                <span class="status-bar__beta-badge">BETA</span>
+                <span class="status-bar__version" id="status-bar-version"></span>
+            </div>
+            <div class="status-bar__center">
+                <span class="status-bar__copyright" id="status-bar-copyright"></span>
+            </div>
+            <div class="status-bar__right">
+                <div class="status-bar__links" id="status-bar-links"></div>
+            </div>
+        </footer>
 
         <!-- Toast container -->
         <div id="toast-container"></div>

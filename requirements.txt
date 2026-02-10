@@ -1,4 +1,5 @@
 aiohttp>=3.9
+anthropic>=0.40.0
 cohere>=5.0
 duckduckgo_search>=5.3
 elevenlabs>=1.0

@@ -306,6 +306,273 @@ class StabilityImageGenerator(ImageGenerator):
             ImageSize.HORIZONTAL: "16:9",
             ImageSize.VERTICAL: "9:16",
             ImageSize.PORTRAIT_3_4: "3:4",
+            ImageSize.PORTRAIT_2_3: "2:3",
+            ImageSize.PORTRAIT_4_5: "4:5",
+            ImageSize.LANDSCAPE_3_2: "3:2",
+            ImageSize.LANDSCAPE_4_3: "4:3",
+            ImageSize.LANDSCAPE_5_4: "5:4",
+            ImageSize.ULTRAWIDE: "21:9",
         }
 
         return size_map.get(size, "1:1")
+
+    def edit_image(
+        self,
+        image_source,
+        edit_prompt: str,
+        search_prompt: str = None,
+        mask=None,
+        style_preset: str = None,
+        negative_prompt: str = None,
+        seed: int = 0,
+        grow_mask: int = 5,
+        output_format: str = "bytes",
+        output_path: str = None,
+        full_response: bool = False,
+        **kwargs,
+    ):
+        """
+        Edit an existing image using text instructions with Stability AI.
+
+        Uses Search and Replace endpoint by default (no mask needed, works with JPEG).
+        When a mask is provided, uses Inpaint endpoint instead.
+
+        Args:
+            image_source: Source image to edit. Can be:
+                         - str: File path to image
+                         - bytes: Raw image data
+                         - str: Base64 encoded image
+            edit_prompt: What to replace with (e.g., "a watercolor painting",
+                        "a sunset sky", "a vintage photograph")
+            search_prompt: What to find and replace in the image
+                          (e.g., "the subject", "the background", "the sky").
+                          Defaults to "the subject" if not provided.
+            mask: Optional mask image for Inpaint mode (black=keep, white=edit).
+                  When provided, uses Inpaint instead of Search and Replace.
+                  Can be: str (path), bytes, or None.
+            style_preset: Style to guide the generation
+                         Options: 3d-model, analog-film, anime, cinematic, comic-book,
+                                 digital-art, enhance, fantasy-art, isometric, line-art,
+                                 low-poly, modeling-compound, neon-punk, origami,
+                                 photographic, pixel-art, tile-texture
+            negative_prompt: Keywords of what you do NOT want in the result
+            seed: Randomness seed (0 for random, 1-4294967294 for reproducible)
+            grow_mask: Expands mask edges (0-20, default 5). Only used with Inpaint.
+            output_format: How to return the image (default: "bytes")
+                          Options: "bytes", "file"
+            output_path: File path to save edited image (required if output_format="file")
+            full_response: If True, returns ImageGenerationResponse with metadata
+            **kwargs: Additional provider-specific parameters
+
+        Returns:
+            If full_response=True: ImageGenerationResponse object with metadata
+            If output_format="bytes": edited image bytes
+            If output_format="file": file path string
+
+        Example:
+            >>> img_gen = ImageGenerator.create(provider=ImageProvider.STABILITY_AI)
+            >>> # Transform subject into watercolor (works with JPEG!)
+            >>> edited = img_gen.edit_image(
+            ...     image_source="photo.jpg",
+            ...     edit_prompt="a watercolor painting",
+            ...     search_prompt="the person"
+            ... )
+            >>> # Replace background with sunset
+            >>> edited = img_gen.edit_image(
+            ...     image_source="portrait.jpg",
+            ...     edit_prompt="a beautiful sunset sky",
+            ...     search_prompt="the background"
+            ... )
+            >>> # Use mask for precise control (Inpaint mode)
+            >>> edited = img_gen.edit_image(
+            ...     image_source="photo.png",
+            ...     edit_prompt="a red sports car",
+            ...     mask="car_mask.png"
+            ... )
+        """
+        # Validate input
+        if not image_source:
+            if self.verbose:
+                verbose_print("Error: image_source parameter is required", "error")
+            raise ValueError("image_source parameter is required for image editing")
+
+        if not edit_prompt:
+            if self.verbose:
+                verbose_print("Error: edit_prompt parameter is required", "error")
+            raise ValueError("edit_prompt parameter is required for image editing")
+
+        if self.verbose:
+            edit_mode = "Inpaint (with mask)" if mask else "Search and Replace"
+            verbose_print(f"Editing image with Stability AI {edit_mode}", "info")
+            if not mask:
+                sp = search_prompt or "the subject"
+                verbose_print(f"Search: '{sp}' -> Replace with: '{edit_prompt[:50]}...'", "debug")
+            if style_preset:
+                verbose_print(f"Style Preset: {style_preset}", "debug")
+            if negative_prompt:
+                verbose_print(f"Negative Prompt: {negative_prompt[:50]}...", "debug")
+            if output_path:
+                verbose_print(f"Output will be saved to: {output_path}", "debug")
+
+        # Determine actual output format for API
+        if output_format == "url":
+            if self.verbose:
+                verbose_print("Note: Stability AI doesn't provide URLs. Saving to file instead.", "warning")
+            api_output_path = output_path or "output/stability_edited_image.png"
+            output_format = "file"
+        else:
+            api_output_path = output_path if output_format == "file" else None
+
+        # Build parameters for provider call
+        params = {
+            "image_source": image_source,
+            "edit_prompt": edit_prompt,
+            "search_prompt": search_prompt,
+            "mask": mask,
+            "style_preset": style_preset,
+            "negative_prompt": negative_prompt,
+            "seed": seed,
+            "grow_mask": grow_mask,
+            "output_format": "png",  # File format
+            "output_path": api_output_path,
+            "full_response": full_response,
+            "api_key": self.api_key,
+            "verbose": self.verbose,
+        }
+
+        # Add any additional kwargs
+        params.update(kwargs)
+
+        try:
+            response = stability_image.edit_image(**params)
+
+            if self.verbose:
+                if full_response:
+                    verbose_print(f"Image edited successfully in {response.process_time:.2f}s", "info")
+                else:
+                    verbose_print("Image edited successfully", "info")
+
+            return response
+
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error editing image: {str(e)}", "error")
+            raise
+
+    async def edit_image_async(
+        self,
+        image_source,
+        edit_prompt: str,
+        search_prompt: str = None,
+        mask=None,
+        style_preset: str = None,
+        negative_prompt: str = None,
+        seed: int = 0,
+        grow_mask: int = 5,
+        output_format: str = "bytes",
+        output_path: str = None,
+        full_response: bool = False,
+        **kwargs,
+    ):
+        """
+        Asynchronously edit an existing image using text instructions with Stability AI.
+
+        Uses Search and Replace endpoint by default (no mask needed).
+        When a mask is provided, uses Inpaint endpoint instead.
+
+        Args:
+            image_source: Source image to edit. Can be:
+                         - str: File path to image
+                         - bytes: Raw image data
+                         - str: Base64 encoded image
+            edit_prompt: What to replace with
+            search_prompt: What to find and replace in the image
+            mask: Optional mask image for Inpaint mode
+            style_preset: Style to guide the generation
+            negative_prompt: Keywords of what you do NOT want in the result
+            seed: Randomness seed (0 for random)
+            grow_mask: Expands mask edges (0-20). Only used with Inpaint.
+            output_format: How to return the image (default: "bytes")
+            output_path: File path to save edited image
+            full_response: If True, returns ImageGenerationResponse with metadata
+            **kwargs: Additional provider-specific parameters
+
+        Returns:
+            If full_response=True: ImageGenerationResponse object with metadata
+            If output_format="bytes": edited image bytes
+            If output_format="file": file path string
+
+        Example:
+            >>> img_gen = ImageGenerator.create(provider=ImageProvider.STABILITY_AI)
+            >>> edited = await img_gen.edit_image_async(
+            ...     image_source="photo.jpg",
+            ...     edit_prompt="a sunset sky",
+            ...     search_prompt="the background"
+            ... )
+        """
+        # Validate input
+        if not image_source:
+            if self.verbose:
+                verbose_print("Error: image_source parameter is required", "error")
+            raise ValueError("image_source parameter is required for image editing")
+
+        if not edit_prompt:
+            if self.verbose:
+                verbose_print("Error: edit_prompt parameter is required", "error")
+            raise ValueError("edit_prompt parameter is required for image editing")
+
+        if self.verbose:
+            edit_mode = "Inpaint (with mask)" if mask else "Search and Replace"
+            verbose_print(f"Editing image (async) with Stability AI {edit_mode}", "info")
+            if not mask:
+                sp = search_prompt or "the subject"
+                verbose_print(f"Search: '{sp}' -> Replace with: '{edit_prompt[:50]}...'", "debug")
+            if style_preset:
+                verbose_print(f"Style Preset: {style_preset}", "debug")
+            if output_path:
+                verbose_print(f"Output will be saved to: {output_path}", "debug")
+
+        # Determine actual output format for API
+        if output_format == "url":
+            if self.verbose:
+                verbose_print("Note: Stability AI doesn't provide URLs. Saving to file instead.", "warning")
+            api_output_path = output_path or "output/stability_edited_image.png"
+            output_format = "file"
+        else:
+            api_output_path = output_path if output_format == "file" else None
+
+        # Build parameters for provider call
+        params = {
+            "image_source": image_source,
+            "edit_prompt": edit_prompt,
+            "search_prompt": search_prompt,
+            "mask": mask,
+            "style_preset": style_preset,
+            "negative_prompt": negative_prompt,
+            "seed": seed,
+            "grow_mask": grow_mask,
+            "output_format": "png",
+            "output_path": api_output_path,
+            "full_response": full_response,
+            "api_key": self.api_key,
+            "verbose": self.verbose,
+        }
+
+        # Add any additional kwargs
+        params.update(kwargs)
+
+        try:
+            response = await stability_image.edit_image_async(**params)
+
+            if self.verbose:
+                if full_response:
+                    verbose_print(f"Image edited successfully in {response.process_time:.2f}s", "info")
+                else:
+                    verbose_print("Image edited successfully", "info")
+
+            return response
+
+        except Exception as e:
+            if self.verbose:
+                verbose_print(f"Error editing image: {str(e)}", "error")
+            raise

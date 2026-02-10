@@ -1,121 +1,66 @@
-from .tts import TTS, TTSProvider, OpenAITTS, ElevenLabsTTS, TTSFullResponse
-from .stt import STT, STTProvider, OpenAISTT, STTFullResponse
-from .voice_chat import (
-    VoiceChat,
-    VoiceChatConfig,
-    ConversationMessage,
-    ConversationRole,
-    VoiceTurnResult,
-    VoiceChatSession,
-    ConversationManager
-)
-from .live_voice_chat import LiveVoiceChatConfig
+"""
+SimplerLLM Voice Module
 
-# LiveVoiceChat requires sounddevice/pynput which need PortAudio
-try:
-    from .live_voice_chat import (
-        LiveVoiceChat,
-        AudioRecorder,
-        AudioPlayer
-    )
-    _LIVE_VOICE_AVAILABLE = True
-except (ImportError, OSError):
-    LiveVoiceChat = None
-    AudioRecorder = None
-    AudioPlayer = None
-    _LIVE_VOICE_AVAILABLE = False
-from .dialogue_generator import (
-    DialogueGenerator,
-    Dialogue,
-    DialogueLine,
-    SpeakerConfig,
-    DialogueGenerationConfig,
-    AudioDialogueResult,
-    DialogueStyle
-)
-from .video_transcription import (
-    VideoTranscriber,
-    MultiLanguageCaptionGenerator,
-    VideoTranscriptionResult,
-    CaptionSegment,
-    LanguageCaptions,
-    MultiLanguageCaptionsResult
-)
-from .video_dubbing import (
-    VideoDubber,
-    DubbedSegment,
-    DubbingConfig,
-    VideoDubbingResult
-)
-from .realtime_voice import (
-    RealtimeVoice,
-    RealtimeVoiceProvider,
-    RealtimeSessionConfig,
-    OpenAIRealtimeVoice,
-    TurnDetectionType,
+Text-to-Speech (TTS) and Speech-to-Text (STT) capabilities.
+"""
+
+# TTS exports
+from .tts import (
+    TTS,
+    TTSBase,
+    TTSProvider,
+    TTSResponse,
     Voice,
-    AudioFormat,
-    Modality,
-    RealtimeVoiceChat,
-    RealtimeVoiceChatConfig
+    TTSError,
+    TTSValidationError,
+    TTSProviderError,
+    TTSVoiceNotFoundError,
+    OpenAITTS,
+    OPENAI_VOICES,
+    OPENAI_MODELS,
+    OPENAI_FORMATS,
+    ELEVENLABS_MODELS,
+    ELEVENLABS_FORMATS,
 )
+
+# Optional ElevenLabs TTS
+try:
+    from .tts import ElevenLabsTTS
+    _has_elevenlabs = True
+except (ImportError, TypeError):
+    _has_elevenlabs = False
+    ElevenLabsTTS = None
+
+# STT exports
+from .stt import STT, STTProvider, OpenAISTT, STTFullResponse
 
 __all__ = [
-    # TTS
+    # TTS - Factory
     'TTS',
+    'TTSBase',
+    # TTS - Models
     'TTSProvider',
+    'TTSResponse',
+    'Voice',
+    # TTS - Exceptions
+    'TTSError',
+    'TTSValidationError',
+    'TTSProviderError',
+    'TTSVoiceNotFoundError',
+    # TTS - Providers
     'OpenAITTS',
-    'ElevenLabsTTS',
-    'TTSFullResponse',
+    # TTS - Constants
+    'OPENAI_VOICES',
+    'OPENAI_MODELS',
+    'OPENAI_FORMATS',
+    'ELEVENLABS_MODELS',
+    'ELEVENLABS_FORMATS',
     # STT
     'STT',
     'STTProvider',
     'OpenAISTT',
     'STTFullResponse',
-    # VoiceChat
-    'VoiceChat',
-    'VoiceChatConfig',
-    'ConversationMessage',
-    'ConversationRole',
-    'VoiceTurnResult',
-    'VoiceChatSession',
-    'ConversationManager',
-    # LiveVoiceChat (config always available, others require PortAudio)
-    'LiveVoiceChatConfig',
-    '_LIVE_VOICE_AVAILABLE',
-    # Dialogue Generator
-    'DialogueGenerator',
-    'Dialogue',
-    'DialogueLine',
-    'SpeakerConfig',
-    'DialogueGenerationConfig',
-    'AudioDialogueResult',
-    'DialogueStyle',
-    # Video Transcription
-    'VideoTranscriber',
-    'MultiLanguageCaptionGenerator',
-    'VideoTranscriptionResult',
-    'CaptionSegment',
-    'LanguageCaptions',
-    'MultiLanguageCaptionsResult',
-    # Video Dubbing
-    'VideoDubber',
-    'DubbedSegment',
-    'DubbingConfig',
-    'VideoDubbingResult',
-    # Realtime Voice
-    'RealtimeVoice',
-    'RealtimeVoiceProvider',
-    'RealtimeSessionConfig',
-    'OpenAIRealtimeVoice',
-    'TurnDetectionType',
-    'Voice',
-    'AudioFormat',
-    'Modality',
-    'RealtimeVoiceChat',
-    'RealtimeVoiceChatConfig',
 ]
 
-# Conditionally add LiveVoiceChat exports if available
-if _LIVE_VOICE_AVAILABLE:
-    __all__.extend(['LiveVoiceChat', 'AudioRecorder', 'AudioPlayer'])
+if _has_elevenlabs:
+    __all__.append('ElevenLabsTTS')
