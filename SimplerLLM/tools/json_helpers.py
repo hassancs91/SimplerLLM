@@ -15,6 +15,38 @@ except ImportError:
     RootModel = None
 
 
+def _is_decimal_type(field_type) -> bool:
+    """Check if a type is Decimal, handling various import scenarios."""
+    if field_type is Decimal:
+        return True
+    if field_type == Decimal:
+        return True
+    # Fallback: check by name for cases where Decimal is imported differently
+    type_name = getattr(field_type, '__name__', None)
+    if type_name == 'Decimal':
+        return True
+    return False
+
+
+def _is_origin_type(origin, target_types: tuple) -> bool:
+    """
+    Check if origin matches any of the target types.
+    Handles differences between Python versions where get_origin() may return
+    different values (e.g., set vs typing.Set).
+    """
+    if origin is None:
+        return False
+    # Direct comparison
+    if origin in target_types:
+        return True
+    # Check by name for cross-version compatibility
+    origin_name = getattr(origin, '__name__', str(origin))
+    for target in target_types:
+        target_name = getattr(target, '__name__', str(target))
+        if origin_name == target_name:
+            return True
+    return False
+
 
 def convert_pydantic_to_json(model_instance):
     """
@@ -126,7 +158,14 @@ def validate_json_with_pydantic_model(model_class, json_data):
             try:
                 # RootModel takes value directly, not as kwargs
                 if is_root_model:
-                    model_instance = model_class(item)
+                    # Handle case where LLM wrapped the list in an object
+                    # e.g., {"items": ["a", "b"]} should become ["a", "b"]
+                    actual_item = item
+                    if isinstance(item, dict) and len(item) == 1:
+                        single_value = list(item.values())[0]
+                        if isinstance(single_value, list):
+                            actual_item = single_value
+                    model_instance = model_class(actual_item)
                 else:
                     model_instance = model_class(**item)
                 validated_data.append(model_instance.model_dump())
@@ -142,6 +181,102 @@ def validate_json_with_pydantic_model(model_class, json_data):
         raise ValueError("Invalid JSON data type. Expected dict or list.")
 
     return validated_data, validation_errors
+
+
+def try_auto_wrap_for_nested_model(model_class: Type[BaseModel], json_data: list) -> list:
+    """
+    Auto-wrap unwrapped JSON objects if the model expects them in a single List field.
+
+    When an LLM returns separate objects instead of wrapping them in the expected
+    container field, this function detects and fixes the structure.
+
+    Example:
+        Input (unwrapped):  [{"name": "A", ...}, {"name": "B", ...}]
+        Output (wrapped):   [{"items": [{"name": "A", ...}, {"name": "B", ...}]}]
+
+    Args:
+        model_class: The target Pydantic model class
+        json_data: List of extracted JSON objects
+
+    Returns:
+        Modified json_data with auto-wrapping applied if applicable
+    """
+    if not json_data or len(json_data) == 0:
+        return json_data
+
+    # Skip RootModel (handled separately by _unwrap_rootmodel_list)
+    if HAS_ROOT_MODEL and RootModel is not None:
+        try:
+            if issubclass(model_class, RootModel):
+                return json_data
+        except TypeError:
+            pass
+
+    # Handle case where LLM returned a JSON array that got wrapped as [[{}, {}]]
+    # This happens when extract_json_from_text parses "[{...}, {...}]" and wraps it
+    working_data = json_data
+    if (len(json_data) == 1 and
+        isinstance(json_data[0], list) and
+        len(json_data[0]) > 0 and
+        all(isinstance(item, dict) for item in json_data[0])):
+        # json_data is [[{}, {}]] - use the inner list for processing
+        working_data = json_data[0]
+
+    # First try validation - if at least one item validates, use it
+    # This handles the case where extract_json_from_text extracts both
+    # the outer wrapper AND inner objects from pretty-printed JSON
+    validated, errors = validate_json_with_pydantic_model(model_class, working_data)
+    if validated:
+        # At least one item validated - return only the validated items
+        # Re-extract just the validated data to return
+        valid_items = []
+        for item in working_data:
+            try:
+                model_class(**item)
+                valid_items.append(item)
+            except:
+                pass
+        if valid_items:
+            return valid_items
+
+    # Find List[SomeModel] fields in the model
+    type_hints = get_type_hints(model_class)
+    list_fields = []
+
+    for field_name, field_type in type_hints.items():
+        origin = get_origin(field_type)
+        if origin is list:
+            args = get_args(field_type)
+            if args and hasattr(args[0], '__annotations__'):
+                # This is a List[SomeModel] field
+                list_fields.append((field_name, args[0]))
+
+    # Only auto-wrap if model has exactly ONE List[Model] field
+    if len(list_fields) != 1:
+        return json_data
+
+    field_name, inner_model = list_fields[0]
+    inner_fields = set(get_type_hints(inner_model).keys())
+
+    # Check if ALL extracted objects contain the inner model's required fields
+    # Allow extra keys (they'll be ignored during Pydantic validation)
+    # This makes auto-wrap more robust with web search where LLM output is less constrained
+    all_match = all(
+        isinstance(obj, dict) and inner_fields.issubset(set(obj.keys()))
+        for obj in working_data
+    )
+
+    if all_match:
+        # Wrap the objects in the expected structure
+        wrapped = [{field_name: working_data}]
+
+        # Validate the wrapped structure
+        validated, errors = validate_json_with_pydantic_model(model_class, wrapped)
+        if not errors:
+            return wrapped
+
+    # Return original if wrapping didn't help
+    return working_data
 
 
 def convert_json_to_pydantic_model(model_class, json_data):
@@ -172,6 +307,10 @@ def get_field_constraints(field_info):
         dict: Dictionary of constraints (ge, le, gt, lt, min_length, max_length, min_items, max_items, pattern)
     """
     constraints = {}
+
+    # Check direct pattern attribute on FieldInfo (Pydantic v2 Field(pattern="..."))
+    if hasattr(field_info, 'pattern') and field_info.pattern:
+        constraints['pattern'] = field_info.pattern
 
     # Check if field_info has constraints attribute (Pydantic v2)
     if hasattr(field_info, 'constraints'):
@@ -362,7 +501,7 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
         return "12345678-1234-5678-1234-567812345678"
 
     # Handle Decimal type
-    if field_type == Decimal:
+    if _is_decimal_type(field_type):
         if 'ge' in constraints:
             return str(constraints['ge'])
         elif 'gt' in constraints:
@@ -406,21 +545,44 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
                 for field_name, field_info in field_type.model_fields.items():
                     field_constraints = get_field_constraints(field_info)
                     field_type_hint = get_type_hints(field_type).get(field_name)
-                    example_data[field_name] = example_value_for_type(
-                        field_type_hint,
-                        field_constraints,
-                        _recursion_depth + 1,
-                        _seen_types
-                    )
+                    # Try smart example first (handles field validators like username, password, email)
+                    smart = get_smart_example_for_field(field_name, field_type_hint, field_constraints)
+                    if smart is not None:
+                        example_data[field_name] = smart
+                    else:
+                        value = example_value_for_type(
+                            field_type_hint,
+                            field_constraints,
+                            _recursion_depth + 1,
+                            _seen_types
+                        )
+                        # For list-type fields, ensure we return [] instead of None
+                        # This handles circular references in List[Model] fields
+                        if value is None and field_type_hint is not None:
+                            hint_origin = get_origin(field_type_hint)
+                            if hint_origin is list:
+                                value = []
+                        example_data[field_name] = value
             else:
                 # Fallback for older Pydantic versions
                 for field_name, field_type_hint in get_type_hints(field_type).items():
-                    example_data[field_name] = example_value_for_type(
-                        field_type_hint,
-                        None,
-                        _recursion_depth + 1,
-                        _seen_types
-                    )
+                    # Try smart example first
+                    smart = get_smart_example_for_field(field_name, field_type_hint, {})
+                    if smart is not None:
+                        example_data[field_name] = smart
+                    else:
+                        value = example_value_for_type(
+                            field_type_hint,
+                            {},
+                            _recursion_depth + 1,
+                            _seen_types
+                        )
+                        # For list-type fields, ensure we return [] instead of None
+                        if value is None and field_type_hint is not None:
+                            hint_origin = get_origin(field_type_hint)
+                            if hint_origin is list:
+                                value = []
+                        example_data[field_name] = value
             return field_type(**example_data)
         elif field_type == str:
             # Check for pattern constraint first
@@ -447,8 +609,9 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
                 return base_string[:target_length]
             else:
                 # Need to pad or repeat to meet minimum length
+                # Use underscores instead of spaces to avoid breaking alphanumeric validators
                 repeats = (target_length // len(base_string)) + 1
-                repeated = (base_string + " ") * repeats
+                repeated = (base_string + "_") * repeats
                 return repeated[:target_length]
         elif field_type == int:
             # Respect numeric constraints
@@ -532,7 +695,7 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
         for i in range(1, 3):  # Create 2 example key-value pairs
             example_dict[f"example_key_{i}"] = example_value_for_type(value_type, {}, _recursion_depth + 1, _seen_types)
         return example_dict
-    elif origin == set or origin == frozenset:  # Handle Set and FrozenSet
+    elif _is_origin_type(origin, (set, frozenset)):  # Handle Set and FrozenSet
         args = get_args(field_type)
         if not args:
             return []  # No type specified, return empty list
@@ -548,7 +711,7 @@ def example_value_for_type(field_type: Type, constraints: dict = None, _recursio
                     value = f"{value}_{i}"
                 items.append(value)
         return items  # Return as list since JSON doesn't support sets
-    elif origin == tuple:  # Handle Tuple types
+    elif _is_origin_type(origin, (tuple,)):  # Handle Tuple types
         args = get_args(field_type)
         if not args:
             return []  # No type args, return empty list

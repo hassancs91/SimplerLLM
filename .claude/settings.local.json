@@ -52,7 +52,11 @@
       "WebFetch(domain:wavespeed.ai)",
       "WebFetch(domain:platform.stability.ai)",
       "Bash(del \"d:\\\\repos\\\\SimplerLLM\\\\SimplerLLM\\\\tools\\\\brainstorm.py\")",
-      "Bash(Remove-Item -Recurse -Force \"d:\\\\repos\\\\SimplerLLM\\\\SimplerLLM\\\\voice\\\\dialogue_generator\")"
+      "Bash(Remove-Item -Recurse -Force \"d:\\\\repos\\\\SimplerLLM\\\\SimplerLLM\\\\voice\\\\dialogue_generator\")",
+      "Bash(git init:*)",
+      "Bash(gh repo create:*)",
+      "Bash(curl:*)",
+      "Bash(cmd /c \"cd /d d:\\\\repos\\\\SimplerLLM && chcp 65001 >nul && python -X utf8 debug_websearch_pydantic.py\")"
     ],
     "deny": [],
     "ask": []

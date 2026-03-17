@@ -56,6 +56,9 @@ gpt5_token_issue_writeup.md
 
 # Website (separate private repository)
 simplerllm_website/
+
+# New Web App (separate private repository)
+new_web_app/
 MINIAGENT_ROADMAP.md
 mcp_server
 examples

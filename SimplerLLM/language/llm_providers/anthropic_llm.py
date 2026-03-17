@@ -443,6 +443,7 @@ def generate_response_with_web_search(
     max_tokens: int = 300,
     full_response: bool = False,
     api_key: Optional[str] = None,
+    json_mode: bool = False,
 ) -> Optional[Dict]:
     """
     Generate a response using Anthropic's Messages API with web search enabled.
@@ -454,6 +455,7 @@ def generate_response_with_web_search(
         max_tokens: Maximum tokens for the response
         full_response: If True, returns LLMFullResponse with web_sources
         api_key: Anthropic API key
+        json_mode: If True, enhances system prompt to request JSON output
 
     Returns:
         str or LLMFullResponse: Generated text or full response with web sources
@@ -475,6 +477,11 @@ def generate_response_with_web_search(
 
     client = Anthropic(api_key=api_key)
 
+    # Enhance system prompt for JSON mode
+    effective_system_prompt = system_prompt
+    if json_mode:
+        effective_system_prompt = f"{system_prompt}\n\nIMPORTANT: You MUST respond with valid JSON only. No additional text or explanation outside the JSON structure."
+
     # Execute with retry logic
     response = None
     last_error = None
@@ -484,7 +491,7 @@ def generate_response_with_web_search(
             response = client.messages.create(
                 model=model_name,
                 max_tokens=max_tokens,
-                system=system_prompt,
+                system=effective_system_prompt,
                 messages=messages,
                 tools=[{
                     "type": "web_search_20250305",
@@ -550,6 +557,7 @@ async def generate_response_with_web_search_async(
     max_tokens: int = 300,
     full_response: bool = False,
     api_key: Optional[str] = None,
+    json_mode: bool = False,
 ) -> Optional[Dict]:
     """
     Asynchronously generate a response using Anthropic's Messages API with web search enabled.
@@ -561,6 +569,7 @@ async def generate_response_with_web_search_async(
         max_tokens: Maximum tokens for the response
         full_response: If True, returns LLMFullResponse with web_sources
         api_key: Anthropic API key
+        json_mode: If True, enhances system prompt to request JSON output
 
     Returns:
         str or LLMFullResponse: Generated text or full response with web sources
@@ -584,6 +593,11 @@ async def generate_response_with_web_search_async(
 
     client = AsyncAnthropic(api_key=api_key)
 
+    # Enhance system prompt for JSON mode
+    effective_system_prompt = system_prompt
+    if json_mode:
+        effective_system_prompt = f"{system_prompt}\n\nIMPORTANT: You MUST respond with valid JSON only. No additional text or explanation outside the JSON structure."
+
     # Execute with retry logic
     response = None
     last_error = None
@@ -593,7 +607,7 @@ async def generate_response_with_web_search_async(
             response = await client.messages.create(
                 model=model_name,
                 max_tokens=max_tokens,
-                system=system_prompt,
+                system=effective_system_prompt,
                 messages=messages,
                 tools=[{
                     "type": "web_search_20250305",

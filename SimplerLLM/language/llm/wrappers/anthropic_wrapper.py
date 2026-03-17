@@ -89,6 +89,7 @@ class AnthropicLLM(LLM):
                     max_tokens=max_tokens,
                     full_response=full_response,
                     api_key=self.api_key,
+                    json_mode=json_mode,
                 )
                 if self.verbose:
                     verbose_print("Web search response received successfully", "info")
@@ -241,6 +242,7 @@ class AnthropicLLM(LLM):
                     max_tokens=max_tokens,
                     full_response=full_response,
                     api_key=self.api_key,
+                    json_mode=json_mode,
                 )
                 if self.verbose:
                     verbose_print("Web search response received successfully", "info")

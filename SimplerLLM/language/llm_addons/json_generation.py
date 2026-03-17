@@ -47,6 +47,7 @@ from SimplerLLM.tools.json_helpers import (
     validate_json_with_pydantic_model,
     generate_json_example_from_pydantic,
     extract_schema_constraints,
+    try_auto_wrap_for_nested_model,
     HAS_ROOT_MODEL,
     RootModel,
 )
@@ -279,6 +280,9 @@ def generate_pydantic_json_model(
                 # Handle RootModel list unwrapping (when LLM wraps list in object)
                 json_object = _unwrap_rootmodel_list(json_object, model_class)
 
+                # Handle auto-wrapping for nested models (when LLM returns unwrapped objects)
+                json_object = try_auto_wrap_for_nested_model(model_class, json_object)
+
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
                 )
@@ -411,6 +415,9 @@ def generate_pydantic_json_model_reliable(
                 # Handle RootModel list unwrapping (when LLM wraps list in object)
                 json_object = _unwrap_rootmodel_list(json_object, model_class)
 
+                # Handle auto-wrapping for nested models (when LLM returns unwrapped objects)
+                json_object = try_auto_wrap_for_nested_model(model_class, json_object)
+
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
                 )
@@ -540,6 +547,9 @@ async def generate_pydantic_json_model_async(
 
                 # Handle RootModel list unwrapping (when LLM wraps list in object)
                 json_object = _unwrap_rootmodel_list(json_object, model_class)
+
+                # Handle auto-wrapping for nested models (when LLM returns unwrapped objects)
+                json_object = try_auto_wrap_for_nested_model(model_class, json_object)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object
@@ -673,6 +683,9 @@ async def generate_pydantic_json_model_reliable_async(
 
                 # Handle RootModel list unwrapping (when LLM wraps list in object)
                 json_object = _unwrap_rootmodel_list(json_object, model_class)
+
+                # Handle auto-wrapping for nested models (when LLM returns unwrapped objects)
+                json_object = try_auto_wrap_for_nested_model(model_class, json_object)
 
                 validated, errors = validate_json_with_pydantic_model(
                     model_class, json_object

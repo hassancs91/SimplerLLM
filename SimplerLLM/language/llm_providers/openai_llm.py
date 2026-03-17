@@ -713,6 +713,7 @@ def generate_response_with_web_search(
     max_tokens=300,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     """
     Generate a response using OpenAI's Responses API with web search enabled.
@@ -723,6 +724,7 @@ def generate_response_with_web_search(
         max_tokens: Maximum tokens for the response
         full_response: If True, returns LLMFullResponse with web_sources
         api_key: OpenAI API key
+        json_mode: If True, enables JSON output format
 
     Returns:
         str or LLMFullResponse: Generated text or full response with web sources
@@ -732,11 +734,17 @@ def generate_response_with_web_search(
 
     for attempt in range(MAX_RETRIES):
         try:
-            response = openai_client.responses.create(
-                model=model_name,
-                input=input_text,
-                tools=[{"type": "web_search"}],
-            )
+            # Build request parameters
+            # Note: JSON mode is NOT supported with web search in OpenAI's Responses API
+            # The json_mode parameter is accepted but ignored - JSON extraction happens
+            # post-response via extract_json_from_text() in json_generation.py
+            request_params = {
+                "model": model_name,
+                "input": input_text,
+                "tools": [{"type": "web_search"}],
+            }
+
+            response = openai_client.responses.create(**request_params)
 
             # Extract text and citations from the response
             generated_text = ""
@@ -784,6 +792,7 @@ async def generate_response_with_web_search_async(
     max_tokens=300,
     full_response=False,
     api_key=None,
+    json_mode=False,
 ):
     """
     Asynchronously generate a response using OpenAI's Responses API with web search enabled.
@@ -794,6 +803,7 @@ async def generate_response_with_web_search_async(
         max_tokens: Maximum tokens for the response
         full_response: If True, returns LLMFullResponse with web_sources
         api_key: OpenAI API key
+        json_mode: If True, enables JSON output format
 
     Returns:
         str or LLMFullResponse: Generated text or full response with web sources
@@ -803,11 +813,17 @@ async def generate_response_with_web_search_async(
 
     for attempt in range(MAX_RETRIES):
         try:
-            response = await async_openai_client.responses.create(
-                model=model_name,
-                input=input_text,
-                tools=[{"type": "web_search"}],
-            )
+            # Build request parameters
+            # Note: JSON mode is NOT supported with web search in OpenAI's Responses API
+            # The json_mode parameter is accepted but ignored - JSON extraction happens
+            # post-response via extract_json_from_text() in json_generation.py
+            request_params = {
+                "model": model_name,
+                "input": input_text,
+                "tools": [{"type": "web_search"}],
+            }
+
+            response = await async_openai_client.responses.create(**request_params)
 
             # Extract text and citations from the response
             generated_text = ""
