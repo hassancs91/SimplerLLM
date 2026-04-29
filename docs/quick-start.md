@@ -75,6 +75,29 @@ response = llm.generate_response(
 | `temperature` | Randomness (0.0 = deterministic, 1.0+ = creative) |
 | `max_tokens` | Maximum length of the response |
 
+## Vision / Image Input
+
+Pass images for the model to analyze:
+
+```python
+response = llm.generate_response(
+    prompt="Describe this image",
+    images=["https://example.com/photo.jpg"],
+    detail="auto"  # "low", "high", or "auto"
+)
+```
+
+Works with local files too:
+
+```python
+response = llm.generate_response(
+    prompt="What's in these images?",
+    images=["path/to/image1.png", "path/to/image2.jpg"]
+)
+```
+
+See [LLM Interface](llm-interface.md) for full details.
+
 ## Getting Token Usage
 
 Set `full_response=True` to get token counts and metadata:

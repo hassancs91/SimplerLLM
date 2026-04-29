@@ -88,6 +88,37 @@ asyncio.run(main())
 | `top_p` | `float` | `1.0` | Nucleus sampling |
 | `json_mode` | `bool` | `False` | Force JSON output |
 | `full_response` | `bool` | `False` | Return detailed response object |
+| `images` | `list[str]` | `None` | List of image URLs or local file paths for vision |
+| `detail` | `str` | `"auto"` | Image detail level: `"low"`, `"high"`, or `"auto"` |
+| `web_search` | `bool` | `False` | Enable web search |
+
+### Vision / Image Input
+
+Pass images to analyze visual content:
+
+```python
+# Using an image URL
+response = llm.generate_response(
+    prompt="Describe this image",
+    images=["https://example.com/photo.jpg"]
+)
+
+# Using a local file
+response = llm.generate_response(
+    prompt="What objects are in these images?",
+    images=["path/to/image1.png", "path/to/image2.jpg"],
+    detail="high"  # "low", "high", or "auto"
+)
+```
+
+| Provider | Vision Support |
+|----------|---------------|
+| OpenAI | Supported |
+| Anthropic | Supported |
+| Gemini | Supported |
+| Ollama | Supported (llava, llama3.2-vision) |
+| Cohere | Supported |
+| DeepSeek | Supported |
 
 ### JSON Mode
 
