@@ -19,7 +19,8 @@ colorama>=0.4
 scipy>=1.15
 tiktoken>=0.9
 qdrant-client==1.14.3
-voyageai==0.3.3
+# voyageai is optional - install via: pip install SimplerLLM[voyage]
+# (Not in default install because upstream voyageai currently requires-python <3.14)
 pydub>=0.25.1
 elevenlabs>=2.22.0
 # sounddevice>=0.4.6  # Optional - for live voice features. Requires PortAudio. Install with: pip install SimplerLLM[voice]

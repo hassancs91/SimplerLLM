@@ -15,6 +15,9 @@ extras_require = {
         "torch>=2.0.0",
         "accelerate>=0.25.0",
     ],
+    "voyage": [
+        "voyageai>=0.3.3",
+    ],
 }
 
 # Read the long description from the README file
@@ -23,7 +26,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="SimplerLLM",
-    version="0.3.5",
+    version="0.3.6",
     author="Hasan Aboul Hasan",
     author_email="hasan@learnwithhasan.com",
     description="An easy-to-use Library for interacting with language models.",
@@ -48,6 +51,8 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 
