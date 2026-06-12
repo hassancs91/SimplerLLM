@@ -29,9 +29,9 @@ pip install pygame>=2.5.0
 ## Key Features
 
 ### 🔗 Unified LLM Interface
-- **8 LLM Providers**: OpenAI, Anthropic, Google Gemini, Cohere, OpenRouter, DeepSeek, and Ollama
+- **9+ LLM Providers**: OpenAI, Anthropic, Google Gemini, Cohere, OpenRouter, CometAPI, DeepSeek, and Ollama
 - **Consistent API**: Same interface across all providers
-- **100+ Models**: Access to diverse models through OpenRouter integration
+- **500+ Models**: Access to diverse models through OpenRouter and CometAPI integrations
 - **Async Support**: Full asynchronous capabilities
 
 ### 🛡️ Reliability & Failover
@@ -45,7 +45,7 @@ pip install pygame>=2.5.0
 - **Retry Logic**: Automatic retry on validation failures
 
 ### 🔍 Vector Operations
-- **Multiple Providers**: OpenAI, Voyage AI, and Cohere embeddings
+- **Multiple Providers**: OpenAI, Voyage AI, Cohere, OpenRouter, and CometAPI embeddings
 - **Local & Cloud Storage**: Local vector database and Qdrant integration
 - **Semantic Search**: Advanced similarity search capabilities
 
@@ -94,6 +94,9 @@ cohere_llm = LLM.create(provider=LLMProvider.COHERE, model_name="command-r-plus"
 
 # OpenRouter (Access to 100+ models)
 openrouter_llm = LLM.create(provider=LLMProvider.OPENROUTER, model_name="openai/gpt-4o")
+
+# CometAPI (Access to 500+ models with native model names)
+cometapi_llm = LLM.create(provider=LLMProvider.COMETAPI, model_name="claude-sonnet-4-6")
 
 # DeepSeek
 deepseek_llm = LLM.create(provider=LLMProvider.DEEPSEEK, model_name="deepseek-chat")
@@ -192,6 +195,18 @@ voyage_embeddings = EmbeddingsLLM.create(
 cohere_embeddings = EmbeddingsLLM.create(
     provider=EmbeddingsProvider.COHERE,
     model_name="embed-english-v3.0"
+)
+
+# OpenRouter Embeddings (any model via one API key)
+openrouter_embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.OPENROUTER,
+    model_name="openai/text-embedding-3-small"
+)
+
+# CometAPI Embeddings (one key, native model names)
+cometapi_embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.COMETAPI,
+    model_name="text-embedding-3-small"
 )
 
 # Generate embeddings
@@ -422,6 +437,7 @@ COHERE_API_KEY=your_cohere_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
 OPENROUTER_SITE_URL=your_site_url  # Optional
 OPENROUTER_SITE_NAME=your_site_name  # Optional
+COMETAPI_API_KEY=your_cometapi_api_key  # COMETAPI_KEY also works
 
 # Embeddings
 VOYAGE_API_KEY=your_voyage_api_key

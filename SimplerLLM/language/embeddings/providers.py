@@ -5,6 +5,8 @@ This module contains the concrete implementations for each embedding provider:
 - OpenAIEmbeddings: OpenAI's text-embedding models
 - VoyageEmbeddings: Voyage AI embeddings with retrieval optimization
 - CohereEmbeddings: Cohere embeddings with multilingual support
+- OpenRouterEmbeddings: Any embedding model via the OpenRouter gateway
+- CometAPIEmbeddings: Embedding models via the CometAPI aggregator
 """
 
 import os
@@ -13,6 +15,8 @@ from typing import List, Optional, Union, Any
 import SimplerLLM.language.llm_providers.openai_llm as openai_llm
 import SimplerLLM.language.llm_providers.voyage_llm as voyage_llm
 import SimplerLLM.language.llm_providers.cohere_llm as cohere_llm
+import SimplerLLM.language.llm_providers.openrouter_llm as openrouter_llm
+import SimplerLLM.language.llm_providers.cometapi_llm as cometapi_llm
 from SimplerLLM.language.llm_providers.llm_response_models import LLMEmbeddingsResponse
 
 from .models import EmbeddingsProvider
@@ -177,6 +181,260 @@ class OpenAIEmbeddings(BaseEmbeddings):
         model_name = model_name if model_name is not None else self.model_name
 
         return await openai_llm.generate_embeddings_async(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key
+        )
+
+
+class OpenRouterEmbeddings(BaseEmbeddings):
+    """
+    OpenRouter embeddings implementation.
+
+    Generates text embeddings through OpenRouter's unified gateway, giving
+    access to embedding models from multiple providers with a single API key.
+    Model names use the 'provider/model' format.
+
+    Attributes:
+        provider: Always EmbeddingsProvider.OPENROUTER
+        model_name: OpenRouter model identifier in 'provider/model' format
+            (default: "openai/text-embedding-3-small")
+        api_key: OpenRouter API key (falls back to OPENROUTER_API_KEY env var)
+
+    Example:
+        >>> embeddings = OpenRouterEmbeddings(
+        ...     provider=EmbeddingsProvider.OPENROUTER,
+        ...     model_name="openai/text-embedding-3-small"
+        ... )
+        >>> vector = embeddings.generate_embeddings("Hello world")
+        >>> print(len(vector))  # 1536
+    """
+
+    def __init__(
+        self,
+        provider: EmbeddingsProvider,
+        model_name: str,
+        api_key: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ):
+        super().__init__(provider, model_name, api_key, user_id)
+        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
+
+    def generate_embeddings(
+        self,
+        user_input: Union[str, List[str]],
+        model_name: Optional[str] = None,
+        full_response: bool = False,
+    ) -> Union[List[float], List[List[float]], LLMEmbeddingsResponse]:
+        """
+        Generate embeddings using any model through OpenRouter.
+
+        Args:
+            user_input: Text or list of texts to embed. Single strings return
+                a single embedding vector. Lists return a list of vectors.
+            model_name: Model name override in 'provider/model' format
+                (e.g., 'openai/text-embedding-3-large'). If not provided,
+                uses the instance's model_name.
+            full_response: If True, returns LLMEmbeddingsResponse with metadata.
+                If False, returns just the embedding vector(s).
+
+        Returns:
+            If full_response=False:
+                - Single input: List[float] - embedding vector
+                - List input: List[List[float]] - list of embedding vectors
+            If full_response=True:
+                LLMEmbeddingsResponse with generated_embedding, model,
+                process_time, and llm_provider_response.
+
+        Raises:
+            ValueError: If user_input is empty or None.
+            Exception: On API errors after retry attempts exhausted.
+
+        Example:
+            >>> embeddings = OpenRouterEmbeddings(
+            ...     provider=EmbeddingsProvider.OPENROUTER,
+            ...     model_name="openai/text-embedding-3-small"
+            ... )
+            >>> # Single text
+            >>> vector = embeddings.generate_embeddings("Hello world")
+            >>> print(f"Dimensions: {len(vector)}")  # 1536
+            >>>
+            >>> # Different model through the same gateway
+            >>> vector = embeddings.generate_embeddings(
+            ...     "Hello world",
+            ...     model_name="qwen/qwen3-embedding-8b"
+            ... )
+        """
+        model_name = model_name if model_name is not None else self.model_name
+
+        return openrouter_llm.generate_embeddings(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key
+        )
+
+    async def generate_embeddings_async(
+        self,
+        user_input: Union[str, List[str]],
+        model_name: Optional[str] = None,
+        full_response: bool = False,
+    ) -> Union[List[float], List[List[float]], LLMEmbeddingsResponse]:
+        """
+        Asynchronously generate embeddings through OpenRouter.
+
+        This is the async version of generate_embeddings(). See
+        generate_embeddings() for full parameter documentation.
+
+        Args:
+            user_input: Text or list of texts to embed.
+            model_name: Model name override in 'provider/model' format.
+            full_response: If True, returns LLMEmbeddingsResponse.
+
+        Returns:
+            Embedding vector(s) or LLMEmbeddingsResponse.
+
+        Example:
+            >>> import asyncio
+            >>> embeddings = OpenRouterEmbeddings(
+            ...     provider=EmbeddingsProvider.OPENROUTER,
+            ...     model_name="openai/text-embedding-3-small"
+            ... )
+            >>> vector = asyncio.run(
+            ...     embeddings.generate_embeddings_async("Hello world")
+            ... )
+        """
+        model_name = model_name if model_name is not None else self.model_name
+
+        return await openrouter_llm.generate_embeddings_async(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key
+        )
+
+
+class CometAPIEmbeddings(BaseEmbeddings):
+    """
+    CometAPI embeddings implementation.
+
+    Generates text embeddings through CometAPI's all-in-one aggregator,
+    giving access to OpenAI embedding models (and more) with a single
+    CometAPI key. Model names use their native format without a prefix.
+
+    Attributes:
+        provider: Always EmbeddingsProvider.COMETAPI
+        model_name: Native model identifier
+            (default: "text-embedding-3-small")
+        api_key: CometAPI key (falls back to COMETAPI_API_KEY then
+            COMETAPI_KEY env vars)
+
+    Example:
+        >>> embeddings = CometAPIEmbeddings(
+        ...     provider=EmbeddingsProvider.COMETAPI,
+        ...     model_name="text-embedding-3-small"
+        ... )
+        >>> vector = embeddings.generate_embeddings("Hello world")
+        >>> print(len(vector))  # 1536
+    """
+
+    def __init__(
+        self,
+        provider: EmbeddingsProvider,
+        model_name: str,
+        api_key: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ):
+        super().__init__(provider, model_name, api_key, user_id)
+        self.api_key = api_key or os.getenv("COMETAPI_API_KEY") or os.getenv("COMETAPI_KEY", "")
+
+    def generate_embeddings(
+        self,
+        user_input: Union[str, List[str]],
+        model_name: Optional[str] = None,
+        full_response: bool = False,
+    ) -> Union[List[float], List[List[float]], LLMEmbeddingsResponse]:
+        """
+        Generate embeddings using an embedding model through CometAPI.
+
+        Args:
+            user_input: Text or list of texts to embed. Single strings return
+                a single embedding vector. Lists return a list of vectors.
+            model_name: Model name override (e.g., 'text-embedding-3-large').
+                If not provided, uses the instance's model_name.
+            full_response: If True, returns LLMEmbeddingsResponse with metadata.
+                If False, returns just the embedding vector(s).
+
+        Returns:
+            If full_response=False:
+                - Single input: List[float] - embedding vector
+                - List input: List[List[float]] - list of embedding vectors
+            If full_response=True:
+                LLMEmbeddingsResponse with generated_embedding, model,
+                process_time, and llm_provider_response.
+
+        Raises:
+            ValueError: If user_input is empty or None.
+            Exception: On API errors after retry attempts exhausted.
+
+        Example:
+            >>> embeddings = CometAPIEmbeddings(
+            ...     provider=EmbeddingsProvider.COMETAPI,
+            ...     model_name="text-embedding-3-small"
+            ... )
+            >>> # Single text
+            >>> vector = embeddings.generate_embeddings("Hello world")
+            >>> print(f"Dimensions: {len(vector)}")  # 1536
+            >>>
+            >>> # Larger model through the same key
+            >>> vector = embeddings.generate_embeddings(
+            ...     "Hello world",
+            ...     model_name="text-embedding-3-large"
+            ... )
+        """
+        model_name = model_name if model_name is not None else self.model_name
+
+        return cometapi_llm.generate_embeddings(
+            user_input=user_input,
+            model_name=model_name,
+            full_response=full_response,
+            api_key=self.api_key
+        )
+
+    async def generate_embeddings_async(
+        self,
+        user_input: Union[str, List[str]],
+        model_name: Optional[str] = None,
+        full_response: bool = False,
+    ) -> Union[List[float], List[List[float]], LLMEmbeddingsResponse]:
+        """
+        Asynchronously generate embeddings through CometAPI.
+
+        This is the async version of generate_embeddings(). See
+        generate_embeddings() for full parameter documentation.
+
+        Args:
+            user_input: Text or list of texts to embed.
+            model_name: Model name override.
+            full_response: If True, returns LLMEmbeddingsResponse.
+
+        Returns:
+            Embedding vector(s) or LLMEmbeddingsResponse.
+
+        Example:
+            >>> import asyncio
+            >>> embeddings = CometAPIEmbeddings(
+            ...     provider=EmbeddingsProvider.COMETAPI,
+            ...     model_name="text-embedding-3-small"
+            ... )
+            >>> vector = asyncio.run(
+            ...     embeddings.generate_embeddings_async("Hello world")
+            ... )
+        """
+        model_name = model_name if model_name is not None else self.model_name
+
+        return await cometapi_llm.generate_embeddings_async(
             user_input=user_input,
             model_name=model_name,
             full_response=full_response,

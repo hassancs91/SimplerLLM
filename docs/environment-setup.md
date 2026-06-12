@@ -15,6 +15,7 @@ Set the API key for each provider you plan to use:
 | Cohere | `COHERE_API_KEY` |
 | Perplexity | `PERPLEXITY_API_KEY` |
 | OpenRouter | `OPENROUTER_API_KEY` |
+| CometAPI | `COMETAPI_API_KEY` (or `COMETAPI_KEY`) |
 | Moonshot | `MOONSHOT_API_KEY` |
 | Voyage AI (embeddings) | `VOYAGE_API_KEY` |
 
@@ -76,10 +77,18 @@ HF_LOAD_IN_8BIT=false    # Enable 8-bit quantization
 
 ## OpenRouter
 
-Optional metadata for request tracking:
+The same `OPENROUTER_API_KEY` is used for both chat models and embeddings. Optional metadata for request tracking:
 
 ```env
 OPENROUTER_API_KEY=your-key-here
 OPENROUTER_SITE_URL=https://yoursite.com
 OPENROUTER_SITE_NAME=Your App Name
+```
+
+## CometAPI
+
+The same key is used for both chat models and embeddings. Both variable names work (`COMETAPI_API_KEY` is checked first):
+
+```env
+COMETAPI_API_KEY=your-key-here
 ```

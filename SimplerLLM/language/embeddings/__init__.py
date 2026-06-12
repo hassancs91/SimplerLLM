@@ -2,8 +2,9 @@
 Embeddings Module - Unified Interface for Text Embeddings.
 
 This module provides a factory-based interface for generating text embeddings
-using multiple providers (OpenAI, Voyage AI, Cohere). It supports both
-synchronous and asynchronous operations with provider-specific optimizations.
+using multiple providers (OpenAI, Voyage AI, Cohere, OpenRouter). It supports
+both synchronous and asynchronous operations with provider-specific
+optimizations.
 
 Supported Providers:
     OpenAI:
@@ -22,10 +23,16 @@ Supported Providers:
         - embed-multilingual-v3.0: 100+ languages (1024 dimensions)
         - embed-v4.0: Latest model with configurable dimensions
 
+    OpenRouter (unified gateway, models use 'provider/model' format):
+        - openai/text-embedding-3-small (default): 1536 dimensions
+        - openai/text-embedding-3-large: 3072 dimensions
+        - qwen/qwen3-embedding-8b: Open-weights multilingual embeddings
+
 Environment Variables:
     OPENAI_API_KEY: Required for OpenAI embeddings
     VOYAGE_API_KEY: Required for Voyage AI embeddings
     COHERE_API_KEY: Required for Cohere embeddings
+    OPENROUTER_API_KEY: Required for OpenRouter embeddings
 
 Quick Start:
     >>> from SimplerLLM.language import EmbeddingsLLM, EmbeddingsProvider
@@ -80,6 +87,8 @@ from .providers import (
     OpenAIEmbeddings,
     VoyageEmbeddings,
     CohereEmbeddings,
+    OpenRouterEmbeddings,
+    CometAPIEmbeddings,
 )
 
 __all__ = [
@@ -91,4 +100,6 @@ __all__ = [
     "OpenAIEmbeddings",
     "VoyageEmbeddings",
     "CohereEmbeddings",
+    "OpenRouterEmbeddings",
+    "CometAPIEmbeddings",
 ]

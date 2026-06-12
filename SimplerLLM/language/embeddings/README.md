@@ -1,10 +1,10 @@
 # Embeddings - Multi-Provider Text Embeddings
 
-SimplerLLM Embeddings provides a unified interface for generating text embeddings using multiple providers (OpenAI, Voyage AI, Cohere). Perfect for semantic search, RAG systems, clustering, and similarity detection.
+SimplerLLM Embeddings provides a unified interface for generating text embeddings using multiple providers (OpenAI, Voyage AI, Cohere, OpenRouter, CometAPI). Perfect for semantic search, RAG systems, clustering, and similarity detection.
 
 ## Features
 
-- **Three Providers**: OpenAI, Voyage AI, and Cohere support
+- **Five Providers**: OpenAI, Voyage AI, Cohere, OpenRouter, and CometAPI support
 - **Sync & Async**: Both synchronous and asynchronous methods
 - **Factory Pattern**: Simple `EmbeddingsLLM.create()` interface
 - **Provider-Specific Features**: input_type optimization, custom dimensions, truncation
@@ -134,6 +134,63 @@ long_emb = embeddings.generate_embeddings(
 - `input_type`: "search_document", "search_query", "classification", "clustering"
 - `truncate`: "START", "END", or "NONE"
 - `embedding_types`: List of specific embedding types
+
+### OpenRouter
+
+Access embedding models from multiple providers through a single API key. Model names use the `provider/model` format:
+
+```python
+embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.OPENROUTER,
+    model_name="openai/text-embedding-3-small"
+)
+
+vector = embeddings.generate_embeddings("Your text here")
+
+# Switch to a different model through the same gateway
+vector = embeddings.generate_embeddings(
+    "Your text here",
+    model_name="qwen/qwen3-embedding-8b"
+)
+```
+
+**Models:**
+
+| Model | Use Case |
+|-------|----------|
+| openai/text-embedding-3-small | General purpose (default), 1536 dims |
+| openai/text-embedding-3-large | Highest quality, 3072 dims |
+| qwen/qwen3-embedding-8b | Open-weights multilingual |
+
+See the full list at https://openrouter.ai/collections/embedding-models
+
+### CometAPI
+
+Access embedding models through a single CometAPI key. Model names use their native format without a prefix:
+
+```python
+embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.COMETAPI,
+    model_name="text-embedding-3-small"
+)
+
+vector = embeddings.generate_embeddings("Your text here")
+
+# Larger model through the same key
+vector = embeddings.generate_embeddings(
+    "Your text here",
+    model_name="text-embedding-3-large"
+)
+```
+
+**Models:**
+
+| Model | Use Case |
+|-------|----------|
+| text-embedding-3-small | General purpose (default), 1536 dims |
+| text-embedding-3-large | Highest quality, 3072 dims |
+
+See the full list at https://www.cometapi.com/models
 
 ## Full Response with Metadata
 
@@ -271,6 +328,8 @@ print(f"Similarity (1-3): {cosine_similarity(vec1, vec3):.4f}")  # Low
 OPENAI_API_KEY=sk-...
 VOYAGE_API_KEY=pa-...
 COHERE_API_KEY=...
+OPENROUTER_API_KEY=sk-or-...
+COMETAPI_API_KEY=sk-...
 ```
 
 ## API Reference
@@ -280,7 +339,7 @@ COHERE_API_KEY=...
 ```python
 @staticmethod
 def create(
-    provider: EmbeddingsProvider,  # OPENAI, VOYAGE, or COHERE (required)
+    provider: EmbeddingsProvider,  # OPENAI, VOYAGE, COHERE, OPENROUTER, or COMETAPI (required)
     model_name: str = None,        # Provider-specific model (optional)
     api_key: str = None,           # API key (optional, falls back to env var)
     user_id: str = None            # Optional tracking ID

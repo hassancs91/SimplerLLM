@@ -25,6 +25,7 @@ class LLMProvider(Enum):
     PERPLEXITY = 9
     MOONSHOT = 10
     HUGGING_FACE_LOCAL = 11
+    COMETAPI = 12
 
 class LLM:
     def __init__(
@@ -89,6 +90,9 @@ class LLM:
         if provider == LLMProvider.HUGGING_FACE_LOCAL:
             from .wrappers.hf_local_wrapper import HuggingFaceLocalLLM
             return HuggingFaceLocalLLM(provider, model_name, temperature, top_p, verbose=verbose)
+        if provider == LLMProvider.COMETAPI:
+            from .wrappers.cometapi_wrapper import CometAPILLM
+            return CometAPILLM(provider, model_name, temperature, top_p, api_key, verbose=verbose)
         else:
             return None
 

@@ -26,6 +26,9 @@ PROVIDER_CAPABILITIES: Dict[LLMProvider, Set[str]] = {
     LLMProvider.OLLAMA: {"images"},
     LLMProvider.COHERE: set(),
     LLMProvider.HUGGING_FACE_LOCAL: set(),
+    LLMProvider.COMETAPI: {
+        "reasoning_effort", "timeout", "images", "detail"
+    },
 }
 
 # Universal parameters supported by all providers

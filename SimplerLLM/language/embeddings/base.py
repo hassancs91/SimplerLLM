@@ -13,6 +13,8 @@ from .providers import (
     OpenAIEmbeddings,
     VoyageEmbeddings,
     CohereEmbeddings,
+    OpenRouterEmbeddings,
+    CometAPIEmbeddings,
 )
 
 
@@ -21,6 +23,8 @@ DEFAULT_MODELS = {
     EmbeddingsProvider.OPENAI: "text-embedding-3-small",
     EmbeddingsProvider.VOYAGE: "voyage-3",
     EmbeddingsProvider.COHERE: "embed-english-v3.0",
+    EmbeddingsProvider.OPENROUTER: "openai/text-embedding-3-small",
+    EmbeddingsProvider.COMETAPI: "text-embedding-3-small",
 }
 
 
@@ -36,6 +40,8 @@ class EmbeddingsLLM:
         - OPENAI: OpenAI's text-embedding models
         - VOYAGE: Voyage AI embeddings with retrieval optimization
         - COHERE: Cohere embeddings with multilingual support
+        - OPENROUTER: Any embedding model via the OpenRouter gateway
+        - COMETAPI: Embedding models via the CometAPI aggregator
 
     Example:
         >>> from SimplerLLM.language.embeddings import EmbeddingsLLM, EmbeddingsProvider
@@ -60,6 +66,8 @@ class EmbeddingsLLM:
         - OpenAIEmbeddings: OpenAI-specific implementation
         - VoyageEmbeddings: Voyage AI-specific implementation
         - CohereEmbeddings: Cohere-specific implementation
+        - OpenRouterEmbeddings: OpenRouter gateway implementation
+        - CometAPIEmbeddings: CometAPI aggregator implementation
     """
 
     def __init__(
@@ -104,18 +112,23 @@ class EmbeddingsLLM:
                 - EmbeddingsProvider.OPENAI: OpenAI embeddings
                 - EmbeddingsProvider.VOYAGE: Voyage AI embeddings
                 - EmbeddingsProvider.COHERE: Cohere embeddings
+                - EmbeddingsProvider.OPENROUTER: OpenRouter gateway embeddings
+                - EmbeddingsProvider.COMETAPI: CometAPI aggregator embeddings
             model_name: Model identifier. If not provided, uses provider default:
                 - OPENAI: "text-embedding-3-small"
                 - VOYAGE: "voyage-3"
                 - COHERE: "embed-english-v3.0"
+                - OPENROUTER: "openai/text-embedding-3-small"
+                - COMETAPI: "text-embedding-3-small"
             api_key: API key for authentication. Falls back to environment
-                variables (OPENAI_API_KEY, VOYAGE_API_KEY, COHERE_API_KEY).
+                variables (OPENAI_API_KEY, VOYAGE_API_KEY, COHERE_API_KEY,
+                OPENROUTER_API_KEY, COMETAPI_API_KEY/COMETAPI_KEY).
             user_id: Optional user identifier for tracking/billing.
 
         Returns:
             Provider-specific embeddings instance (OpenAIEmbeddings,
-            VoyageEmbeddings, or CohereEmbeddings), or None if provider
-            is not specified.
+            VoyageEmbeddings, CohereEmbeddings, OpenRouterEmbeddings,
+            or CometAPIEmbeddings), or None if provider is not specified.
 
         Raises:
             ValueError: If provider is not a valid EmbeddingsProvider enum.
@@ -138,6 +151,18 @@ class EmbeddingsLLM:
             ...     model_name="embed-multilingual-v3.0",
             ...     api_key="your-api-key"
             ... )
+            >>>
+            >>> # Any model through OpenRouter
+            >>> embeddings = EmbeddingsLLM.create(
+            ...     provider=EmbeddingsProvider.OPENROUTER,
+            ...     model_name="openai/text-embedding-3-large"
+            ... )
+            >>>
+            >>> # Through CometAPI
+            >>> embeddings = EmbeddingsLLM.create(
+            ...     provider=EmbeddingsProvider.COMETAPI,
+            ...     model_name="text-embedding-3-small"
+            ... )
         """
         if provider is None:
             return None
@@ -145,7 +170,9 @@ class EmbeddingsLLM:
         if not isinstance(provider, EmbeddingsProvider):
             raise ValueError(
                 f"provider must be an EmbeddingsProvider enum, got {type(provider).__name__}. "
-                f"Use EmbeddingsProvider.OPENAI, EmbeddingsProvider.VOYAGE, or EmbeddingsProvider.COHERE"
+                f"Use EmbeddingsProvider.OPENAI, EmbeddingsProvider.VOYAGE, "
+                f"EmbeddingsProvider.COHERE, EmbeddingsProvider.OPENROUTER, "
+                f"or EmbeddingsProvider.COMETAPI"
             )
 
         # Use default model if not specified
@@ -157,6 +184,10 @@ class EmbeddingsLLM:
             return VoyageEmbeddings(provider, model_name, api_key, user_id)
         elif provider == EmbeddingsProvider.COHERE:
             return CohereEmbeddings(provider, model_name, api_key, user_id)
+        elif provider == EmbeddingsProvider.OPENROUTER:
+            return OpenRouterEmbeddings(provider, model_name, api_key, user_id)
+        elif provider == EmbeddingsProvider.COMETAPI:
+            return CometAPIEmbeddings(provider, model_name, api_key, user_id)
         else:
             return None
 

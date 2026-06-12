@@ -1,6 +1,6 @@
 # Embeddings
 
-Generate text embeddings with OpenAI, Voyage AI, or Cohere.
+Generate text embeddings with OpenAI, Voyage AI, Cohere, or any model through OpenRouter or CometAPI.
 
 ## Basic Usage
 
@@ -20,6 +20,8 @@ print(len(vector))  # 1536
 | OpenAI | `EmbeddingsProvider.OPENAI` | `text-embedding-3-small` | 1536 |
 | Voyage AI | `EmbeddingsProvider.VOYAGE` | `voyage-3` | 1024 |
 | Cohere | `EmbeddingsProvider.COHERE` | `embed-english-v3.0` | 1024 |
+| OpenRouter | `EmbeddingsProvider.OPENROUTER` | `openai/text-embedding-3-small` | 1536 |
+| CometAPI | `EmbeddingsProvider.COMETAPI` | `text-embedding-3-small` | 1536 |
 
 ## Batch Embeddings
 
@@ -67,6 +69,12 @@ embeddings = EmbeddingsLLM.create(provider=EmbeddingsProvider.VOYAGE)
 
 # Cohere
 embeddings = EmbeddingsLLM.create(provider=EmbeddingsProvider.COHERE)
+
+# OpenRouter
+embeddings = EmbeddingsLLM.create(provider=EmbeddingsProvider.OPENROUTER)
+
+# CometAPI
+embeddings = EmbeddingsLLM.create(provider=EmbeddingsProvider.COMETAPI)
 ```
 
 To use a specific model:
@@ -132,6 +140,50 @@ query_vector = embeddings.generate_embeddings(
 | `truncate` | `str` | `"END"` | `"START"`, `"END"`, or `"NONE"` |
 
 Available models: `embed-english-v3.0`, `embed-multilingual-v3.0`, `embed-v4.0`.
+
+## OpenRouter
+
+OpenRouter gives access to embedding models from multiple providers through a single API key (`OPENROUTER_API_KEY`). Model names use the `provider/model` format:
+
+```python
+embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.OPENROUTER,
+    model_name="openai/text-embedding-3-small"
+)
+
+vector = embeddings.generate_embeddings("What is machine learning?")
+print(len(vector))  # 1536
+
+# Switch models without changing API keys
+vector = embeddings.generate_embeddings(
+    "What is machine learning?",
+    model_name="qwen/qwen3-embedding-8b"
+)
+```
+
+Example models: `openai/text-embedding-3-small`, `openai/text-embedding-3-large`, `qwen/qwen3-embedding-8b`. See the [OpenRouter embedding models list](https://openrouter.ai/collections/embedding-models) for all available models.
+
+## CometAPI
+
+CometAPI gives access to embedding models through a single API key (`COMETAPI_API_KEY` or `COMETAPI_KEY`). Model names use their native format without a prefix:
+
+```python
+embeddings = EmbeddingsLLM.create(
+    provider=EmbeddingsProvider.COMETAPI,
+    model_name="text-embedding-3-small"
+)
+
+vector = embeddings.generate_embeddings("What is machine learning?")
+print(len(vector))  # 1536
+
+# Larger model through the same key
+vector = embeddings.generate_embeddings(
+    "What is machine learning?",
+    model_name="text-embedding-3-large"
+)
+```
+
+Example models: `text-embedding-3-small`, `text-embedding-3-large`. See [CometAPI models](https://www.cometapi.com/models) for all available models.
 
 ## Async Usage
 

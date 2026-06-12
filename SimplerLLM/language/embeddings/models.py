@@ -28,6 +28,15 @@ class EmbeddingsProvider(Enum):
             Models: embed-english-v3.0, embed-multilingual-v3.0
             Features: input_type for search optimization, truncation control
 
+        OPENROUTER: OpenRouter unified gateway. Access embedding models
+            from multiple providers through a single API.
+            Models use 'provider/model' format:
+            openai/text-embedding-3-small, qwen/qwen3-embedding-8b
+
+        COMETAPI: CometAPI all-in-one aggregator. Access OpenAI embedding
+            models (and more) through a single CometAPI key, using native
+            model names: text-embedding-3-small, text-embedding-3-large
+
     Example:
         >>> from SimplerLLM.language.embeddings import EmbeddingsProvider
         >>> provider = EmbeddingsProvider.OPENAI
@@ -37,3 +46,5 @@ class EmbeddingsProvider(Enum):
     OPENAI = 1
     VOYAGE = 2
     COHERE = 3
+    OPENROUTER = 4
+    COMETAPI = 5

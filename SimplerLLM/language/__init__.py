@@ -17,6 +17,8 @@ from .embeddings import (
     OpenAIEmbeddings,
     VoyageEmbeddings,
     CohereEmbeddings,
+    OpenRouterEmbeddings,
+    CometAPIEmbeddings,
 )
 from .llm_addons import (
     create_optimized_prompt,
@@ -63,6 +65,8 @@ __all__ = [
     'OpenAIEmbeddings',
     'VoyageEmbeddings',
     'CohereEmbeddings',
+    'OpenRouterEmbeddings',
+    'CometAPIEmbeddings',
     # LLM Addons
     'create_optimized_prompt',
     'generate_pydantic_json_model',
