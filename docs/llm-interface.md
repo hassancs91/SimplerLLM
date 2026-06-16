@@ -29,6 +29,7 @@ response = llm.generate_response(prompt="What is Python?")
 | DeepSeek | `LLMProvider.DEEPSEEK` | `DEEPSEEK_API_KEY` |
 | Ollama | `LLMProvider.OLLAMA` | — (local) |
 | OpenRouter | `LLMProvider.OPENROUTER` | `OPENROUTER_API_KEY` |
+| CometAPI | `LLMProvider.COMETAPI` | `COMETAPI_API_KEY` (or `COMETAPI_KEY`) |
 | Cohere | `LLMProvider.COHERE` | `COHERE_API_KEY` |
 | Perplexity | `LLMProvider.PERPLEXITY` | `PERPLEXITY_API_KEY` |
 | Moonshot | `LLMProvider.MOONSHOT` | `MOONSHOT_API_KEY` |
@@ -119,6 +120,8 @@ response = llm.generate_response(
 | Ollama | Supported (llava, llama3.2-vision) |
 | Cohere | Supported |
 | DeepSeek | Supported |
+| OpenRouter | Supported (vision-capable models) |
+| CometAPI | Supported (vision-capable models) |
 
 ### JSON Mode
 

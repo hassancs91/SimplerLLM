@@ -106,6 +106,7 @@ Parameters are automatically filtered based on the provider. Provider-specific p
 | DeepSeek | `thinking`, `images` |
 | Perplexity | `timeout`, `search_domain_filter`, `search_recency_filter`, `return_images`, `return_related_questions`, `images` |
 | OpenRouter | `reasoning_effort`, `timeout`, `site_url`, `site_name`, `images`, `detail` |
+| CometAPI | `reasoning_effort`, `timeout`, `images`, `detail` |
 | Ollama | `images` |
 
 Universal parameters (`prompt`, `messages`, `system_prompt`, `temperature`, `max_tokens`, `top_p`, `json_mode`, `full_response`) work with all providers.

@@ -54,6 +54,7 @@ response = llm.generate_response(prompt="Your prompt here")
 | DeepSeek | `LLMProvider.DEEPSEEK` | `deepseek-chat` |
 | Cohere | `LLMProvider.COHERE` | `command-r-plus` |
 | OpenRouter | `LLMProvider.OPENROUTER` | `openai/gpt-4o` |
+| CometAPI | `LLMProvider.COMETAPI` | `claude-sonnet-4-6` |
 | Perplexity | `LLMProvider.PERPLEXITY` | `sonar` |
 | Ollama | `LLMProvider.OLLAMA` | `llama3` |
 
