@@ -46,6 +46,7 @@ test_complex_json.py
 setup.py
 
 CLAUDE.md
+.claude/
 
 output
 /output
@@ -67,14 +68,8 @@ examples
 guides
 projects
 
-# SimplerLLM Desktop App
-simplerllm_desktop_app/node_modules/
-simplerllm_desktop_app/dist/
-simplerllm_desktop_app/python/
-simplerllm_desktop_app/.env
-simplerllm_desktop_app/__pycache__/
-simplerllm_desktop_app/**/__pycache__/
-simplerllm_desktop_app/*.log
+# SimplerLLM Desktop App (separate repository — moved to D:\repos\simplerllm_desktop_app)
+simplerllm_desktop_app/
 
 
 simplerllm_img_desktop_app/node_modules/
