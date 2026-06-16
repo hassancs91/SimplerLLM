@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(find /d/repos/SimplerLLM -maxdepth 3 -type f \\\\\\(-name *test*.py -o -name *example*.py \\\\\\))",
-      "Bash(wait bihnl5sze:*)",
-      "Bash(2)"
-    ]
-  }
-}
