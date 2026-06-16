@@ -9,7 +9,7 @@
 
 SimplerLLM is an open-source Python library designed to simplify interactions with Large Language Models (LLMs) for researchers, developers, and AI enthusiasts. It provides a unified interface for multiple LLM providers, robust tools for content processing, and advanced features like reliable failover systems and intelligent routing.
 
-[📚 Full Documentation](https://docs.simplerllm.com/)
+[📚 Full Documentation](https://learnwithhasan.com/simplerllm/docs/installation/)
 
 ## Installation
 
@@ -29,7 +29,7 @@ pip install pygame>=2.5.0
 ## Key Features
 
 ### 🔗 Unified LLM Interface
-- **9+ LLM Providers**: OpenAI, Anthropic, Google Gemini, Cohere, OpenRouter, CometAPI, DeepSeek, and Ollama
+- **11 LLM Providers**: OpenAI, Anthropic, Google Gemini, Cohere, OpenRouter, CometAPI, DeepSeek, Perplexity, Moonshot, Ollama, and HuggingFace Local
 - **Consistent API**: Same interface across all providers
 - **500+ Models**: Access to diverse models through OpenRouter and CometAPI integrations
 - **Async Support**: Full asynchronous capabilities
@@ -57,7 +57,7 @@ pip install pygame>=2.5.0
 ### 🛠️ Advanced Tools
 - **Content Loading**: PDF, DOCX, web pages, and more
 - **Text Chunking**: Semantic, sentence, and paragraph-based chunking
-- **Search Integration**: Serper and Value Serp APIs
+- **Search Integration**: Serper, Value Serp, SearchAPI, and Apify
 - **Prompt Templates**: Dynamic prompt generation and management
 
 ## Quick Start
@@ -84,10 +84,10 @@ from SimplerLLM.language.llm import LLM, LLMProvider
 openai_llm = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-4o")
 
 # Anthropic Claude
-anthropic_llm = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20241022")
+anthropic_llm = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-sonnet-4-5-20250929")
 
 # Google Gemini
-gemini_llm = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-1.5-pro")
+gemini_llm = LLM.create(provider=LLMProvider.GEMINI, model_name="gemini-2.5-flash")
 
 # Cohere
 cohere_llm = LLM.create(provider=LLMProvider.COHERE, model_name="command-r-plus")
@@ -101,8 +101,17 @@ cometapi_llm = LLM.create(provider=LLMProvider.COMETAPI, model_name="claude-sonn
 # DeepSeek
 deepseek_llm = LLM.create(provider=LLMProvider.DEEPSEEK, model_name="deepseek-chat")
 
+# Perplexity (built-in web search)
+perplexity_llm = LLM.create(provider=LLMProvider.PERPLEXITY, model_name="sonar-pro")
+
+# Moonshot / Kimi
+moonshot_llm = LLM.create(provider=LLMProvider.MOONSHOT, model_name="kimi-k2-0905-preview")
+
 # Ollama (Local models)
-ollama_llm = LLM.create(provider=LLMProvider.OLLAMA, model_name="llama2")
+ollama_llm = LLM.create(provider=LLMProvider.OLLAMA, model_name="llama3")
+
+# HuggingFace Local (runs models locally via transformers)
+hf_local_llm = LLM.create(provider=LLMProvider.HUGGING_FACE_LOCAL, model_name="meta-llama/Llama-3.2-1B-Instruct")
 ```
 
 ### Reliable LLM with Failover
@@ -113,7 +122,7 @@ from SimplerLLM.language.llm.reliable import ReliableLLM
 
 # Create primary and secondary LLMs
 primary_llm = LLM.create(provider=LLMProvider.OPENAI, model_name="gpt-4o")
-secondary_llm = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-3-5-sonnet-20241022")
+secondary_llm = LLM.create(provider=LLMProvider.ANTHROPIC, model_name="claude-sonnet-4-5-20250929")
 
 # Create reliable LLM with automatic failover
 reliable_llm = ReliableLLM(primary_llm, secondary_llm)
@@ -434,6 +443,9 @@ OPENAI_API_KEY=your_openai_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 GEMINI_API_KEY=your_gemini_api_key
 COHERE_API_KEY=your_cohere_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+PERPLEXITY_API_KEY=your_perplexity_api_key
+MOONSHOT_API_KEY=your_moonshot_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
 OPENROUTER_SITE_URL=your_site_url  # Optional
 OPENROUTER_SITE_NAME=your_site_name  # Optional
@@ -446,8 +458,16 @@ VOYAGE_API_KEY=your_voyage_api_key
 RAPIDAPI_API_KEY=your_rapidapi_key
 SERPER_API_KEY=your_serper_api_key
 VALUE_SERP_API_KEY=your_value_serp_api_key
+SEARCHAPI_API_KEY=your_searchapi_key
+APIFY_API_KEY=your_apify_key
 STABILITY_API_KEY=your_stability_api_key
+
+# Global (optional)
+MAX_RETRIES=3
+RETRY_DELAY=2
 ```
+
+> A complete reference with every supported variable is in [`.env-example`](.env-example).
 
 ### Async Support
 
@@ -530,7 +550,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- [📖 Documentation](https://docs.simplerllm.com/)
+- [📖 Documentation](https://learnwithhasan.com/simplerllm/docs/installation/)
 - [💬 Discord Community](https://discord.gg/HUrtZXyp3j)
 
 ---
