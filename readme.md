@@ -1,5 +1,7 @@
 # SimplerLLM
 
+[![PyPI](https://img.shields.io/pypi/v/simplerllm.svg)](https://pypi.org/project/simplerllm/)
+[![Python versions](https://img.shields.io/pypi/pyversions/simplerllm.svg)](https://pypi.org/project/simplerllm/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Join the Discord chat!](https://img.shields.io/badge/Join-Discord-7289DA.svg)](https://discord.gg/HUrtZXyp3j)
 
