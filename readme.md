@@ -556,3 +556,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **SimplerLLM** - Making AI development simpler, one line of code at a time.
+
+<!-- lwh-footer -->
+
+---
+
+## 📘 The free book
+
+Boring building blocks are what keep an app alive in production. The book has 47 of them.
+
+**[Vibe Engineering Blocks](https://learnwithhasan.com/blocks/)** is my free 74-page book.
+47 building blocks for shipping real apps with AI. One block per page, each with the exact
+prompt to hand your AI.
+
+Built by **[Hasan Aboul Hasan](https://learnwithhasan.com)**. I build real products with AI and
+write down exactly how.
+[Guides](https://learnwithhasan.com/guides/) &nbsp;·&nbsp;
+[YouTube](https://www.youtube.com/@HasanAboulHasan) &nbsp;·&nbsp;
+[Community](https://learnwithhasan.com/community/)
